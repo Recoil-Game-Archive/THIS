@@ -1,4 +1,3 @@
--- $Id: camain.lua 3171 2008-11-06 09:06:29Z det $
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 --
@@ -12,36 +11,19 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---
--- 0.75b2 compatibilty
---
-if (Spring.GetTeamColor == nil) then
-  local getTeamInfo = Spring.GetTeamInfo
-  Spring.GetTeamColor = function(teamID)
-    local _,_,_,_,_,_,r,g,b,a = getTeamInfo(teamID)
-    return r, g, b, a
-  end
-  Spring.GetTeamInfo = function(teamID)
-    local id, leader, active, isDead, isAi, side,
-          r, g, b, a, allyTeam = getTeamInfo(teamID)
-    return id, leader, active, isDead, isAi, side, allyTeam
-  end
-end
-
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 Spring.SendCommands({"ctrlpanel " .. LUAUI_DIRNAME .. "ctrlpanel.txt"})
 
-VFS.Include(LUAUI_DIRNAME .. 'utils.lua', utilFile)
+VFS.Include(LUAUI_DIRNAME .. "rml_setup.lua",  nil)--, VFS.ZIP)
+VFS.Include(LUAUI_DIRNAME .. 'utils.lua', nil)--, VFS.ZIP)
 
 include("setupdefs.lua")
 include("savetable.lua")
 
 include("debug.lua")
-include("modfonts.lua")
---include("layout.lua")   -- contains a simple LayoutButtons()
---include("cawidgets.lua")  -- the widget handler
+include("fonts.lua")
+include("layout.lua")   -- contains a simple LayoutButtons()
+include("widgets.lua")  -- the widget handler
+
 
 --------------------------------------------------------------------------------
 --
@@ -64,11 +46,6 @@ end
 
 
 --------------------------------------------------------------------------------
-
-local gl = Spring.Draw  --  easier to use
-
-
--------------------------------------------------------------------------------
 -------------------------------------------------------------------------------
 --
 --  A few helper functions
@@ -90,7 +67,7 @@ activePage = 0
 forceLayout = true
 
 
-function Update()
+function Update(dt)
   local currentPage = Spring.GetActivePage()
   if (forceLayout or (currentPage ~= activePage)) then
     Spring.ForceLayoutUpdate()  --  for the page number indicator
@@ -98,9 +75,9 @@ function Update()
   end
   activePage = currentPage
 
-  fontHandler.Update()
+  fontHandler.Update(dt)
 
-  widgetHandler:Update()
+  widgetHandler:Update(dt)
 
   return
 end
@@ -120,20 +97,29 @@ function ConfigureLayout(command)
   return widgetHandler:ConfigureLayout(command)
 end
 
+function ActiveCommandChanged(id, cmdType)
+  return widgetHandler:ActiveCommandChanged(id, cmdType)
+end
+
 function CommandNotify(id, params, options)
   return widgetHandler:CommandNotify(id, params, options)
 end
 
 function DrawScreen(vsx, vsy)
+  widgetHandler:SetViewSize(vsx, vsy)
   return widgetHandler:DrawScreen()
 end
 
-function KeyPress(key, mods, isRepeat)
-  return widgetHandler:KeyPress(key, mods, isRepeat)
+function KeyMapChanged()
+  return widgetHandler:KeyMapChanged()
 end
 
-function KeyRelease(key, mods)
-  return widgetHandler:KeyRelease(key, mods)
+function KeyPress(key, mods, isRepeat, label, unicode, scanCode, actions)
+  return widgetHandler:KeyPress(key, mods, isRepeat, label, unicode, scanCode, actions)
+end
+
+function KeyRelease(key, mods, label, unicode, scanCode, actions)
+  return widgetHandler:KeyRelease(key, mods, label, unicode, scanCode, actions)
 end
 
 function MouseMove(x, y, dx, dy, button)
