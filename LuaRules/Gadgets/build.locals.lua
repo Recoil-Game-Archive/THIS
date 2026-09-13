@@ -675,7 +675,7 @@ function gadget:DrawWorld()
 		local b = SYNCED.buildstate[u]
 		if b and b.rally then
 			local x,y,z = spGetUnitPosition(u)
-			for i in sipairs(b.rally) do
+			for i in ipairs(b.rally) do
 				if b.rally and b.rally[i-1] then
 					x,z = b.rally[i-1][1], b.rally[i-1][2]
 				end
