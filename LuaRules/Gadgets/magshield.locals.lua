@@ -129,7 +129,7 @@ function gadget:DrawWorld()
 	--glLighting(true)
 	glPolygonOffset(-10, -10)
 	glCulling(GL_BACK)
-	for u,_ in spairs(shielded) do
+	for u,_ in pairs(shielded) do
 		--if u ~= queenID then
 			local x,y,z = GetUnitPosition(u)
 			local _,los = GetPositionLosState(x,y,z,ateam)

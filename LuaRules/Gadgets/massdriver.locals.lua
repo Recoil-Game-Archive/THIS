@@ -141,7 +141,7 @@ function gadget:DrawWorld()
 	local f = spGetGameFrame()
 	glLineWidth(3)
 	glDepthTest(GL_LEQUAL)
-	for _,b in spairs(SYNCED.bounceList) do
+	for _,b in pairs(SYNCED.bounceList) do
 		glColor(1,.9,.2,.2 * (b.ttl - f))
 		glBeginEnd(GL_LINES, DrawLine, b.x, b.y, b.z, b.tx, b.ty, b.tz)
 	end

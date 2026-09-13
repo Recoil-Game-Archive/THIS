@@ -292,7 +292,7 @@ end
 
 function gadget:DrawWorldPreUnit()
 	glCulling(GL_BACK)
-	for i,p in spairs(SYNCED.planets) do
+	for i,p in pairs(SYNCED.planets) do
 		Lighting(true)
 		PushMatrix()
 		Translate(p.x, -300, p.z)
@@ -317,7 +317,7 @@ end
 function gadget:DrawWorld()
 	local team=spGetLocalTeamID()
 	local _,spec=spGetSpectatingState()
-	for i,p in spairs(SYNCED.planets) do
+	for i,p in pairs(SYNCED.planets) do
 		local r,g,b = GetTeamColor(p.lastOwner or gaia)
 		Color(r,g,b,1)
 		DrawGroundCircle(p.x, 0, p.z, occupationRange, 30)
@@ -348,7 +348,7 @@ function gadget:DrawInMiniMap(mmsx, mmsy)
 	glScale(1/Game.mapSizeX, -1/Game.mapSizeZ, 1)
 	glRotate(270,1,0,0)
 	Lighting(true)
-	for i,p in spairs(SYNCED.planets) do
+	for i,p in pairs(SYNCED.planets) do
 		PushMatrix()
 		Translate(p.x, -300, p.z)
 		UnitShape(planet, p.lastOwner or gaia)

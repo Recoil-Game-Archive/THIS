@@ -150,7 +150,7 @@ local function UpdateLine(y)
 			end
 		end
 	end
-	for _,p in spairs(SYNCED.planets) do
+	for _,p in pairs(SYNCED.planets) do
 		if p.z > (y - planetRadius)*resolution and p.z < (y + 1 + planetRadius)*resolution then
 			local pos = floor(p.x/resolution)
 			for i = -planetRadius,planetRadius do

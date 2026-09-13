@@ -422,7 +422,7 @@ function gadget:DrawWorldPreUnit()
 
 	--draw the body of any Imperators that are partially visible
 
-	for u,h in spairs(SYNCED.hardpoints) do
+	for u,h in pairs(SYNCED.hardpoints) do
 		--local x,y,z= spGetUnitPosition(u)
 		local l=spGetUnitLosState(u,allyteam)
 		if l.los or spec then

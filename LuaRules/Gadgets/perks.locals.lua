@@ -150,7 +150,7 @@ function gadget:DrawScreen(vsx, vsy)
 	glTexture("bitmaps/ui/money_perks.png")
 	glTexRect(vsx - panelRight - panelWidth, vsy - panelTop - panelHeight, vsx - panelRight, vsy - panelTop, false, false)
 	local n = 0
-	for p,_ in spairs(SYNCED.perks[spGetLocalTeamID()].have) do
+	for p,_ in pairs(SYNCED.perks[spGetLocalTeamID()].have) do
 		glTexture(perkList[p][3])
 		glTexRect(vsx - right - n*width - width, vsy - top, vsx - right - n*width, vsy - top - height, false, true)
 		n=n+1
