@@ -70,6 +70,6 @@
 	[customParams] {
 		type=hardpoint;
 		cost=0;
-		buildtime=0;
+		buildtime=1;
 	}
 }
