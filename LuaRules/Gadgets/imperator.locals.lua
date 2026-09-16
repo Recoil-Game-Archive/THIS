@@ -265,11 +265,12 @@ function gadget:GameFrame(f)
 	for u,d in pairs(hardpoints) do
 		local team = spGetUnitTeam(u)
 		local px,py,pz,pdx,pdy,pdz=spGetUnitPiecePosDir(d[1],d[2])
+		local impHead = Spring.GetUnitHeading(d[1])
 		Spring.MoveCtrl.SetPosition(u,px,py,pz)
-		Spring.MoveCtrl.SetRotation(u,0,GetHeading(pdx,pdz),0)
+		Spring.MoveCtrl.SetHeading(u,impHead)
 		if d[3] then
 			Spring.MoveCtrl.SetPosition(d[3],px,py,pz)
-			Spring.MoveCtrl.SetRotation(d[3],0,GetHeading(pdx,pdz),0)
+			Spring.MoveCtrl.SetHeading(d[3],impHead)
 		end
 		if d[5] and d[5] < f then
 			local nu = spCreateUnit(d[4],px,py,pz,0,spGetUnitTeam(u))
