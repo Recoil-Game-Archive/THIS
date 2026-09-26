@@ -20,6 +20,7 @@
 	collisionVolumeType=Box;
 	collisionVolumeScales=15 10 28;
 	collisionVolumeTest=1;
+	script=ship.lua;
 
 	// Movement
 	canFly=1;

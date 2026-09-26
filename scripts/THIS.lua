@@ -1,3 +1,4 @@
+
 include "constants.lua"
 
 dirBack = math.rad(180)
@@ -10,6 +11,7 @@ perkGravRange = 6
 perkGravFlak = 12
 
 PERK_BETTER_KINETICS = 2049
+
 KLIGHT_ROF_BOOST = 16
 KLIGHT_SPRAY_BOOST = 50
 KDUAL_ROF_BOOST = 12
@@ -42,7 +44,7 @@ SIG_Damage = 128
 SIG_RestoreStealth = 256
 ]]--
 
-SIG_Aim1 = 1
+--[[SIG_Aim1 = 1
 SIG_Aim2 = 2
 SIG_Aim3 = 4
 SIG_Aim4 = 8
@@ -61,7 +63,7 @@ SIG_Aim16 = 32768
 SIG_Aim17 = 65536
 SIG_Aim18 = 131072
 SIG_Aim19 = 262144
-SIG_Aim20 = 524288
+SIG_Aim20 = 524288]]
 
 SIG_Damage = 1048576
 SIG_RestoreStealth = 2097152

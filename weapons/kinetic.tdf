@@ -40,6 +40,10 @@
 	{
 		default=15;
 	}
+	[customParams] {
+		spray_boost=50;
+		rof_boost=16;
+	}
 }
 
 [KLightS]
@@ -83,6 +87,10 @@
 	[DAMAGE]
 	{
 		default=20;
+	}
+	[customParams] {
+		spray_boost=50;
+		rof_boost=16;
 	}
 }
 
@@ -128,6 +136,10 @@
 	{
 		default=25;
 	}
+	[customParams] {
+		spray_boost=50;
+		rof_boost=16;
+	}
 }
 
 [KDual]
@@ -172,6 +184,10 @@
 	{
 		default=10;
 	}
+	[customParams] {
+		spray_boost=50;
+		rof_boost=12;
+	}
 }
 
 [KDualG]	//gunstar cannon
@@ -215,6 +231,10 @@
 	[DAMAGE]
 	{
 		default=15;
+	}
+	[customParams] {
+		spray_boost=50;
+		rof_boost=16;
 	}
 }
 
@@ -262,6 +282,10 @@
 	{
 		default=120;
 	}
+	[customParams] {
+		spray_boost=50;
+		rof_boost=48;
+	}
 }
 
 [KDualH]	//Eclipse cannons
@@ -307,6 +331,10 @@
 	[DAMAGE]
 	{
 		default=40;
+	}
+	[customParams] {
+		spray_boost=10;
+		rof_boost=96;
 	}
 }
 
@@ -354,6 +382,10 @@
 	{
 		default=1200;
 	}
+	[customParams] {
+		spray_boost=10;
+		rof_boost=96;
+	}
 }
 
 [KHeavyEden]	//Shadow of Eden hull-mounted cannon
@@ -400,6 +432,10 @@
 	[DAMAGE]
 	{
 		default=1200;
+	}
+	[customParams] {
+		spray_boost=50;
+		rof_boost=16;
 	}
 }
 
