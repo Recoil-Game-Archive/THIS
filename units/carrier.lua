@@ -19,6 +19,7 @@ local unitDef = {
 	collisionVolumeScales = "92 40 180",
 	collisionVolumeTest = true,
 	collide = 0,
+	script = "ship.lua",
 
 	-- Movement
 	canFly = true,
@@ -70,16 +71,14 @@ local unitDef = {
 			name = "GStandard",
 			onlyTargetCategory = "LARGE",
 		},
-	
+		{
+			name = "GFlak",
+			badTargetCategory = "LARGE",
+		},
 		{
 			name = "TStandard",
 			onlyTargetCategory = "LARGE",
 			--badTargetCategory = "SMALL",
-		},
-	
-		{
-			name = "GFlak",
-			badTargetCategory = "LARGE",
 		},
 	},
 	
@@ -107,6 +106,10 @@ local unitDef = {
 		cost = 3000,
 		buildtime = 40,
 		occupationStrength = 2,
+		headingaim = 160,
+		pitchaim = 120,
+		firestealthtime = 3000,
+		moreguns = 3,
 	},
 }
 

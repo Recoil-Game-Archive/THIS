@@ -69,14 +69,13 @@ function gadget:UnitCreated(unitID, unitDefID, teamID, builderID)
 		info.sleeveIDs = {}
 		info.barrelIDs = {}
 		
-		info.gravIDs = {}
 		info.flareIDs = {} -- flare_x for single barrels
 		info.gpIDs = {} -- gp_x_y for alternating points
 		info.numGPs = {}
 		info.gBarrelIDs = {} -- gbarrel_x_y for alternating barrels
 		info.numGBarrels = {}
 		
-		info.torpedos = {}
+		info.torpedoPieces = {}
 		info.numTorpedos = 0
 		
 		info.damages = {}
@@ -106,11 +105,9 @@ function gadget:UnitCreated(unitID, unitDefID, teamID, builderID)
 				info.barrelIDs[weaponNum] = pieceNum
 			elseif pieceName:find("flare_") then
 				info.flareIDs[weaponNum] = pieceNum
-			elseif pieceName:find("grav") then
-				info.gravIDs[weaponNum] = pieceNum
-			elseif pieceName:find("torpedo") then
-				info.numTorpedos = info.numTorpedos + 1
-				info.torpedos[numTorpedos] = pieceNum
+			elseif pieceName:find("tp") then
+				info.numTorpedos = (info.numTorpedos or 0) + 1
+				info.torpedoPieces[info.numTorpedos] = pieceNum
 			elseif pieceName:find("damage") then
 				table.insert(info.damages, pieceNum)
 			elseif pieceName:find("bay") then
@@ -133,15 +130,19 @@ function gadget:GamePreload()
 		-- WeaponDef Level Info
 		info.burstLengths = {}
 		info.reloadTimes = {}
-		info.breakStealths = {}
+		info.torpedos = {}
+		info.plasmas = {}
 		info.kinetics = {}
+		info.gravitics = {}
 		for i = 1, #weapons do
 			local weaponInfo = weapons[i]
 			local weaponDef = WeaponDefs[weaponInfo.weaponDef]
 			local weapCP = weaponDef.customParams
 			info.reloadTimes[i] = weaponDef.reload
 			info.burstLengths[i] = weaponDef.salvoSize
-			info.breakStealths[i] = weaponDef.description:find("Plasma") --weaponDef.customParams.breakstealth
+			info.torpedos[i] = weaponDef.description:find("Torpedo")
+			info.plasmas[i] = weaponDef.description:find("Plasma")
+			info.gravitics[i] = weaponDef.description:find("Grav")
 			local kinetic = weaponDef.description:find("Kinetic")
 			if kinetic then
 				info.kinetics[i] = {
@@ -153,12 +154,12 @@ function gadget:GamePreload()
 	
 		-- UnitDef Level Info
 		info.numWeapons = #weapons
-		info.elevationSpeed = math.rad(tonumber(cp.elevationspeed) or 90) -- TODO: check existing, needs to be per weapon but is it per unitdef or consistent across the weapondef
-		info.turretTurnSpeed = math.rad(tonumber(cp.turretturnspeed) or 90)
+		info.pitchAim = math.rad(tonumber(cp.pitchaim) or 90)
+		info.headingAim = math.rad(tonumber(cp.headingaim) or 90)
 		info.barrelRecoilSpeed = (tonumber(cp.barrelrecoilspeed) or 100)
 		info.barrelRecoilDist = {[1]=1.5,} --table.unserialize(cp.barrelrecoildist)
-		info.moreGuns = {[3]=true,} --table.unserialize(cp.moreguns)
-
+		info.moreGuns = tonumber(cp.moreguns) --table.unserialize(cp.moreguns)
+		info.fireStealthTime = tonumber(cp.firestealthtime or 1000)
 		-- And finally, stick it in GG for the script to access
 		GG.lusHelper[unitDefID] = info
 	end
