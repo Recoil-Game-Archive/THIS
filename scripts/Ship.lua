@@ -133,7 +133,7 @@ function script.FireWeapon(weapNum)
 		Spring.Echo("FireWeapon torpedo", tType, tUser, tUnitID)
 		if tType > 0 and GG.LaunchDroneAsWeapon then
 			Spring.Echo("FireWeapon torpedo check 2")
-			for tPiece in pairs(info.torpedoPieces) do
+			for i, tPiece in pairs(info.torpedoPieces) do
 				GG.LaunchDroneAsWeapon(unitID, unitDefID, teamID, tUnitID, TORPEDO, tPiece, 0) 
 			end
 		end

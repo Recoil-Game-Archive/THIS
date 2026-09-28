@@ -65,7 +65,7 @@ local function MoveTorps(f)
 	for u,t in pairs(torpMoveList) do
 		if t.activeFrame < f then
 			if ValidUnitID(u) then
-				local command=GetUnitCommands(u)[1]
+				local command=GetUnitCommands(u,1)[1]
 				if command then
 					local vx,vy,vz=GetUnitVelocity(u)
 					local x,y,z=GetUnitPosition(u)
@@ -89,7 +89,8 @@ local function MoveTorps(f)
 						vy = vy*friction + (diry/dirlen)*acceleration
 						vz = vz*friction + (dirz/dirlen)*acceleration
 						SetVelocity(u,vx,vy,vz)
-						SetRotation(u,0,GetHeadingFromVector(vx,vz)/32756*math.pi,0)
+						--SetRotation(u,0,GetHeadingFromVector(vx,vz)/32756*math.pi,0)
+						Spring.MoveCtrl.SetHeading(u, GetHeadingFromVector(vx,vz))
 						if sqrt((tx-x)*(tx-x) + (ty-y)*(ty-y) + (tz-z)*(tz-z)) < 40 then
 							spDestroyUnit(u,true)
 						end

@@ -71,7 +71,7 @@
 
 	// Misc
 	SmoothAnim=0;
-	//Script=torpedo.lua;
+	Script=torpedo.lua;
 
 	[SFXTypes]
 	{

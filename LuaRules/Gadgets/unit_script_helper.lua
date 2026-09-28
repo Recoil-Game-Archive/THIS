@@ -106,7 +106,7 @@ function gadget:UnitCreated(unitID, unitDefID, teamID, builderID)
 			elseif pieceName:find("flare_") then
 				info.flareIDs[weaponNum] = pieceNum
 			elseif pieceName:find("tp") then
-				info.numTorpedos = (info.numTorpedos or 0) + 1
+				info.numTorpedos = info.numTorpedos + 1
 				info.torpedoPieces[info.numTorpedos] = pieceNum
 			elseif pieceName:find("damage") then
 				table.insert(info.damages, pieceNum)
