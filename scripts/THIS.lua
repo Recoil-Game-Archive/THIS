@@ -9,6 +9,7 @@ perkMassDriver = 1
 perkMoreGuns = 2
 perkGravRange = 6
 perkGravFlak = 12
+perkAntiMatter = 11
 
 PERK_BETTER_KINETICS = 2049
 

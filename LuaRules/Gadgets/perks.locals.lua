@@ -72,7 +72,9 @@ local function PerkPicked(team, perk)
 			spCallCOBScript(u, "NewPerk", 0, 2048+perk)
 		else
 			local env = Spring.UnitScript.GetScriptEnv(u)
-			Spring.UnitScript.CallAsUnit(u, env.NewPerk, perk)
+			if env and env.NewPerk then
+				Spring.UnitScript.CallAsUnit(u, env.NewPerk, perk)
+			end
 		end
 	end
 	if perkFunc[perk] then
