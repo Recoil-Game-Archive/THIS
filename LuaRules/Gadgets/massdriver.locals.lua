@@ -65,8 +65,7 @@ function gadget:Initialize()
 end
 
 
-
-function gadget:UnitDamaged(u, ud, team, damage, para, weapon, au, aud, ateam)
+function gadget:UnitDamaged(u, ud, team, damage, para, weapon, proj, au, aud, ateam)
 	if ateam and kinetic[weapon] and perks[ateam].have[1] then
 --		table.insert(damageList, {
 --			target = u,

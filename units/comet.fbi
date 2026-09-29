@@ -20,6 +20,7 @@
 	collisionVolumeType=Box;
 	collisionVolumeScales=52 32 136;
 	collide=0;
+	script=ship.lua;
 
 	// Movement
 	canFly=1;
@@ -110,5 +111,8 @@
 		cost=4000;
 		buildtime=30;
 		occupationStrength=1;
+		headingaim=360; // and 120
+		pitchaim=240; // and 80
+		firestealthtime=3000;
 	}
 }

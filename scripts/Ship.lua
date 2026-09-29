@@ -99,13 +99,13 @@ function script.AimWeapon(weapNum, heading, pitch)
 	if info.gravitics[weapNum] then return true end
 	if info.torpedos[weapNum] then return true end
 	local hPiece = info.pivotIDs[weapNum] or info.turretIDs[weapNum]
-	if hPiece then Turn(hPiece, y_axis, heading, info.headingAim) end
+	if hPiece then Turn(hPiece, y_axis, heading, info.headingAim) end -- TODO: ->headingAims[weapNum] 
 	local pPiece = info.sleeveIDs[weapNum] or info.barrelIDs[weapNum]
 	if not pPiece and info.gBarrelIDs[weapNum] then
 		currGPs[weapNum] = (currGPs[weapNum] or 1)
 		pPiece = info.gBarrelIDs[weapNum][currGPs[weapNum]]
 	end
-	if pPiece then Turn(pPiece, x_axis, -pitch, info.pitchAim) end
+	if pPiece then Turn(pPiece, x_axis, -pitch, info.pitchAim) end -- TODO: ->pitchAims[weapNum] 
 	if hPiece then WaitForTurn(hPiece, y_axis) end
 	if pPiece then WaitForTurn(pPiece, x_axis) end
 	return true
@@ -132,9 +132,8 @@ end
 function script.FireWeapon(weapNum)
 	if info.torpedos[weapNum] then
 		local tType, tUser, tUnitID = Spring.GetUnitWeaponTarget(unitID, weapNum)
-		Spring.Echo("FireWeapon torpedo", tType, tUser, tUnitID)
 		if tType > 0 and GG.LaunchDroneAsWeapon then
-			Spring.Echo("FireWeapon torpedo check 2")
+			-- TODO: comet ripple launches, tp00+tp10, sleep 300, tp01+tp11
 			for i, tPiece in pairs(info.torpedoPieces) do
 				GG.LaunchDroneAsWeapon(unitID, unitDefID, teamID, tUnitID, TORPEDO, tPiece, 0) 
 			end
@@ -162,7 +161,7 @@ end
 
 function script.BlockShot(weapNum, targetID, userTarget)
 	if info.torpedos[weapNum] then 
-		Spring.Echo("BlockShot torpedo", targetID)
+		--Spring.Echo("BlockShot torpedo", targetID)
 		return targetID == nil
 	end
 	return false
