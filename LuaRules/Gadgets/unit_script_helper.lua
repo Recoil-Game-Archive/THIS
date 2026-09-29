@@ -160,6 +160,11 @@ function gadget:GamePreload()
 		info.barrelRecoilDist = {[1]=1.5,} --table.unserialize(cp.barrelrecoildist)
 		info.moreGuns = tonumber(cp.moreguns) --table.unserialize(cp.moreguns)
 		info.fireStealthTime = tonumber(cp.firestealthtime or 1000)
+		info.trail = {
+			width	= tonumber(cp.trailwidth or 1),
+			ttl		= tonumber(cp.trailttl or 1),
+			rate	= tonumber(cp.trailrate or 1),
+		}
 		-- And finally, stick it in GG for the script to access
 		GG.lusHelper[unitDefID] = info
 	end

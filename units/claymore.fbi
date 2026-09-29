@@ -94,6 +94,9 @@
 		trailg=.9;
 		trailb=1;
 		trailalpha=1;
+		trailwidth=5;
+		trailttl=128;
+		trailrate=16;
 		moreguns=3;
 		firestealthtime=2000;
 	}

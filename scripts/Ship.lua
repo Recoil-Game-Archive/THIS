@@ -38,7 +38,9 @@ function MoveRate(rate)
 			SetUnitValue(COB.STEALTH, 0)
 		end
 		if EngineEnabled == 0 then
-			if GG.AddTrail and ex then GG.AddTrail(unitID, unitDefID, teamID, ex - 1, 5, 128, 16) end
+			if GG.AddTrail and ex then 
+				GG.AddTrail(unitID, unitDefID, teamID, ex - 1, info.trail.width, info.trail.ttl, info.trail.rate) 
+			end
 			EngineEnabled = 1
 		end
 	end
