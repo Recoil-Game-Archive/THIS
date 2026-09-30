@@ -98,7 +98,7 @@ function script.AimWeapon(weapNum, heading, pitch)
 	if info.gravitics[weapNum] and info.gravitics[weapNum-1] then return teamPerks.have[perkGravFlak] end
 	if info.gravitics[weapNum] then return true end
 	if info.torpedos[weapNum] then return true end
-	local hPiece = info.pivotIDs[weapNum] or info.turretIDs[weapNum]
+	local hPiece = info.pivotIDs[weapNum] or info.turretIDs[weapNum] or info.barrelIDs[weapNum]
 	if hPiece then Turn(hPiece, y_axis, heading, info.headingAims[weapNum]) end
 	local pPiece = info.sleeveIDs[weapNum] or info.barrelIDs[weapNum]
 	if not pPiece and info.gBarrelIDs[weapNum] then

@@ -60,7 +60,7 @@ function gadget:UnitCreated(unitID, unitDefID, teamID, builderID)
 	info.builderID = builderID
 	if info.firstTime == nil then
 		info.firstTime = true -- only do this step once
-		Spring.Echo("UnitCreated firstTime", info, ud.name)
+		--Spring.Echo("UnitCreated firstTime", info, ud.name)
 		-- Parse Model Data
 		local pieceMap = GetUnitPieceMap(unitID)
 
