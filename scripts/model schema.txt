@@ -8,7 +8,7 @@ sleeve				sleeve_{#}
 barrel				barrel_{#}
 flare (single barrel)		flare_{#}
 flare (switching barrels)	gp_{#}_{*}
-torpedo				tp{**}
+torpedo				tp_{wave}_{*}
 grav				grav
 missile				ml_{#}_{*}
 

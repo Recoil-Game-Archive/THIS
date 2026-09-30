@@ -75,8 +75,7 @@ function gadget:UnitCreated(unitID, unitDefID, teamID, builderID)
 		info.gBarrelIDs = {} -- gbarrel_x_y for alternating barrels
 		info.numGBarrels = {}
 		
-		info.torpedoPieces = {}
-		info.numTorpedos = 0
+		info.torpedoPieces = {} -- tp_wave_y
 		
 		info.damages = {}
 		info.numBays = 0
@@ -106,8 +105,8 @@ function gadget:UnitCreated(unitID, unitDefID, teamID, builderID)
 			elseif pieceName:find("flare_") then
 				info.flareIDs[weaponNum] = pieceNum
 			elseif pieceName:find("tp") then
-				info.numTorpedos = info.numTorpedos + 1
-				info.torpedoPieces[info.numTorpedos] = pieceNum
+				info.torpedoPieces[weaponNum] = info.torpedoPieces[weaponNum] or {}
+				table.insert(info.torpedoPieces[weaponNum], pieceNum)
 			elseif pieceName:find("damage") then
 				table.insert(info.damages, pieceNum)
 			elseif pieceName:find("bay") then
@@ -154,8 +153,12 @@ function gadget:GamePreload()
 	
 		-- UnitDef Level Info
 		info.numWeapons = #weapons
-		info.pitchAim = math.rad(tonumber(cp.pitchaim) or 90)
-		info.headingAim = math.rad(tonumber(cp.headingaim) or 90)
+		info.headingAims = {}
+		info.pitchAims = {}
+		for i = 1, #weapons do
+			info.headingAims[i] = math.rad(tonumber(cp["headingaim" .. i]) or info.headingAims[i-1] or 90)
+			info.pitchAims[i] = math.rad(tonumber(cp["pitchaim" .. i]) or info.pitchAims[i-1] or 90)
+		end
 		info.barrelRecoilSpeed = (tonumber(cp.barrelrecoilspeed) or 100)
 		info.barrelRecoilDist = {[1]=1.5,} --table.unserialize(cp.barrelrecoildist)
 		info.moreGuns = tonumber(cp.moreguns) --table.unserialize(cp.moreguns)

@@ -3,10 +3,10 @@ function Init()
 	Sleep(30 + 33) -- to let the MoveCtrl move it
 	EmitSfx(piece("frontemit"), 1027)
 	EmitSfx(piece("rearemit"), 1027)
-	Turn(piece("tp00"), y_axis, math.rad(-90))
-	Turn(piece("tp01"), y_axis, math.rad(-120))
-	Turn(piece("tp10"), y_axis, math.rad(90))
-	Turn(piece("tp11"), y_axis, math.rad(120))
+	Turn(piece("tp_1_1"), y_axis, math.rad(-90))
+	Turn(piece("tp_2_1"), y_axis, math.rad(-120))
+	Turn(piece("tp_1_2"), y_axis, math.rad(90))
+	Turn(piece("tp_2_2"), y_axis, math.rad(120))
 end
 
 -- Comet Killed anim

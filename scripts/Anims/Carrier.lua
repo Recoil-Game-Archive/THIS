@@ -4,12 +4,12 @@ function Init()
 	Sleep(30) -- to let the MoveCtrl move it
 	EmitSfx(piece("frontemit"), 1027)
 	EmitSfx(piece("backemit"), 1027)
-	Turn(piece("tp00"), y_axis, math.rad(-85))
-	Turn(piece("tp01"), y_axis, math.rad(-90))
-	Turn(piece("tp02"), y_axis, math.rad(-95))
-	Turn(piece("tp10"), y_axis, math.rad(85))
-	Turn(piece("tp11"), y_axis, math.rad(90))
-	Turn(piece("tp12"), y_axis, math.rad(95))
+	Turn(piece("tp_1_1"), y_axis, math.rad(-85))
+	Turn(piece("tp_1_2"), y_axis, math.rad(-90))
+	Turn(piece("tp_1_3"), y_axis, math.rad(-95))
+	Turn(piece("tp_1_4"), y_axis, math.rad(85))
+	Turn(piece("tp_1_5"), y_axis, math.rad(90))
+	Turn(piece("tp_1_6"), y_axis, math.rad(95))
 end
 
 -- Carrier Killed anim

@@ -111,8 +111,10 @@
 		cost=4000;
 		buildtime=30;
 		occupationStrength=1;
-		headingaim=360; // and 120
-		pitchaim=240; // and 80
+		headingaim1=120;
+		pitchaim1=80;
+		headingaim3=360;
+		pitchaim3=240;
 		firestealthtime=3000;
 	}
 }
