@@ -24,6 +24,10 @@
 	{
 		default=.0001;
 	}
+	[customparams]
+	{
+		torpedotype=2; // TORPEDO
+	}
 }
 
 [tlongbow]
@@ -51,6 +55,10 @@
 	[DAMAGE]
 	{
 		default=.0001;
+	}
+	[customparams]
+	{
+		torpedotype=3; // FTORPEDO
 	}
 }
 
@@ -80,6 +88,10 @@
 	{
 		default=.0001;
 	}
+	[customparams]
+	{
+		torpedotype=3; // FTORPEDO
+	}
 }
 
 [tstarbase]
@@ -107,6 +119,10 @@
 	[DAMAGE]
 	{
 		default=.0001;
+	}
+	[customparams]
+	{
+		torpedotype=2; // TORPEDO
 	}
 }
 
@@ -137,6 +153,10 @@
 	{
 		default=.0001;
 	}
+	[customparams]
+	{
+		torpedotype=2; // TORPEDO
+	}
 }
 
 [tEclipseShort]
@@ -165,6 +185,10 @@
 	[DAMAGE]
 	{
 		default=.0001;
+	}
+	[customparams]
+	{
+		torpedotype=2; // TORPEDO
 	}
 }
 

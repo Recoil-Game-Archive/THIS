@@ -76,6 +76,7 @@ function gadget:UnitCreated(unitID, unitDefID, teamID, builderID)
 		info.numGBarrels = {}
 		
 		info.torpedoPieces = {} -- tp_wave_y
+		info.torpedoLaunchers = {} -- torp_wave_y
 		
 		info.damages = {}
 		info.numBays = 0
@@ -107,6 +108,9 @@ function gadget:UnitCreated(unitID, unitDefID, teamID, builderID)
 			elseif pieceName:find("tp") then
 				info.torpedoPieces[weaponNum] = info.torpedoPieces[weaponNum] or {}
 				table.insert(info.torpedoPieces[weaponNum], pieceNum)
+			elseif pieceName:find("torp") then
+				info.torpedoLaunchers[weaponNum] = info.torpedoLaunchers[weaponNum] or {}
+				table.insert(info.torpedoLaunchers[weaponNum], pieceNum) -- TODO: Danger will robinson! assumes same order as the flare pieces
 			elseif pieceName:find("damage") then
 				table.insert(info.damages, pieceNum)
 			elseif pieceName:find("bay") then
@@ -139,7 +143,7 @@ function gadget:GamePreload()
 			local weapCP = weaponDef.customParams
 			info.reloadTimes[i] = weaponDef.reload
 			info.burstLengths[i] = weaponDef.salvoSize
-			info.torpedos[i] = weaponDef.description:find("Torpedo")
+			info.torpedos[i] = tonumber(weapCP.torpedotype) --description:find("Torpedo") and 
 			info.plasmas[i] = weaponDef.description:find("Plasma")
 			info.gravitics[i] = weaponDef.description:find("Grav")
 			local kinetic = weaponDef.description:find("Kinetic")
