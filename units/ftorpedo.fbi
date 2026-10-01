@@ -21,6 +21,7 @@
 	collisionVolumeType=CylZ;
 	collisionVolumeScales=9 9 12;
 	collisionVolumeTest=1;
+	script=torpedo.lua;
 
 	// Movement
 	canFly=1;
@@ -89,6 +90,9 @@
 		trailg=1;
 		trailb=.2;
 		trailalpha=1;
+		trailwidth=1;
+		trailttl=64;
+		trailrate=2;
 		occupationStrength=0;
 	}
 }

@@ -2,6 +2,8 @@
 local base = piece("base")
 local trail = piece("trail")
 
+local forwardsTorp = unitDef.name == "ftorpedo"
+
 function DamageLoop()
 	Signal(SIG_Damage)
 	SetSignalMask(SIG_Damage)
@@ -20,7 +22,7 @@ function script.Create()
 	Sleep(1)
 	Turn(trail, y_axis, math.rad(90))
 	if GG.AddTrail then GG.AddTrail(unitID, unitDefID, teamID, trail-1, 1, 64, 2) end
-	Sleep(12000)
+	Sleep(forwardsTorp and 6000 or 12000)
 	GetUnitValue(COB.KILL_UNIT)
 end
 
