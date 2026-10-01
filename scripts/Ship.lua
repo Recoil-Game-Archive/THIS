@@ -119,12 +119,7 @@ end
 function script.QueryWeapon(weapNum)
 	if info.gravitics[weapNum] then return grav end
 	if info.gpIDs[weapNum] then -- a switching gun point
-		currGPs[weapNum] = (currGPs[weapNum] or 0) + 1
-		if currGPs[weapNum] > info.numGPs[weapNum] then
-			currGPs[weapNum] = 1
-		end
-		--Spring.Echo(unitDef.name, "QueryWeapon GP", weapNum)
-		return info.gpIDs[weapNum][currGPs[weapNum]]
+		return info.gpIDs[weapNum][currGPs[weapNum] or 1]
 	end
 	return info.flareIDs[weapNum] or body
 end
@@ -144,6 +139,12 @@ function script.FireWeapon(weapNum)
 end
 
 function script.Shot(weapNum)
+	if info.gpIDs[weapNum] then -- a switching gun point
+		currGPs[weapNum] = (currGPs[weapNum] or 0) + 1
+		if currGPs[weapNum] > info.numGPs[weapNum] then
+			currGPs[weapNum] = 1
+		end
+	end
 	if info.plasmas[weapNum] or info.gravitics[weapNum] then
 		SetUnitValue(COB.STEALTH, 0)
 		StartThread(RestoreStealth)

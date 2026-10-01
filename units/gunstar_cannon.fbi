@@ -21,6 +21,7 @@
 	collisionVolumeOffsets=1 0 0;
 	collisionVolumeScales=16 6 22;
 	collisionVolumeTest=1;
+	script=ship.lua;
 
 	// Movement
 	canFly=1;
@@ -90,5 +91,10 @@
 		cost=175;
 		buildtime=6;
 		//nobuild=true;
+		moreguns=2;
+		headingaim1=80;
+		pitchaim1=60;
+		headingaim2=160;
+		pitchaim2=120;
 	}
 }
