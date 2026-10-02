@@ -19,7 +19,7 @@ end
 
 local tp = 0
 local pitch = 0
-local SPAM_RELOAD = 540
+local SPAM_RELOAD = 540 * 30
 
 function VolleyTorpedos(t)
 	local tp0 = piece("tp_1_1")
