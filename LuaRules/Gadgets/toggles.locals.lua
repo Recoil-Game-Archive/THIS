@@ -60,7 +60,12 @@ function gadget:AllowCommand(u, ud, team, cmd, param, opt)
 			local toggle=toggleUnit[ud][cmd - CMD_TOGGLE]
 			local f = FindUnitCmdDesc(u,cmd)
 			EditUnitCmdDesc(u,f,{ params={param[1],toggle.off, toggle.on}})
-			CallCOBScript(u, "Toggle", 0, cmd - CMD_TOGGLE, param[1])
+			local lus = Spring.UnitScript.GetScriptEnv(u)
+			if lus then
+				Spring.UnitScript.CallAsUnit(u, lus.Toggle, cmd - CMD_TOGGLE, param[1])
+			else
+				CallCOBScript(u, "Toggle", 0, cmd - CMD_TOGGLE, param[1])
+			end
 		end
 		return false
 	end

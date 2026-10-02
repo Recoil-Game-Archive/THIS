@@ -129,18 +129,20 @@ function script.FireWeapon(weapNum)
 	if torpedoType then
 		local tType, tUser, tUnitID = Spring.GetUnitWeaponTarget(unitID, weapNum)
 		if tType > 0 and GG.LaunchDroneAsWeapon then
-			for wave, tPieces in pairs(info.torpedoPieces) do
-				local launcherPieces = info.torpedoLaunchers and info.torpedoLaunchers[wave]
-				for i, tPiece in pairs(tPieces) do
-					GG.LaunchDroneAsWeapon(unitID, unitDefID, teamID, tUnitID, torpedoType, tPiece, 0)
-					if launcherPieces then
-						Move(launcherPieces[i], z_axis, -1.5, 10)
+			if volley and volley == 1 then VolleyTorpedos(tUnitID) else
+				for wave, tPieces in pairs(info.torpedoPieces) do
+					local launcherPieces = info.torpedoLaunchers and info.torpedoLaunchers[wave]
+					for i, tPiece in pairs(tPieces) do
+						GG.LaunchDroneAsWeapon(unitID, unitDefID, teamID, tUnitID, torpedoType, tPiece, 0)
+						if launcherPieces then
+							Move(launcherPieces[i], z_axis, -1.5, 10)
+						end
 					end
-				end
-				Sleep(300) -- between each wave
-				if launcherPieces then
-					for i, launcherPiece in pairs(launcherPieces) do
-						Move(launcherPiece, z_axis, 0, 0.4)
+					Sleep(300) -- between each wave
+					if launcherPieces then
+						for i, launcherPiece in pairs(launcherPieces) do
+							Move(launcherPiece, z_axis, 0, 0.4)
+						end
 					end
 				end
 			end
