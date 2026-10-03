@@ -62,8 +62,9 @@
 
 	Weapon2=LLightS;
 	OnlyTargetCategory2=TARGET;
-	WeaponMainDir2=0 0 1;
+	//WeaponMainDir2=0 0 1;
 	//MaxAngleDif2=30;
+	
 
 	ExplodeAs=RetroDeathSmall;
 	SelfDestructAs=RetroDeathSmall;
