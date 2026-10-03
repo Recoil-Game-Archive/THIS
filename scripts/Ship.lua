@@ -120,7 +120,6 @@ end
 function script.QueryWeapon(weapNum)
 	if info.gravitics[weapNum] then return grav end
 	if info.gpIDs[weapNum] then -- a switching gun point
-		Spring.Echo(unitDef.name, "QueryWeapon", weapNum, currGPs[weapNum])
 		return info.gpIDs[weapNum][currGPs[weapNum] or 1]
 	end
 	return info.flareIDs[weapNum] or base or body

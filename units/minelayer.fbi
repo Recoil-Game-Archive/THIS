@@ -70,7 +70,7 @@
 
 	// Misc
 	SmoothAnim=0;
-	script=minelayer.lua;
+	script=ship.lua;
 
 	[SFXTypes]
 	{

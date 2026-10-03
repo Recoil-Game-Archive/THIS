@@ -79,7 +79,7 @@ function gadget:UnitCreated(unitID, unitDefID, teamID, builderID)
 		info.torpedoLaunchers = {} -- torp_wave_y
 		
 		info.damages = {}
-		info.numBays = 0
+		info.bays = {}
 		
 		info.extras = {}
 		
@@ -114,7 +114,7 @@ function gadget:UnitCreated(unitID, unitDefID, teamID, builderID)
 			elseif pieceName:find("damage") then
 				table.insert(info.damages, pieceNum)
 			elseif pieceName:find("bay") then
-				info.numBays = info.numBays + 1
+				table.insert(info.bays, pieceNum)
 			elseif pieceName:find("extra") then
 				table.insert(info.extras, pieceNum)
 			end
