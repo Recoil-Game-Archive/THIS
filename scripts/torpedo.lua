@@ -18,38 +18,41 @@ function DamageLoop()
 end
 
 function script.Create()
-	SetUnitValue(COB.STEALTH, 0)
+
 	Sleep(1)
 	Turn(trail, y_axis, math.rad(90))
 	if GG.AddTrail then GG.AddTrail(unitID, unitDefID, teamID, trail-1, 1, 64, 2) end
-	Sleep(forwardsTorp and 6000 or 12000)
-	GetUnitValue(COB.KILL_UNIT)
+	if unitDef.name ~= "shuriken" then
+		SetUnitValue(COB.STEALTH, 0)
+		Sleep(forwardsTorp and 6000 or 12000)
+		Spring.DestroyUnit(unitID, false, true)
+	end
 end
 
 local perkAntiMatter = 11
 local teamPerks = GG.perks[teamID]
 
 function script.Killed(recentDamage, maxHealth)
-	EmitSfx(base, 1025) -- fires weapon 1, regular torpedo?
-	Hide(base)
+	EmitSfx(1, 1025) -- fires weapon 1, regular torpedo?
+	Hide(1)
 	if teamPerks.have[perkAntiMatter] then
-		EmitSfx(base, 4097) -- explodes weapon 2, AM warhead
+		EmitSfx(1, 4097) -- explodes weapon 2, AM warhead
 	end
 	return 0
 end
 
 function script.QueryWeapon()
-	return base
+	return 1
 end
 
---[[function script.FireWeapon()
-	GetUnitValue(COB.KILL_UNIT, 0, 1)
-end]]
+function script.FireWeapon()
+	Spring.DestroyUnit(unitID, false, true)
+end
 
 function script.AimWeapon(weapNum, heading, pitch)
 	return false
 end
 
 function script.AimFromWeapon()
-	return base
+	return 1
 end
