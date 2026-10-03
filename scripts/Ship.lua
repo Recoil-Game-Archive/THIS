@@ -120,6 +120,7 @@ end
 function script.QueryWeapon(weapNum)
 	if info.gravitics[weapNum] then return grav end
 	if info.gpIDs[weapNum] then -- a switching gun point
+		Spring.Echo(unitDef.name, "QueryWeapon", weapNum, currGPs[weapNum])
 		return info.gpIDs[weapNum][currGPs[weapNum] or 1]
 	end
 	return info.flareIDs[weapNum] or base or body
@@ -164,9 +165,10 @@ function script.Shot(weapNum)
 		-- currently only plasma seem to have barrel recoil so put it here to avoid recoiling kinetics
 		local recoilDist = info.barrelRecoilDist[weapNum]
 		if recoilDist then
-			Move(info.barrelIDs[weapNum], z_axis, -recoilDist)
+			local bPiece = info.barrelIDs[weapNum] or info.gBarrelIDs[weapNum][currGPs[weapNum]]
+			Move(bPiece, z_axis, -recoilDist, 180) -- TODO: claymore was originally instant
 			Sleep(400)
-			Move(info.barrelIDs[weapNum], z_axis, 0, 2)
+			Move(bPiece, z_axis, 0, 25) -- TODO: claymore was originally 2
 		end
 	end
 	if info.kinetics[weapNum] then
