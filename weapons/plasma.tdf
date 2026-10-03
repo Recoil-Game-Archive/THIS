@@ -338,7 +338,7 @@
 
 [PFlak]
 	{
-	name=Plasma Flak;
+	name=Plasme Flak; // TODO: stupid hack to avoid detection as plasma causing stealth loss
 	RGBcolor=.2 .2 1;
 	weaponType=Cannon;
 	noselfdamage=1;

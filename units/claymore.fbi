@@ -99,5 +99,6 @@
 		trailrate=16;
 		moreguns=3;
 		firestealthtime=2000;
+		barrelrecoildist=1.5;
 	}
 }

@@ -21,6 +21,7 @@
 	collisionVolumeScales=136 96 80;
 	collisionVolumeTest=1;
 	collide=0;
+	script=ship.lua;
 
 	// Movement
 	canFly=1;
@@ -90,5 +91,10 @@
 		type=large;
 		cost=5000;
 		buildtime=50;
+		headingaim2=160;
+		pitchaim2=120;
+		moreguns=4;
+		barrelrecoildist=15;
+		firestealthtime=4500;
 	}
 }
