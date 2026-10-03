@@ -3,6 +3,7 @@ info = GG.lusHelper[unitDefID]
 body = piece("body") -- global for the killed animation include
 ex = piece("ex") -- global for the init animation include
 local grav = piece("grav")
+local base = piece("base")
 
 include "THIS.lua"
 
@@ -121,7 +122,7 @@ function script.QueryWeapon(weapNum)
 	if info.gpIDs[weapNum] then -- a switching gun point
 		return info.gpIDs[weapNum][currGPs[weapNum] or 1]
 	end
-	return info.flareIDs[weapNum] or body
+	return info.flareIDs[weapNum] or base or body
 end
 
 function script.FireWeapon(weapNum)
@@ -133,7 +134,7 @@ function script.FireWeapon(weapNum)
 				for wave, tPieces in pairs(info.torpedoPieces) do
 					local launcherPieces = info.torpedoLaunchers and info.torpedoLaunchers[wave]
 					for i, tPiece in pairs(tPieces) do
-						GG.LaunchDroneAsWeapon(unitID, unitDefID, teamID, tUnitID, torpedoType, tPiece, 0)
+						GG.LaunchDroneAsWeapon(unitID, unitDefID, teamID, tUnitID, torpedoType, tPiece, 0, info.torpedoPitch)
 						if launcherPieces then
 							Move(launcherPieces[i], z_axis, -1.5, 10)
 						end

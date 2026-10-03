@@ -143,7 +143,7 @@ function gadget:GamePreload()
 			local weapCP = weaponDef.customParams
 			info.reloadTimes[i] = weaponDef.reload
 			info.burstLengths[i] = weaponDef.salvoSize
-			info.torpedos[i] = tonumber(weapCP.torpedotype) --description:find("Torpedo") and 
+			info.torpedos[i] = tonumber(weapCP.torpedotype)
 			info.plasmas[i] = weaponDef.description:find("Plasma")
 			info.gravitics[i] = weaponDef.description:find("Grav")
 			local kinetic = weaponDef.description:find("Kinetic")
@@ -157,11 +157,12 @@ function gadget:GamePreload()
 	
 		-- UnitDef Level Info
 		info.numWeapons = #weapons
+		info.torpedoPitch = math.rad(tonumber(cp.torpedopitch) or 0)
 		info.headingAims = {}
 		info.pitchAims = {}
 		for i = 1, #weapons do
-			info.headingAims[i] = math.rad(tonumber(cp["headingaim" .. i]) or info.headingAims[i-1] or 90)
-			info.pitchAims[i] = math.rad(tonumber(cp["pitchaim" .. i]) or info.pitchAims[i-1] or 90)
+			info.headingAims[i] = math.rad(tonumber(cp["headingaim" .. i]) or math.deg(info.headingAims[i-1] or math.pi/2))
+			info.pitchAims[i] = math.rad(tonumber(cp["pitchaim" .. i]) or math.deg(info.pitchAims[i-1] or math.pi/2))
 		end
 		info.barrelRecoilSpeed = (tonumber(cp.barrelrecoilspeed) or 100)
 		info.barrelRecoilDist = {[1]=1.5,} --table.unserialize(cp.barrelrecoildist)
