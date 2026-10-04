@@ -1,31 +1,19 @@
-main piece			body
-death pieces			bodyemit, front, rear, frontemit, rearemit, right, rightemit, left, leftemit
-exhaust				ex
+# is weaponnumber
+* is just index of the piece
 
+main piece			body
+exhaust				ex
+grav				grav
 whole ship pivot		pivot_{#}
 turret				turret_{#}
 sleeve				sleeve_{#}
-barrel				barrel_{#}
+barrel (single)			barrel_{#}
 flare (single barrel)		flare_{#}
+gbarrel (switching barrels)	gbarrel_{#}_(*}
 flare (switching barrels)	gp_{#}_{*}
-torpedo				tp_{wave}_{*}
-grav				grav
-missile				ml_{#}_{*}
-
-bays				bay{0,1}    via gadget? not in bos
+torpedo firing point		tp_{wave}_{*}
+torpedo for recoil		torp_{wave}_{*}
+drone for hiding		drone_{wave}_{*}
+Parts for 'more guns' perk	extra{*}
 damage smoke			damage{0,1}
 
-
-whole ship spin (longbow)	body
-drones (dronelauncher)		drone{0,1}
-(eclipse, SoE)			whole bunch of custom pieces
-(imperator modules)		a few pieces
-(meteor)			shoulder{l,r}, wing{l,r} for Killed()
-(minelayer)			{l,r}wing for Killed()
-torpedos (gunstar_t)		torp{l,r}{*}
-starbase			ring, link, linkemit{0,1,2}, bodyemit{0,1}
-(starslayer)			cannons{0,1} for recoil
-(supportcarrier)		platform1, etc for extra guns perk
-(wraith)			wing{0,1} on create anim
-
-turn & elevation speeds, are they per unitdef or consistent across weapondefs?

@@ -1,9 +1,9 @@
 -- Generic ship script
 info = GG.lusHelper[unitDefID]
 body = piece("body") -- global for the killed animation include
+base = piece("base")
 ex = piece("ex") -- global for the init animation include
 local grav = piece("grav")
-local base = piece("base")
 
 include "THIS.lua"
 
