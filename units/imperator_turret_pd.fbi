@@ -22,6 +22,7 @@
 	collisionVolumeOffset=0 0 0;
 	collisionVolumeTest=1;
 	collide=0;
+	script=ship.lua;
 
 	// Movement
 	canFly=0;
@@ -90,5 +91,7 @@
 		cost=1500;
 		buildtime=120;
 		arc=140;
+		headingaim1=480;
+		pitchaim1=480;
 	}
 }

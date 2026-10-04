@@ -95,6 +95,8 @@
 		pitchaim2=120;
 		moreguns=4;
 		barrelrecoildist=15;
+		barrelrecoilspeed=180;
+		barrelreturnspeed=25;
 		firestealthtime=4500;
 	}
 }

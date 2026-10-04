@@ -168,7 +168,9 @@ function gadget:GamePreload()
 			info.headingAims[i] = math.rad(tonumber(cp["headingaim" .. i]) or math.deg(info.headingAims[i-1] or math.pi/2))
 			info.pitchAims[i] = math.rad(tonumber(cp["pitchaim" .. i]) or math.deg(info.pitchAims[i-1] or math.pi/2))
 		end
-		info.barrelRecoilSpeed = (tonumber(cp.barrelrecoilspeed) or 100)
+		info.barrelRecoilSpeed = (tonumber(cp.barrelrecoilspeed) or 1000)
+		info.barrelReturnSpeed = (tonumber(cp.barrelreturnspeed) or 100)
+		info.barrelRecoilSleep = (tonumber(cp.barrelrecoilsleep) or 400)
 		info.barrelRecoilDist = {}
 		if cp.barrelrecoildist then
 			info.barrelRecoilDist[1] = tonumber(cp.barrelrecoildist) --table.unserialize(cp.barrelrecoildist)

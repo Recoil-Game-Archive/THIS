@@ -119,6 +119,12 @@ function gadget:UnitCreated(u, ud, team)
 	end
 end
 
+function gadget:UnitPreDamaged(u, ud, team)
+	if ud == hardpoint then
+		return 0, 0
+	end
+end
+
 local destroyList={}
 local transferList={}
 

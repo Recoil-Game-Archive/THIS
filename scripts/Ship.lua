@@ -184,9 +184,9 @@ function script.Shot(weapNum)
 		local recoilDist = info.barrelRecoilDist[weapNum]
 		if recoilDist then
 			local bPiece = info.barrelIDs[weapNum] or info.gBarrelIDs[weapNum][currGPs[weapNum]]
-			Move(bPiece, z_axis, -recoilDist, 180) -- TODO: claymore was originally instant
-			Sleep(400)
-			Move(bPiece, z_axis, 0, 25) -- TODO: claymore was originally 2
+			Move(bPiece, z_axis, -recoilDist, info.barrelRecoilSpeed)
+			Sleep(info.barrelRecoilSleep)
+			Move(bPiece, z_axis, 0, info.barrelReturnSpeed)
 		end
 	end
 	if info.kinetics[weapNum] then

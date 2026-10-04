@@ -100,5 +100,7 @@
 		moreguns=3;
 		firestealthtime=2000;
 		barrelrecoildist=1.5;
+		barrelrecoilspeed=1000;
+		barrelreturnspeed=2;
 	}
 }
