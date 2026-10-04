@@ -67,14 +67,11 @@ local function PerkPicked(team, perk)
 		end
 	end
 	for _,u in ipairs(units) do
-		--Spring.Echo(UnitDefs[uid].customParams.luascript)
-		if not Spring.UnitScript.GetScriptEnv(u) then
+		local env = Spring.UnitScript.GetScriptEnv(u)
+		if not env then
 			spCallCOBScript(u, "NewPerk", 0, 2048+perk)
-		else
-			local env = Spring.UnitScript.GetScriptEnv(u)
-			if env and env.NewPerk then
-				Spring.UnitScript.CallAsUnit(u, env.NewPerk, perk)
-			end
+		elseif env and env.NewPerk then
+			Spring.UnitScript.CallAsUnit(u, env.NewPerk, perk)
 		end
 	end
 	if perkFunc[perk] then

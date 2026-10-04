@@ -126,6 +126,17 @@ function script.QueryWeapon(weapNum)
 	return info.flareIDs[weapNum] or base or body
 end
 
+
+function RearmDrones()
+	Sleep(10000)
+	for wave, dPieces in pairs(info.dronePieces) do
+		for i, dPiece in pairs(dPieces) do
+			Turn(dPiece, y_axis, 0)
+			Show(dPiece)
+		end
+	end
+end
+
 function script.FireWeapon(weapNum)
 	local torpedoType = info.torpedos[weapNum]
 	if torpedoType then
@@ -134,19 +145,26 @@ function script.FireWeapon(weapNum)
 			if volley and volley == 1 then VolleyTorpedos(tUnitID) else
 				for wave, tPieces in pairs(info.torpedoPieces) do
 					local launcherPieces = info.torpedoLaunchers and info.torpedoLaunchers[wave]
+					local dronePieces = info.dronePieces and info.dronePieces[wave]
 					for i, tPiece in pairs(tPieces) do
+						if dronePieces then
+							Turn(dronePieces[i], y_axis, (-1)^(wave%2) * math.rad(20), math.rad(40))
+							Sleep(500)
+							Hide(dronePieces[i])
+						end
 						GG.LaunchDroneAsWeapon(unitID, unitDefID, teamID, tUnitID, torpedoType, tPiece, 0, info.torpedoPitch)
 						if launcherPieces then
 							Move(launcherPieces[i], z_axis, -1.5, 10)
 						end
 					end
-					Sleep(300) -- between each wave
+					Sleep(dronePieces and 500 or 300) -- between each wave TODO: hack for drone launcher sleep, should be a customParam of the weapon
 					if launcherPieces then
 						for i, launcherPiece in pairs(launcherPieces) do
 							Move(launcherPiece, z_axis, 0, 0.4)
 						end
 					end
 				end
+				RearmDrones()
 			end
 		end
 	end

@@ -77,6 +77,7 @@ function gadget:UnitCreated(unitID, unitDefID, teamID, builderID)
 		
 		info.torpedoPieces = {} -- tp_wave_y
 		info.torpedoLaunchers = {} -- torp_wave_y
+		info.dronePieces = {} -- drone_wave_y
 		
 		info.damages = {}
 		info.bays = {}
@@ -111,6 +112,9 @@ function gadget:UnitCreated(unitID, unitDefID, teamID, builderID)
 			elseif pieceName:find("torp") then
 				info.torpedoLaunchers[weaponNum] = info.torpedoLaunchers[weaponNum] or {}
 				table.insert(info.torpedoLaunchers[weaponNum], pieceNum) -- TODO: Danger will robinson! assumes same order as the flare pieces
+			elseif pieceName:find("drone") then
+				info.dronePieces[weaponNum] = info.dronePieces[weaponNum] or {}
+				table.insert(info.dronePieces[weaponNum], pieceNum)
 			elseif pieceName:find("damage") then
 				table.insert(info.damages, pieceNum)
 			elseif pieceName:find("bay") then

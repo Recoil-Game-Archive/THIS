@@ -188,6 +188,10 @@
 	{
 		default=.0001;
 	}
+	[customparams]
+	{
+		torpedotype=1; // DRONE
+	}
 }
 
 [SAntimatterBeamPrimer]
