@@ -48,19 +48,19 @@ local function updateReloadSpeed( unitID, ud, speedFactor, gameFrame)
 	
 		origUnitReload[unitID] = {
 			weapon = {},
-			weaponCount = #ud.weapons-1,
+			weaponCount = #ud.weapons,
 		}
 		local state = origUnitReload[unitID]
 		
-		for i = 0, state.weaponCount do
-			local reload = WeaponDefs[ud.weapons[i+1].weaponDef].reload
+		for i = 1, state.weaponCount do
+			local reload = WeaponDefs[ud.weapons[i].weaponDef].reload
 			state.weapon[i] = {
 				reload = reload,
 				prevReload = reload,
-				burstRate = WeaponDefs[ud.weapons[i+1].weaponDef].salvoDelay,
+				burstRate = WeaponDefs[ud.weapons[i].weaponDef].salvoDelay,
 				oldReloadFrames = math.floor(reload*30),
 			}
-			if WeaponDefs[ud.weapons[i+1].weaponDef].type == "BeamLaser" then
+			if WeaponDefs[ud.weapons[i].weaponDef].type == "BeamLaser" then
 				state.weapon[i].burstRate = false -- beamlasers go screwy if you mess with their burst length
 			end
 		end
@@ -69,9 +69,9 @@ local function updateReloadSpeed( unitID, ud, speedFactor, gameFrame)
 	
 	local state = origUnitReload[unitID]
 	
-	for i = 0, state.weaponCount do
+	for i = 1, state.weaponCount do
 		local w = state.weapon[i]
-		local reloadState = spGetUnitWeaponState(unitID, i , 'reloadState')
+		local reloadState = spGetUnitWeaponState(unitID, i, 'reloadState') -- TODO: can be nil?
 		local reloadTime = w.prevReload -- spGetUnitWeaponState(unitID, i , 'reloadTime') -- GetUnitWeaponState for reloadTime does not work
 		if speedFactor <= 0 then
 			local newReload = 100000 -- set a high reload time so healthbars don't judder. NOTE: math.huge is TOO LARGE

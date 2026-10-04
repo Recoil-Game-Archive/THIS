@@ -21,6 +21,7 @@
 	collisionVolumeScales=32 24 72;
 	collisionVolumeOffset=0 0 36;
 	collide=0;
+	script=ship.lua;
 
 	// Movement
 	canFly=1;
@@ -107,5 +108,11 @@
 		trailg=.1;
 		trailb=.2;
 		trailalpha=1;
+		trailwidth=18;
+		trailttl=128;
+		trailrate=16;
+		headingaim2=180;
+		pitchaim2=90;
+		moreguns=5;
 	}
 }

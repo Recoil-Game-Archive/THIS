@@ -22,6 +22,7 @@ function DamageLoop()
 end
 
 local EngineEnabled = 0
+afterBurnSpeed = 0
 
 function MoveRate(rate)
 	if rate == 0 then
