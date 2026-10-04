@@ -20,6 +20,7 @@
 	collisionVolumeType=Box;
 	collisionVolumeScales=16 14 20;
 	collisionVolumeTest=1;
+	script=ship.lua;
 
 	// Movement
 	canFly=1;
@@ -92,5 +93,11 @@
 		trailg=.8;
 		trailb=.8;
 		trailalpha=1;
+		trailwidth=5;
+		trailttl=128;
+		trailrate=16;		
+		headingaim2=100;
+		pitchaim2=60;
+		moreguns=3;
 	}
 }
