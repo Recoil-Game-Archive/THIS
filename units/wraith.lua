@@ -18,6 +18,7 @@ local unitDef = {
 	collisionVolumeType = "Box",
 	collisionVolumeScales = "16 6 24",
 	collisionVolumeTest = true,
+	script = "ship.lua",
 
 	-- Movement
 	canFly = true,
@@ -88,6 +89,14 @@ local unitDef = {
 		trailg = 1,
 		trailb = .5,
 		trailalpha = 1,
+		trailwidth = 7,
+		trailttl = 128,
+		trailrate = 16,
+		moreguns = 3,
+		headingaim1 = 800,
+		pitchaim1 = 800,
+		headingaim3 = 90,
+		pitchaim3 = 90,
 	},
 }
 
