@@ -3,7 +3,6 @@ info = GG.lusHelper[unitDefID]
 body = piece("body") -- global for the killed animation include
 base = piece("base")
 ex = piece("ex") -- global for the init animation include
-local grav = piece("grav")
 
 include "THIS.lua"
 
@@ -62,8 +61,10 @@ function NewPerk(p)
 		end
 	elseif p == perkGravRange then
 		local weapNum = next(info.gravitics) -- just get the first one, next one will be FLAK
-		Spring.SetUnitWeaponState(unitID, weapNum, "range", GSTANDARD_RANGE_BOOST)
-		Spring.SetUnitWeaponState(unitID, weapNum+1, "range", GFLAK_RANGE_BOOST)
+		if weapNum then
+			Spring.SetUnitWeaponState(unitID, weapNum, "range", GSTANDARD_RANGE_BOOST)
+			Spring.SetUnitWeaponState(unitID, weapNum+1, "range", GFLAK_RANGE_BOOST)
+		end
 	end
 end
 
@@ -96,7 +97,8 @@ local currGPs = {}
 function script.AimWeapon(weapNum, heading, pitch)
 	Signal(2^weapNum)
 	SetSignalMask(2^weapNum)
-	if info.moreGuns == weapNum and not teamPerks.have[perkMoreGuns] then return false end
+	if info.specialAim == weapNum and SpecialAim then return SpecialAim(heading, pitch) end
+	if info.moreGuns[weapNum] and not teamPerks.have[perkMoreGuns] then return false end
 	if info.gravitics[weapNum] and info.gravitics[weapNum-1] then return teamPerks.have[perkGravFlak] end
 	if info.gravitics[weapNum] then return true end
 	if info.torpedos[weapNum] then return true end
@@ -114,12 +116,12 @@ function script.AimWeapon(weapNum, heading, pitch)
 end
 
 function script.AimFromWeapon(weapNum)
-	if info.gravitics[weapNum] then return grav end
+	if info.gravitics[weapNum] then return info.grav end
 	return info.sleeveIDs[weapNum] or info.turretIDs[weapNum] or info.pivotIDs[weapNum] or body
 end
 
 function script.QueryWeapon(weapNum)
-	if info.gravitics[weapNum] then return grav end
+	if info.gravitics[weapNum] then return info.grav end
 	if info.gpIDs[weapNum] then -- a switching gun point
 		return info.gpIDs[weapNum][currGPs[weapNum] or 1]
 	end
@@ -138,6 +140,7 @@ function RearmDrones()
 end
 
 function script.FireWeapon(weapNum)
+	if info.specialAim == weapNum and SpecialFire then StartThread(SpecialFire) end
 	local torpedoType = info.torpedos[weapNum]
 	if torpedoType then
 		local tType, tUser, tUnitID = Spring.GetUnitWeaponTarget(unitID, weapNum)

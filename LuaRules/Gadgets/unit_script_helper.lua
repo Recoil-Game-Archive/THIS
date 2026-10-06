@@ -22,7 +22,7 @@ local GetUnitPieceMap		= Spring.GetUnitPieceMap
 -- Variables
 GG.lusHelper = {}
 
---[[
+
 -- functions for determining weapon placement
 local function IsPieceAncestor(unitID, pieceName, ancestor, strict)
 	local pieceMap = GetUnitPieceMap(unitID)
@@ -38,7 +38,7 @@ end
 
 local function FindPieceProgenitor(unitID, pieceName, extra)
 	-- order matters here, we want to return turret even if that turret is then attached to body
-	local progenitors = {"lwing", "rwing", "rotory", "turret", "emitter", "trackr", "trackl", "body"}
+	local progenitors = {"extra"}
 	if extra then
 		table.insert(progenitors, 1, extra) -- put any extra pieces at the start (highest priority)
 	end
@@ -48,7 +48,7 @@ local function FindPieceProgenitor(unitID, pieceName, extra)
 		if found then return parent end 
 	end
 	return nil
-end--]]
+end
 
 function gadget:UnitCreated(unitID, unitDefID, teamID, builderID)
 	--env = Spring.UnitScript.GetScriptEnv(unitID)
@@ -88,6 +88,7 @@ function gadget:UnitCreated(unitID, unitDefID, teamID, builderID)
 			local weapNumPos = pieceName:find("_") or 0
 			local weapNumEndPos = pieceName:find("_", weapNumPos+1) or 0
 			local weaponNum = tonumber(pieceName:sub(weapNumPos+1,weapNumEndPos-1) or -1)
+			if weaponNum and FindPieceProgenitor(unitID, pieceName) then info.moreGuns[weaponNum] = true end
 			if pieceName:find("pivot_") then
 				info.pivotIDs[weaponNum] = pieceNum
 			elseif pieceName:find("turret_") then
@@ -121,6 +122,8 @@ function gadget:UnitCreated(unitID, unitDefID, teamID, builderID)
 				table.insert(info.bays, pieceNum)
 			elseif pieceName:find("extra") then
 				table.insert(info.extras, pieceNum)
+			elseif pieceName:find("grav") then
+				info.grav = pieceNum
 			end
 		end
 	end
@@ -175,7 +178,11 @@ function gadget:GamePreload()
 		if cp.barrelrecoildist then
 			info.barrelRecoilDist[1] = tonumber(cp.barrelrecoildist) --table.unserialize(cp.barrelrecoildist)
 		end
-		info.moreGuns = tonumber(cp.moreguns) --table.unserialize(cp.moreguns)
+		info.specialAim = tonumber(cp.specialaim)
+		local moreGunsIndex = tonumber(cp.moreguns)
+		info.moreGuns = { --table.unserialize(cp.moreguns)
+			moreGunsIndex = true
+		}
 		info.fireStealthTime = tonumber(cp.firestealthtime or 1000)
 		info.trail = {
 			width	= tonumber(cp.trailwidth or 1),

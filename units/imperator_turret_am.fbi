@@ -22,6 +22,7 @@
 	collisionVolumeOffset=0 0 0;
 	collisionVolumeTest=1;
 	collide=0;
+	script=ship.lua;
 
 	// Movement
 	canFly=0;
@@ -98,5 +99,7 @@
 		cost=2500;
 		buildtime=80;
 		arc=140;
+		moreguns=4; // TODO: ideally needs 5, there is a hack using piece name
+		specialaim=1;
 	}
 }
