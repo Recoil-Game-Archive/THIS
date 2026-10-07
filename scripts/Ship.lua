@@ -117,7 +117,7 @@ end
 
 function script.AimFromWeapon(weapNum)
 	if info.gravitics[weapNum] then return info.grav end
-	return info.sleeveIDs[weapNum] or info.turretIDs[weapNum] or info.pivotIDs[weapNum] or body
+	return info.sleeveIDs[weapNum] or info.turretIDs[weapNum] or info.pivotIDs[weapNum] or info.flareIDs[weapNum] or body
 end
 
 function script.QueryWeapon(weapNum)

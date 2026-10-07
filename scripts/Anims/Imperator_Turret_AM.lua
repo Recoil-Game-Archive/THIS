@@ -16,7 +16,7 @@ local fPiece = info.flareIDs[1]
 		
 function SpecialAim(heading, pitch)
 	Turn(fPiece, y_axis, heading, math.rad(firing and 6 or 1000))
-	Turn(fPiece, y_axis, -pitch, math.rad(firing and 6 or 1000))
+	Turn(fPiece, x_axis, -pitch, math.rad(firing and 6 or 1000))
 	WaitForTurn(fPiece, y_axis)
 	WaitForTurn(fPiece, x_axis)
 	return true
