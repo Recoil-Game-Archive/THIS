@@ -271,7 +271,7 @@ function gadget:GameFrame(f)
 	for u,d in pairs(hardpoints) do
 		local team = spGetUnitTeam(u)
 		local px,py,pz,pdx,pdy,pdz=spGetUnitPiecePosDir(d[1],d[2])
-		local impHead = Spring.GetUnitHeading(d[1])
+		local impHead = spGetHeadingFromVector(pdx,pdz) --Spring.GetUnitHeading(d[1])
 		Spring.MoveCtrl.SetPosition(u,px,py,pz)
 		Spring.MoveCtrl.SetHeading(u,impHead)
 		if d[3] then
