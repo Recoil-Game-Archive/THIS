@@ -33,6 +33,11 @@ sensorDrawLists = {}
 
 local function ToggleRanges()
 	drawRanges = not drawRanges
+	drawGrav = drawRanges
+end
+
+local function QueryGravDisplay()
+	return drawGrav
 end
 
 local function SensorRange(r)
@@ -98,10 +103,12 @@ function widget:Shutdown()
 		gl.DeleteList(l)
 	end
 	gl.DeleteList(boundary)
+	widgetHandler:DeregisterGlobal("QueryGravDisplay")
 end
 
 function widget:Initialize()
 	widgetHandler:AddAction("togglesensors", ToggleRanges, nil, "p")
+	widgetHandler:RegisterGlobal("QueryGravDisplay", QueryGravDisplay)
 	boundary = CreateList(BeginEnd, GL.LINE_STRIP, MapBoundary)
 	Spring.SendCommands({
 		"unbind Any+l togglelos",
