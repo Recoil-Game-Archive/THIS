@@ -1,10 +1,10 @@
 return {
-  name='THIS',
+  name='THIS (Spring Necromancy Edition)',
   description='Space Combat',
-  shortname='THIS',
-  version='KRE $VERSION',
+  shortname='THIS (SRE)',
+  version='0.13.1',
   mutator='',
-  game='THIS',
+  game='THIS Happens In Space',
   shortGame='THIS',
   modtype=1,
   depend = {
