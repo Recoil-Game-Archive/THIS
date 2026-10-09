@@ -73,7 +73,6 @@
 	targetBorder=1;
 
 	reloadtime=2;
-	guided=1;
 	tracks=1;
 	turnrate=22000;
 
@@ -126,7 +125,6 @@
 	targetBorder=1;
 
 	reloadtime=2;
-	guided=1;
 	tracks=1;
 	turnrate=22000;
 
@@ -180,7 +178,6 @@
 	sprayangle=1200;
 
 	reloadtime=15;
-	//guided=1;
 	tracks=1;
 	turnrate=18000;
 
@@ -234,7 +231,6 @@
 	sprayangle=1200;
 
 	reloadtime=15;
-	//guided=1;
 	//tracks=1;
 	//turnrate=9000;
 
@@ -286,7 +282,6 @@
 	targetBorder=1;
 
 	reloadtime=2;
-	guided=1;
 	tracks=1;
 	turnrate=22000;
 

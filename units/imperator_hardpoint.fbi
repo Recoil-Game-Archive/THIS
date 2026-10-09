@@ -23,6 +23,7 @@
 	collisionVolumeTest=1;
 	collide=0;
 	script=ship.lua;
+	power=1;
 
 	// Movement
 	//canFly=1;

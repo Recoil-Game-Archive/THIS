@@ -214,7 +214,6 @@
 	targetBorder=1;
 
 	reloadtime=2;
-	guided=1;
 	tracks=1;
 	turnrate=220000;
 
@@ -265,7 +264,6 @@
 	targetBorder=1;
 
 	reloadtime=2;
-	guided=1;
 	tracks=1;
 	turnrate=220000;
 
@@ -319,7 +317,6 @@
 	targetBorder=1;
 
 	reloadtime=2;
-	guided=1;
 	tracks=1;
 	turnrate=220000;
 
