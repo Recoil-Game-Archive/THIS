@@ -55,6 +55,7 @@ end
 
 function widget:Initialize()
 	local n = 0
+	local sorted = {}
 	for id,d in pairs(UnitDefs) do
 		local c = d.customParams
 		if c.type=="large" and (not c.nobuild) then
@@ -63,15 +64,27 @@ function widget:Initialize()
 				buildtime = tonumber(c.buildtime),
 				perk = tonumber(c.needperk)
 			}
-			buttonToUnit[n]=id
 			n = n + 1
-			Spring.Echo("Added "..d.humanName.." as "..n)
+			sorted[n] = id
 		end
 		if c.builds then
 			builder[id] = tonumber(c.builds)
 		end
 	end
-	table.sort(buttonToUnit, function(a,b) return orderLarge[UnitDefs[a].name] < orderLarge[UnitDefs[b].name] end)
+	-- table.sort only sorts indices 1..#t, so sort a 1-based list first and
+	-- then copy it into the 0-based button table the rest of the widget uses.
+	-- Units missing from build_order.lua go last instead of raising an error.
+	local function order(id)
+		return orderLarge[UnitDefs[id].name] or math.huge
+	end
+	table.sort(sorted, function(a,b)
+		local oa, ob = order(a), order(b)
+		if oa ~= ob then return oa < ob end
+		return a < b
+	end)
+	for i = 1, n do
+		buttonToUnit[i - 1] = sorted[i]
+	end
 	vsx, vsy = widgetHandler:GetViewSizes()
 	vsize =n
 	height = vsize * buttonHeight

@@ -144,4 +144,4 @@ Drone: Launched from the Chu-ke Nu and Imperator Hive (for free), drones swarm t
 == Known Issues ==
 
 -Sometimes torpedoes give a lua error when their target is killed before they get there.
--Need a replacement chicken panel image.
+-Defenders of the Galaxy mode has no status panel for now; the old Chili one was removed and a new one is planned.

@@ -89,7 +89,7 @@ function widget:GetTooltip(x,y)
 	if index then
 		return 'Choose Perk "'..perkList[index][1]..'"\n'..perkList[index][2]
 	end
-	return pos
+	return ""
 end
 
 function widget:MousePress(x,y,button)
