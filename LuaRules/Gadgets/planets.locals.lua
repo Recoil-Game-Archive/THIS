@@ -86,6 +86,99 @@ local patterns={
 	}
 }
 
+-- Random planets, placed so that no two capture circles overlap and every
+-- circle lies on the map. The patterns "randompoint", "randomx" and "randomz"
+-- place planets in mirrored pairs (through the centre, left-right, top-bottom);
+-- any other name places every planet on its own.
+-- If the map is too small for that many planets at full spacing, the spacing
+-- is reduced step by step until they fit.
+local function PlaceRandomPlanets(count)
+	local mapX, mapZ = Game.mapSizeX, Game.mapSizeZ
+	local mirrored = pattern == "randompoint" or pattern == "randomx" or pattern == "randomz"
+
+	local function Mirror(x, z)
+		if pattern == "randompoint" then
+			return mapX - x, mapZ - z
+		elseif pattern == "randomx" then
+			return mapX - x, z
+		end
+		return x, mapZ - z
+	end
+
+	local function Try(spacing, margin)
+		local placed = {}
+		local function Fits(x, z)
+			for _, other in ipairs(placed) do
+				local dx, dz = x - other.x, z - other.z
+				if dx * dx + dz * dz < spacing * spacing then
+					return false
+				end
+			end
+			return true
+		end
+		local groups = mirrored and math.floor(count / 2) or count
+		for _ = 1, groups do
+			local done = false
+			for _ = 1, 300 do
+				local x = math.random(margin, mapX - margin)
+				local z = math.random(margin, mapZ - margin)
+				if Fits(x, z) then
+					if mirrored then
+						local x2, z2 = Mirror(x, z)
+						local dx, dz = x - x2, z - z2
+						if dx * dx + dz * dz >= spacing * spacing and Fits(x2, z2) then
+							placed[#placed + 1] = {x = x, z = z}
+							placed[#placed + 1] = {x = x2, z = z2}
+							done = true
+						end
+					else
+						placed[#placed + 1] = {x = x, z = z}
+						done = true
+					end
+				end
+				if done then
+					break
+				end
+			end
+			if not done then
+				return nil
+			end
+		end
+		return placed
+	end
+
+	-- circles a little apart rather than just touching
+	local spacing = occupationRange * 2 + 150
+	local margin = occupationRange + 60
+	local placed
+	for _ = 1, 40 do
+		margin = math.floor(math.min(margin, mapX / 4, mapZ / 4))
+		placed = Try(spacing, margin)
+		if placed then
+			break
+		end
+		spacing = spacing * 0.92
+		if spacing < occupationRange * 2 then
+			margin = margin * 0.9 -- circles overlap anyway by now: use the edges too
+		end
+	end
+	if not placed then
+		spEcho("[Planets] could not place " .. count .. " planets on this map")
+		placed = {}
+	elseif spacing < occupationRange * 2 then
+		spEcho("[Planets] this map is too small for " .. count .. " planets without overlapping capture circles")
+	end
+	for i, spot in ipairs(placed) do
+		planets[i] = {
+			x = spot.x,
+			z = spot.z,
+			lastOwner = nil,
+			lastStrength = 0,
+			lastOccupier = nil,
+		}
+	end
+end
+
 function gadget:Initialize()
 	if patterns[pattern] then
 		local mx = Game.mapSizeX
@@ -100,44 +193,7 @@ function gadget:Initialize()
 		for i = 1,(number*312) do
 			math.random(10) --add some randomness
 		end
-		for i = 1,number/2 do
-			local x = math.random(Game.mapSizeX)
-			local z = math.random(Game.mapSizeZ)
-			planets[i * 2 - 1] = {
-				x = x,
-				z = z,
-				lastOwner = nil,
-			}
-			if pattern == "randompoint" then
-				planets[i * 2] = {
-					x = Game.mapSizeX - x,
-					z = Game.mapSizeZ - z,
-					lastOwner = nil,
-				}
-			elseif pattern == "randomx" then
-				planets[i * 2] = {
-					x = Game.mapSizeX - x,
-					z = z,
-					lastOwner = nil,
-				}
-			elseif pattern == "randomz" then
-				planets[i * 2] = {
-					x = x,
-					z = Game.mapSizeZ - z,
-					lastOwner = nil,
-					lastStrength = 0,
-					lastOccupier = nil,
-				}
-			else
-				planets[i * 2] = {
-					x = math.random(Game.mapSizeX),
-					z = math.random(Game.mapSizeZ),
-					lastOwner = nil,
-					lastStrength = 0,
-					lastOccupier = nil,
-				}
-			end
-		end
+		PlaceRandomPlanets(tonumber(number) or 10)
 	end
 
 	for _,t in ipairs(spGetTeamList()) do
@@ -212,6 +268,7 @@ function gadget:GameFrame(f)
 				p.lastStrength = 0
 				p.lastOccupier = nil
 			end
+			p.contested = contested and true or false -- the capture ring shows it
 		end
 	end
 	if f == 900 then
@@ -469,9 +526,156 @@ local function DrawPlanets()
 	gl.DepthMask(true)
 end
 
+--------------------------------------------------------------------------------
+-- Capture rings
+--
+-- All rings are drawn in one instanced call ("GL4" style): a four-corner quad
+-- in one buffer, one entry per planet in a second buffer (where it is, whose
+-- colour, what state), and the shader in Shaders/capturering.frag paints the
+-- ring. If any of that is not available the old plain circles are drawn.
+
+local RING_SHADER_PATH = "LuaRules/Gadgets/Shaders/capturering.frag"
+local RING_EXTENT = 1.5   -- the quad reaches this many ring radii from the centre; the shader fades out before it
+local NOBODY, OWNED, CONTESTED = 0, 1, 2
+
+local ringShader, ringVAO, ringQuad, ringInstances, ringTimeUniform
+local ringCapacity = 0
+local ringsFailed = false
+local ringTimer
+local seenOwner = {}     -- planet -> owner at the last draw (false = nobody)
+local capturedAt = {}    -- planet -> seconds on ringTimer when it last changed hands
+
+local RING_VERTEX_SHADER = [[
+#version 330 compatibility
+layout (location = 0) in vec2 corner;      // -1..1
+layout (location = 1) in vec4 posRadius;   // centre x, y, z and ring radius
+layout (location = 2) in vec4 colour;      // rgb and state
+layout (location = 3) in vec4 params;      // seconds since capture, random number
+out vec2 uv;
+flat out vec4 vColour;
+flat out vec4 vParams;
+void main() {
+	uv = corner * EXTENT;
+	vColour = colour;
+	vParams = params;
+	vec4 world = vec4(posRadius.x + uv.x * posRadius.w, posRadius.y, posRadius.z + uv.y * posRadius.w, 1.0);
+	gl_Position = gl_ModelViewProjectionMatrix * world;
+}
+]]
+
+local function CreateRings(count)
+	if not (gl.GetVBO and gl.GetVAO and gl.CreateShader) then
+		return false, "this engine has no VBO/VAO support for Lua"
+	end
+	local fragment = VFS.LoadFile(RING_SHADER_PATH, VFS.ZIP)
+	if not fragment then
+		return false, RING_SHADER_PATH .. " is missing"
+	end
+	ringShader = gl.CreateShader({
+		vertex = RING_VERTEX_SHADER:gsub("EXTENT", string.format("%.2f", RING_EXTENT)),
+		fragment = "#version 330 compatibility\n" .. fragment,
+	})
+	if not ringShader then
+		return false, "the shader did not compile. Log:\n" .. tostring(gl.GetShaderLog())
+	end
+	ringTimeUniform = gl.GetUniformLocation(ringShader, "time")
+
+	ringQuad = gl.GetVBO(GL.ARRAY_BUFFER, false)
+	ringInstances = gl.GetVBO(GL.ARRAY_BUFFER, true)
+	ringVAO = gl.GetVAO()
+	if not (ringQuad and ringInstances and ringVAO) then
+		return false, "could not create the buffers"
+	end
+	ringQuad:Define(4, {{id = 0, name = "corner", size = 2}})
+	ringQuad:Upload({-1, -1, 1, -1, -1, 1, 1, 1})
+	ringInstances:Define(count, {
+		{id = 1, name = "posRadius", size = 4},
+		{id = 2, name = "colour", size = 4},
+		{id = 3, name = "params", size = 4},
+	})
+	ringVAO:AttachVertexBuffer(ringQuad)
+	ringVAO:AttachInstanceBuffer(ringInstances)
+	ringCapacity = count
+	ringTimer = Spring.GetTimer()
+	return true
+end
+
+local function DeleteRings()
+	if ringShader then
+		gl.DeleteShader(ringShader)
+	end
+	for _, object in ipairs({ringVAO, ringQuad, ringInstances}) do
+		pcall(function() object:Delete() end)
+	end
+	ringShader, ringVAO, ringQuad, ringInstances = nil, nil, nil, nil
+end
+
+-- Returns true when the rings were drawn.
+local function DrawRings()
+	if ringsFailed then
+		return false
+	end
+	if not ringVAO then
+		local count = 0
+		for _ in pairs(SYNCED.planets) do
+			count = count + 1
+		end
+		if count == 0 then
+			return true
+		end
+		local ok, created, reason = pcall(CreateRings, count)
+		if not ok or not created then
+			spEcho("[Planets] capture rings are drawn as plain circles: " .. tostring(ok and reason or created))
+			DeleteRings()
+			ringsFailed = true
+			return false
+		end
+	end
+
+	local now = Spring.DiffTimers(Spring.GetTimer(), ringTimer)
+	local data, n, count = {}, 0, 0
+	for i, p in pairs(SYNCED.planets) do
+		if count < ringCapacity then
+			count = count + 1
+			local owner = p.lastOwner or false
+			if seenOwner[i] ~= nil and owner ~= seenOwner[i] and owner then
+				capturedAt[i] = now
+			end
+			seenOwner[i] = owner
+			local r, g, b, state = 1, 1, 1, NOBODY
+			if p.contested then
+				state = CONTESTED
+			elseif owner then
+				r, g, b = GetTeamColor(owner)
+				state = OWNED
+			end
+			data[n + 1], data[n + 2], data[n + 3], data[n + 4] = p.x, 0, p.z, occupationRange
+			data[n + 5], data[n + 6], data[n + 7], data[n + 8] = r, g, b, state
+			data[n + 9], data[n + 10], data[n + 11], data[n + 12] = capturedAt[i] and (now - capturedAt[i]) or -1, (i * 0.618) % 1, 0, 0
+			n = n + 12
+		end
+	end
+	ringInstances:Upload(data, nil, 0, 1, n)
+
+	glDepthTest(false)
+	gl.DepthMask(false)
+	gl.Blending(GL.ONE, GL.ONE_MINUS_SRC_ALPHA) -- premultiplied, like the planets
+	gl.UseShader(ringShader)
+	gl.Uniform(ringTimeUniform, now)
+	ringVAO:DrawArrays(GL.TRIANGLE_STRIP, 4, 0, count, 0)
+	gl.UseShader(0)
+	gl.Blending(GL.SRC_ALPHA, GL.ONE_MINUS_SRC_ALPHA)
+	gl.DepthMask(true)
+	return true
+end
+
 function gadget:DrawWorldPreUnit()
 	glCulling(false)
 	DrawPlanets()
+	if DrawRings() then
+		return
+	end
+	-- plain version: a tinted disc for an owned planet (the outline is drawn in DrawWorld)
 	for i,p in pairs(SYNCED.planets) do
 		if p.lastOwner then
 			PushMatrix()
@@ -491,7 +695,9 @@ function gadget:DrawWorld()
 	for i,p in pairs(SYNCED.planets) do
 		local r,g,b = GetTeamColor(p.lastOwner or gaia)
 		Color(r,g,b,1)
-		DrawGroundCircle(p.x, 0, p.z, occupationRange, 30)
+		if ringsFailed then
+			DrawGroundCircle(p.x, 0, p.z, occupationRange, 30)
+		end
 		if p.lastOwner and (spec or spAreTeamsAllied(team,p.lastOwner)) then
 			PushMatrix()
 			Translate(p.x, 100, p.z)
@@ -545,6 +751,7 @@ function gadget:Shutdown()
 		gl.DeleteShader(planetShader)
 		planetShader = nil
 	end
+	DeleteRings()
 end
 
 end
