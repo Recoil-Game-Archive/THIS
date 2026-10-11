@@ -110,7 +110,7 @@ def paint(F):
     Tt = is_('turret'); Bb = is_('barrel'); lp = F['lpos']
     setcol(Tt, MID)
     top = Tt & (nrm[:, 1] > 0.35)
-    team = np.maximum(team, top * smooth(0.25, 0.4, dcv) * 0.95)
+    team = np.maximum(team, top * smooth(0.25, 0.4, dcv))
     setcol(Tt & (nrm[:, 1] < -0.2), DARK)
     setcol(Bb, GUN); refl[Bb] = 0.3
     zmax = {k: lp[F['piece'] == k][:, 2].max() for k in np.unique(F['piece'][Bb])}
@@ -124,7 +124,6 @@ def paint(F):
     jit = (pj - 0.5) * 0.09
     alb[painted] *= (1 + jit[painted])[:, None]
     lw = 1 - 0.42 * (1 - smooth(0.06, 0.2, line)); alb[painted] *= lw[painted][:, None]
-    team *= np.where(line < 0.13, 0.55, 1.0)
     hi = (1 - smooth(0.0, 0.42, dcv)) * 0.13; lo = (1 - smooth(0.0, 0.8, dcc)) * 0.30
     alb[painted] = alb[painted] * (1 - lo[painted])[:, None] + hi[painted][:, None]
     grime = 0.5 * noise3(pos, 0.11, 1) + 0.3 * noise3(pos, 0.31, 2) + 0.2 * noise3(pos, 0.9, 3)
@@ -132,6 +131,7 @@ def paint(F):
     alb[painted] *= (0.86 + 0.16 * grime + 0.06 * (streak - 0.5) * side)[painted][:, None]
     shade = 0.50 + 0.50 * ao ** 0.9
     alb[painted] *= shade[painted][:, None]
-    team = team * 0.82 * (emit < 0.3)
+    # team colour areas are fully opaque in the mask: anything less washes the team colour out with hull grey
+    team = smooth(0.35, 0.65, team) * (emit < 0.3)
     emit = np.maximum(emit, 0.10)
     return dict(albedo=alb, team=team, emit=emit, refl=refl, glow=glow)
