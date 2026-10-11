@@ -29,17 +29,25 @@ function gadget:GetInfo()
 	}
 end
 
-local plasma = {
-	[WeaponDefNames.partillery.id]=true,
-	[WeaponDefNames.partilleryq.id]=true,
-	[WeaponDefNames.partilleryw.id]=true,
-	[WeaponDefNames.plight.id]=true,
-	[WeaponDefNames.pmedium.id]=true,
-	[WeaponDefNames.pheavy.id]=true,
-	[WeaponDefNames.pflak.id]=true,
-	[WeaponDefNames.partilleryqf.id]=true,
-	[WeaponDefNames.pdrone.id]=true,
+local plasmaNames = {
+	partillery = true,
+	partilleryq = true,
+	partilleryw = true,
+	plight = true,
+	pmedium = true,
+	pheavy = true,
+	pflak = true,
+	partilleryqf = true,
+	pdrone = true,
 }
+
+-- weapons are defined per unit ("<unitname>_<weaponname>"), customParams.basename
+-- holds the unprefixed name; shared weapondefs have no basename
+local plasma = {}
+for id, wd in pairs(WeaponDefs) do
+	local value = plasmaNames[wd.customParams.basename or wd.name]
+	if value then plasma[id] = value end
+end
 
 if (gadgetHandler:IsSyncedCode()) then
 

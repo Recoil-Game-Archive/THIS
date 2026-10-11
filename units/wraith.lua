@@ -45,23 +45,117 @@ local unitDef = {
 	-- Weapons
 	weapons = {
 		{
-			name = "LPointDefense",
+			def = "LPointDefense",
 			onlyTargetCategory = "TINY",
 			weaponMainDir = "-1 0 0",
 			maxAngleDif = 210,
 		},
 	
 		{
-			name = "LPointDefense",
+			def = "LPointDefense",
 			onlyTargetCategory = "TINY",
 			weaponMainDir = "1 0 0",
 			maxAngleDif = 210,
 		},
 		{
-			name = "LLightS",
+			def = "LLightS",
 			onlyTargetCategory = "TARGET",
 		}
 		
+	},
+
+	weaponDefs = {
+		LPointDefense = {
+			name = "Point Defense",
+			RGBcolor = "0 1 0",
+			weaponType = "BeamLaser",
+			thickness = 2.5,
+			intensity = 1,
+			noselfdamage = true,
+			minIntensity = 1,
+			beamburst = true,
+			beamttl = 16,
+			beamdecay = .9,
+			size = 2,
+
+			soundstart = "weapons\\llightfire2",
+			soundhit = "",
+
+			turret = true,
+			range = 600,
+			weaponvelocity = 1200,
+			FallOffRate = .05,
+
+			reloadtime = .5,
+
+			areaofeffect = 8,
+			collidefriendly = false,
+			avoidfriendly = false,
+			collidefeature = false,
+			avoidfeature = false,
+
+			tolerance = 30000,
+
+			impulsefactor = 0,
+			impulseBoost = 0,
+			craterMult = 0,
+			craterBoost = 0,
+
+			explosiongenerator = "custom:laser",
+
+			laserFlareSize = 0,
+
+			interceptedbyshieldtype = 1, --kinetic
+			damage = {
+				default = 1,
+				drone = 30,
+				torpedo = 30,
+			},
+		},
+
+		LLightS = { --Mace extra laser
+			name = "Light Laser",
+			RGBcolor = "1 0 0",
+			weaponType = "BeamLaser",
+			thickness = 1,
+			intensity = 1,
+			noselfdamage = true,
+			beamttl = 8,
+			beamdecay = .8,
+			beamburst = true,
+
+			soundstart = "weapons\\llightfire",
+			soundhit = "",
+			minIntensity = 1,
+
+			turret = true,
+			range = 450,
+
+			reloadtime = 2,
+
+			areaofeffect = 8,
+			collidefriendly = false,
+			avoidfriendly = false,
+			collidefeature = false,
+			avoidfeature = false,
+
+			tolerance = 1000,
+
+			impulsefactor = 0,
+			impulseBoost = 0,
+			craterMult = 0,
+			craterBoost = 0,
+
+			explosiongenerator = "custom:laser",
+
+			laserFlareSize = 0,
+
+			impactonly = true,
+			interceptedbyshieldtype = 4, --laser
+			damage = {
+				default = 60,
+			},
+		},
 	},
 
 	explodeAs = "RetroDeathSmall",

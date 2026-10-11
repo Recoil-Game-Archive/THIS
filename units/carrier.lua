@@ -45,7 +45,7 @@ local unitDef = {
 	-- Weapons
 	weapons = {
 		{
-			name = "KLight",
+			def = "KLight",
 			onlyTargetCategory = "TARGET",
 			weaponMainDir = "0 0 1",
 			MaxAngleDif = 270,
@@ -53,14 +53,14 @@ local unitDef = {
 		},
 	
 		{
-			name = "KLight",
+			def = "KLight",
 			onlyTargetCategory = "TARGET",
 			weaponMainDir = "0 0 -1",
 			maxAngleDif = 270,
 			badTargetCategory = "LARGE",
 		},
 		{
-			name = "KLight",
+			def = "KLight",
 			onlyTargetCategory = "TARGET",
 			weaponMainDir = "0 0 1",
 			maxAngleDif = 270,
@@ -68,17 +68,179 @@ local unitDef = {
 		},
 	
 		{
-			name = "GStandard",
+			def = "GStandard",
 			onlyTargetCategory = "LARGE",
 		},
 		{
-			name = "GFlak",
+			def = "GFlak",
 			badTargetCategory = "LARGE",
 		},
 		{
-			name = "TStandard",
+			def = "tstandard",
 			onlyTargetCategory = "LARGE",
 			--badTargetCategory = "SMALL",
+		},
+	},
+
+	weaponDefs = {
+		KLight = {
+			name = "Light Kinetic Weapon",
+			RGBcolor = ".85 .7 .2",
+			weaponType = "LaserCannon",
+			thickness = .5,
+			intensity = 1,
+			noselfdamage = true,
+			impactOnly = true,
+			duration = .02,
+
+			soundstart = "weapons\\klightfire",
+			soundhit = "weapons\\klighthit",
+
+			turret = true,
+			range = 500,
+			weaponvelocity = 600,
+			FallOffRate = .05,
+
+			reloadtime = .25,
+			sprayangle = 600,
+
+			areaofeffect = 8,
+			collidefriendly = false,
+			avoidfriendly = false,
+			collidefeature = false,
+			avoidfeature = false,
+
+			tolerance = 3000,
+
+			impulsefactor = 0,
+			impulseBoost = 0,
+			craterMult = 0,
+			craterBoost = 0,
+
+			explosiongenerator = "custom:kinetic",
+
+			interceptedbyshieldtype = 1, --kinetic
+			damage = {
+				default = 15,
+			},
+			customParams = {
+				spray_boost = 50,
+				rof_boost = 16,
+			},
+		},
+
+		GStandard = {
+			name = "Gravitrics",
+			RGBcolor = "0 0 0",
+			weaponType = "BeamLaser",
+			thickness = 8,
+			intensity = 1,
+			noselfdamage = true,
+			burstrate = .06,
+			burst = 10,
+			beamttl = 2,
+			beamburst = true,
+
+			soundstart = "grav",
+			soundhit = "",
+
+			turret = true,
+			range = 350,
+
+			reloadtime = 3,
+
+			areaofeffect = 50,
+			collidefriendly = false,
+			avoidfriendly = true,
+			collidefeature = false,
+			avoidfeature = false,
+
+			tolerance = 9000,
+
+			impulsefactor = 0,
+			impulseBoost = 0,
+			craterMult = 0,
+			craterBoost = 0,
+
+			explosiongenerator = "custom:grav",
+			explosionSpeed = 600,
+
+			interceptedbyshieldtype = 8, --gravitric
+			damage = {
+				default = 600,
+			},
+		},
+
+		GFlak = {
+			name = "Grav Flak",
+			RGBcolor = "1 1 1",
+			weaponType = "BeamLaser", --Cannon;
+			noselfdamage = true,
+			burnblow = true,
+			myGravity = .001,
+			beamburst = true,
+			minintensity = 1,
+			thickness = 1,
+
+			soundhit = "grav",
+
+			turret = true,
+			range = 450,
+			weaponvelocity = 900,
+
+			reloadtime = 1.30,
+			burst = 4,
+			burstrate = .06,
+
+			areaofeffect = 150,
+			collidefriendly = false,
+			avoidfriendly = false,
+			collidefeature = false,
+			avoidfeature = false,
+
+			tolerance = 3000,
+
+			impulsefactor = 0,
+			impulseBoost = 0,
+			craterMult = 0,
+			craterBoost = 0,
+
+			explosiongenerator = "custom:grav",
+			explosionSpeed = 65536,
+
+			interceptedbyshieldtype = 8, --plasma
+			damage = {
+				default = 40,
+			},
+		},
+
+		tstandard = {
+			name = "Torpedo Launch Control",
+			weaponType = "Melee",
+
+			turret = true,
+			range = 900,
+			reloadtime = 8,
+			projectiles = 0,
+
+			areaofeffect = 8,
+
+			tolerance = 3000,
+
+			impulsefactor = 0,
+			impulseBoost = 0,
+			craterMult = 0,
+			craterBoost = 0,
+
+			--explosiongenerator=custom:corruption_shot1;
+
+			interceptedbyshieldtype = 0, --imaginary
+			damage = {
+				default = .0001,
+			},
+			customParams = {
+				torpedotype = 2, -- TORPEDO
+			},
 		},
 	},
 	

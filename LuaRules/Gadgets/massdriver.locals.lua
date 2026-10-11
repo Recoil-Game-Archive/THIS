@@ -24,17 +24,25 @@ function gadget:GetInfo()
 	}
 end
 
-local kinetic = {
-	[WeaponDefNames.klight.id]=2,
-	[WeaponDefNames.klights.id]=2,
-	[WeaponDefNames.klightl.id]=2,
-	[WeaponDefNames.kdual.id]=1,
-	[WeaponDefNames.kdualg.id]=2,
-	[WeaponDefNames.kdualh.id]=2,
-	[WeaponDefNames.kmedium.id]=3,
-	[WeaponDefNames.kheavyeden.id]=7,
-	[WeaponDefNames.kheavy.id]=7,
+local kineticNames = {
+	klight = 2,
+	klights = 2,
+	klightl = 2,
+	kdual = 1,
+	kdualg = 2,
+	kdualh = 2,
+	kmedium = 3,
+	kheavyeden = 7,
+	kheavy = 7,
 }
+
+-- weapons are defined per unit ("<unitname>_<weaponname>"), customParams.basename
+-- holds the unprefixed name; shared weapondefs have no basename
+local kinetic = {}
+for id, wd in pairs(WeaponDefs) do
+	local value = kineticNames[wd.customParams.basename or wd.name]
+	if value then kinetic[id] = value end
+end
 
 local radius = 225
 

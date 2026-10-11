@@ -23,13 +23,21 @@ function gadget:GetInfo()
 	}
 end
 
-local missile = {
-	[WeaponDefNames.mlight6.id] = 80,
-	[WeaponDefNames.mlight12.id] = 80,
-	[WeaponDefNames.mmedium12.id] = 80,
-	[WeaponDefNames.mtiny.id] = 50,
-	[WeaponDefNames.mquasar.id] = 95,
+local missileNames = {
+	mlight6 = 80,
+	mlight12 = 80,
+	mmedium12 = 80,
+	mtiny = 50,
+	mquasar = 95,
 }
+
+-- weapons are defined per unit ("<unitname>_<weaponname>"), customParams.basename
+-- holds the unprefixed name; shared weapondefs have no basename
+local missile = {}
+for id, wd in pairs(WeaponDefs) do
+	local value = missileNames[wd.customParams.basename or wd.name]
+	if value then missile[id] = value end
+end
 
 local empMult = 2
 

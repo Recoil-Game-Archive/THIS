@@ -32,10 +32,12 @@ local spSetUnitHealth  = Spring.SetUnitHealth
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
-local weaponNames = {"meteoremp"}
+local weaponNames = {meteoremp = true}
 local weaponIDs = {}
-for _,name in pairs(weaponNames) do
-	if WeaponDefNames[name] then weaponIDs[WeaponDefNames[name].id] = true end
+-- weapons are defined per unit ("<unitname>_<weaponname>"), customParams.basename
+-- holds the unprefixed name; shared weapondefs have no basename
+for id, wd in pairs(WeaponDefs) do
+	if weaponNames[wd.customParams.basename or wd.name] then weaponIDs[id] = true end
 end
 
 function gadget:UnitPreDamaged(unitID, unitDefID, unitTeam, damage, paralyzer, 

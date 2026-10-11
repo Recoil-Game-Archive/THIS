@@ -51,7 +51,10 @@ for name,data in pairs(WeaponDefNames) do
 	if data.customParams.timeslow_preset then
 		weapons[name] = CopyTable(presets[data.customParams.timeslow_preset])
 	end
-	if weapons[name] then array[data.id] = weapons[name] end
+	-- weapons are defined per unit ("<unitname>_<weaponname>"), customParams.basename
+	-- holds the unprefixed name used in the table above
+	local config = weapons[name] or weapons[data.customParams.basename]
+	if config then array[data.id] = config end
 end
 
 return array, MAX_SLOW_FACTOR, DEGRADE_TIMER*30/UPDATE_PERIOD, DEGRADE_FACTOR*UPDATE_PERIOD/30, UPDATE_PERIOD
