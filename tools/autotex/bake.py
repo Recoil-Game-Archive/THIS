@@ -156,7 +156,10 @@ def dds_dxt5(img, path):
     while True:
         buf = io.BytesIO(); im.save(buf, 'DDS', pixel_format='DXT5'); levels.append(buf.getvalue())
         if im.size == (1, 1): break
-        im = im.resize((max(im.size[0] // 2, 1), max(im.size[1] // 2, 1)), Image.BOX)
+        # resize channel by channel: Pillow premultiplies RGBA on resize, which blacks out every
+        # texel whose alpha (team colour mask) is 0
+        sz = (max(im.size[0] // 2, 1), max(im.size[1] // 2, 1))
+        im = Image.merge('RGBA', [c.resize(sz, Image.BOX) for c in im.split()])
     hdr = bytearray(levels[0][:128])
     flags = struct.unpack_from('<I', hdr, 8)[0] | 0x20000; struct.pack_into('<I', hdr, 8, flags)
     struct.pack_into('<I', hdr, 20, max(w // 4, 1) * max(h // 4, 1) * 16)
