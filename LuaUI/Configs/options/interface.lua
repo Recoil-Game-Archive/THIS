@@ -29,6 +29,8 @@ return {
 		{ id = "healthbars", name = "Health bars", type = "bool", widget = "HealthBars THIS", requires = "HealthBars THIS" },
 		{ id = "altitudelines", name = "Altitude lines", type = "bool", widget = "THIS Altitude Lines", requires = "THIS Altitude Lines",
 		  desc = "A line from every ship down to the plane of the capture rings, with a small circle where it lands." },
+		{ id = "commandlines", name = "Animated order lines", type = "bool", widget = "THIS Command Lines", requires = "THIS Command Lines",
+		  desc = "Glowing lines with running lights for the orders of selected ships. Off: the engine's plain lines." },
 		{ id = "formations", name = "Drag formations", type = "bool", widget = "Formations", requires = "Formations",
 		  desc = "Drag a line while giving a move order to spread ships along it." },
 
