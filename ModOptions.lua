@@ -89,9 +89,9 @@ local options= {
 		section="Chicken",
 	},
 	{
-		key="enableeclipse",
-		name="Enable Eclipse",
-		desc="Enables the Eclipse assault battlecruiser (may not be balanced)",
+		key="enablequasar",
+		name="Enable Quasar",
+		desc="Enables the Quasar assault battlecruiser (may not be balanced)",
 		type="bool",
 		def=true,
 		section="Experimental",

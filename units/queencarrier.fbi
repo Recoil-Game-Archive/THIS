@@ -7,7 +7,7 @@
 	// Required Tags
 	power=7500;
 	mass=15000;
-	icontype=eclipse;
+	icontype=quasar;
 	Category=LARGE CARRIER STRONG TARGET COMMANDER ANY;
 	commander=1;
 	FootprintX=6;
@@ -74,7 +74,7 @@
 	//WeaponMainDir5=0 0 1;
 	//MaxAngleDif5=120;
 
-	Weapon6=TEclipse;
+	Weapon6=TQuasar;
 	OnlyTargetCategory6=LARGE;
 	//BadTargetCategory6=SMALL;
 

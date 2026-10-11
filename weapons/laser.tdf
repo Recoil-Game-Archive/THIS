@@ -186,7 +186,7 @@
 	}
 }
 
-[LMediumH]	// Eclipse lasers
+[LMediumH]	// Quasar lasers
 	{
 	name=Medium-Heavy Laser;
 	RGBcolor=1 0 1;
@@ -383,7 +383,7 @@
 	}
 }
 
-[LPointDefenseM]	//formerly used by Eclipse
+[LPointDefenseM]	//formerly used by Quasar
 	{
 	name=Point Defense;
 	RGBcolor=0 0.3 1;

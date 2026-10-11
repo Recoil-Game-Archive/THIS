@@ -1,21 +1,21 @@
 [UNITINFO]
 {
-	Name=Eclipse;
-	Unitname=eclipselite;
+	Name=Quasar;
+	Unitname=Quasar;
 	Description=Heavy assault battlecruiser;
 
 	// Required Tags
 	power=6000;
 	mass=30000;
-	icontype=eclipse;
+	icontype=quasar;
 	Category=LARGE STRONG TARGET ANY;
 	FootprintX=8;
 	FootprintZ=8;
 	MaxDamage=52000;
-	autoheal=0;
+	//autoheal=20;
 	idleTime=0;
 	idleAutoHeal=0;
-	ObjectName=eclipse.s3o;
+	ObjectName=quasar.s3o;
 	Side=ALL;
 	SoundCategory=CARRIER;
 	collisionVolumeScales=160 72 400;
@@ -67,10 +67,13 @@
 	Weapon2=SGraser;
 	OnlyTargetCategory2=VOID;
 
-	Weapon3=SGraserPrimer;
-	OnlyTargetCategory3=VOID;
-	
-	Weapon4=GEclipse;
+	Weapon3=MegaLaserPrimer;
+	WeaponMainDir3=0 0 1;
+	MaxAngleDif3=10;
+	//OnlyTargetCategory3=TARGET;
+	//BadTargetCategory3=SMALL WEAK;
+
+	Weapon4=GQuasar;
 	OnlyTargetCategory4=LARGE;
 	BadTargetCategory4=WEAK;
 
@@ -134,7 +137,7 @@
 	MaxAngleDif14=210;
 	BadTargetCategory14=LARGE;
 
-	Weapon15=GFlakEclipse;
+	Weapon15=GFlakQuasar;
 	BadTargetCategory15=LARGE;
 
 	Weapon16=PHeavy;
@@ -149,21 +152,24 @@
 	MaxAngleDif17=160;
 	BadTargetCategory17=SMALL TINY;
 
-	Weapon18=TEclipseShort;
+	Weapon18=TQuasar;
 	OnlyTargetCategory18=LARGE;
 
-	Weapon19=MEclipse;
+	Weapon19=MQuasar;
 	OnlyTargetCategory19=TARGET;
 
-	Weapon20=MEclipse;
+	Weapon20=MQuasar;
 	OnlyTargetCategory20=TARGET;
+
+	Weapon21=MegaLaser;
+	OnlyTargetCategory21=VOID;
 
 	ExplodeAs=RetroDeathHuge;
 	SelfDestructAs=RetroDeathHuge;
 
 	// Misc
 	SmoothAnim=0;
-	Script=eclipse.lua;
+	Script=quasar.lua;
 	//damageModifier=0.25;
 
 	[SFXTypes]

@@ -23,7 +23,7 @@ local weapons = {
 	mmedium6eden = {slowDamage = 160, scaleSlow = true},
 	mmedium12 = {slowDamage = 160, scaleSlow = true},
 	mtiny = {slowDamage = 50, scaleSlow = true},
-	meclipse = {slowDamage = 100, scaleSlow = true},
+	mquasar = {slowDamage = 100, scaleSlow = true},
 	
 	meteoremp = {slowDamage = 2000, scaleSlow = true, noPerk = true, onlySlow = true}
 }

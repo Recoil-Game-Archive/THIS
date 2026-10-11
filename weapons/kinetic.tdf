@@ -288,7 +288,7 @@
 	}
 }
 
-[KDualH]	//Eclipse cannons
+[KDualH]	//Quasar cannons
 	{
 	name=Medium-Light Kinetic Weapon;
 	RGBcolor=1 .5 .3;

@@ -259,7 +259,7 @@
 	}
 }
 
-[MEclipse]
+[MQuasar]
 	{
 	name=Light Missile Pack;
 	weaponType=MissileLauncher;

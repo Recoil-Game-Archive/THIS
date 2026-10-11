@@ -28,7 +28,7 @@ local missile = {
 	[WeaponDefNames.mlight12.id] = 80,
 	[WeaponDefNames.mmedium12.id] = 80,
 	[WeaponDefNames.mtiny.id] = 50,
-	[WeaponDefNames.meclipse.id] = 95,
+	[WeaponDefNames.mquasar.id] = 95,
 }
 
 local empMult = 2

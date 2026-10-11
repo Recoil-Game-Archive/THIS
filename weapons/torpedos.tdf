@@ -126,7 +126,7 @@
 	}
 }
 
-[tEclipse]
+[tQuasar]
 	{
 	name=Torpedo Launch Control;
 	weaponType=Melee;
@@ -159,7 +159,7 @@
 	}
 }
 
-[tEclipseShort]
+[tQuasarShort]
 	{
 	name=Torpedo Launch Control;
 	weaponType=Melee;

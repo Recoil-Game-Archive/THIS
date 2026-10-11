@@ -18,7 +18,7 @@ local large = {
 	"meteor",
 	"comet",
 	"starslayer",
-	"eclipse",
+	"quasar",
 }
 
 local gunstar = {

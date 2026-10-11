@@ -45,7 +45,7 @@ modes = {
 }
 defaultDifficulty = modes[2]
 testBuilding 	= UnitDefNames["starbase"].id	--testing to place burrow
-testBuildingQ 	= UnitDefNames["eclipse"].id	--testing to place queen
+testBuildingQ 	= UnitDefNames["quasar"].id	--testing to place queen
 
 --------------------------------------------------------------------------------
 -- difficulty settings
@@ -53,8 +53,8 @@ testBuildingQ 	= UnitDefNames["eclipse"].id	--testing to place queen
 playerMalus          = 1         -- how much harder it becomes for each additional player, exponential (playercount^playerMalus = malus)	-- used only for burrow spawn rate and queen XP
 
 queenName            = "imperator"
---queenMorphName		 = "eclipse"
-miniQueenName		 = "eclipse"
+--queenMorphName		 = "quasar"
+miniQueenName		 = "quasar"
 
 burrowSpawnRate      = 60        -- higher in games with many players, seconds
 chickenSpawnRate     = 59
@@ -183,7 +183,7 @@ difficulties = {
     gracePeriod      = 180,
     waveSizeMult     = 0.9,
     timeSpawnBonus   = .02,     -- how much each time level increases spawn size
-	queenName        = "eclipse",
+	queenName        = "quasar",
 	miniQueenName	 = "queencarrier",
 	--forceBurrowRespawn = true,
 	scoreMult		 = 0.25,

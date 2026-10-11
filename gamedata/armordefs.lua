@@ -19,7 +19,7 @@ local armorDefs = {
 		"comet",
 		"meteor",
 		"minelayer",
-		"eclipse",
+		"quasar",
 		"imperator",
 		"imperator_turret_plasma",
 		"imperator_hangar",

@@ -88,7 +88,7 @@
 	}
 }
 
-[GEclipse]
+[GQuasar]
 	{
 	name=Gravitrics;
 	RGBcolor=0 0 0;
@@ -133,7 +133,7 @@
 }
 
 
-[GFlakEclipse]
+[GFlakQuasar]
 	{
 	name=Grav Flak;
 	RGBcolor=1 1 1;

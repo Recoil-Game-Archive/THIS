@@ -133,7 +133,8 @@ end
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
--- enable Eclipse
-if tobool(Spring.GetModOptions().enableeclipse)then
-    UnitDefs.eclipse.customparams["nobuild"] = nil
+-- enable Quasar
+if tobool(Spring.GetModOptions().enablequasar)then
+    UnitDefs.quasar.customparams["nobuild"] = nil
+	UnitDefs.shadowofeden.customparams["nobuild"] = nil
 end

@@ -70,7 +70,7 @@ Comet: A fast attack destroyer. Comets have gravitics, large plasma cannons and 
 
 Starslayer: Artillery. It has four times the firepower of a Support Carrier for that. Starslayers also have powerful plasma flak weapons that are very good at intercepting drones or torpedoes and deal a lot of damage to small ships as well.
 
-Eclipse: This battlecruiser is slow, expensive and capable of destroying any other large ship it encounters short of an Imperator. It is armed with a graser, multiple kinetics and lasers, and a powerful torpedo volley. Pressing the "dgun" key (D) lets you fire the megalaser, which can rip apart any large ship in seconds but cannot be aimed at small ships.
+Quasar: This battlecruiser is slow, expensive and capable of destroying any other large ship it encounters short of an Imperator. It is armed with a graser, multiple kinetics and lasers, and a powerful torpedo volley. Pressing the "dgun" key (D) lets you fire the megalaser, which can rip apart any large ship in seconds but cannot be aimed at small ships.
 
 Imperator: A flagship. You can have only one of it. The Imperator is slow, VERY slow. It comes without weapons but has 17 hardpoints which you can install weapons or helpful parts on. Those cost extra, of course. The Imperator can only be destroyed by shooting its control tower located at the center. Of course that destroys all the expensive weapons too so make sure you protect it.
 Imperator hardpoints show an arrow when selected, that is the orientation of the hardpoint. For most of its weapons that defines the area it can be fired at.

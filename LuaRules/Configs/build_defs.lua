@@ -10,7 +10,7 @@ local carrierNames = {
 	carrier = "carrierfac",
 	supportcarrier = "supportcarrierfac",
 	minelayer = "minelayerfac",
-	eclipse = "minelayerfac",
+	quasar = "minelayerfac",
 }
 
 carrierDefs = {}

@@ -24,7 +24,7 @@ local longRangeSwarmieeArray = {
 local longRangeSkirmieeArray = {
 	"comet",
 	"meteor",
-	"eclipse",
+	"quasar",
 	"imperator_hardpoint",
 }
 
@@ -40,7 +40,7 @@ local fleeables = {
 	"meteor",
 	"comet",
 	"starbase",
-	"eclipse",
+	"quasar",
 	"imperator",
 	"imperator_turret_cannon",
 	"imperator_turret_am",

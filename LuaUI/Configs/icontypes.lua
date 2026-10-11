@@ -132,8 +132,8 @@ local icontypes = {
 		radiusadjust=1,
 		distance=0.6,
 	},
-	eclipse =	{
-		bitmap="icons/eclipse.tga",
+	quasar =	{
+		bitmap="icons/quasar.tga",
 		size=1,
 		radiusadjust=1,
 		distance=1,
