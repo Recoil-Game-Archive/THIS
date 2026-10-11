@@ -290,28 +290,199 @@ local function Line(sx,sy,sz,tx,ty,tz)
 	Vertex(tx,ty,tz)
 end
 
+--------------------------------------------------------------------------------
+-- Procedural planets
+--
+-- Every planet is one camera-facing quad; the shader in Shaders/planet.frag
+-- paints a sphere on it (earthlike, water, desert, ice, volcanic, gas giant
+-- or barren moon) from noise, so no textures or models are involved. Which
+-- kind each planet is, its size and its look are derived from the game's ID,
+-- so they differ from game to game but are the same for every player.
+-- tools/planets/make_preview.py shows the same shader in a web browser.
+
+local PLANET_Y = -300   -- planets hang below the plane the ships fly in
+local SHADER_PATH = "LuaRules/Gadgets/Shaders/planet.frag"
+local LIGHT = {-0.52, 0.68, -0.52}   -- direction towards the sun
+
+local EARTHLIKE, WATER, DESERT, ICE, VOLCANIC, GAS, BARREN = 0, 1, 2, 3, 4, 5, 6
+-- smallest and largest radius of each kind, and its colour on the minimap
+local KINDS = {
+	[EARTHLIKE] = {min = 225, max = 260, colour = {0.25, 0.50, 0.45}},
+	[WATER]     = {min = 225, max = 260, colour = {0.12, 0.32, 0.65}},
+	[DESERT]    = {min = 205, max = 240, colour = {0.74, 0.50, 0.30}},
+	[ICE]       = {min = 195, max = 230, colour = {0.72, 0.84, 0.95}},
+	[VOLCANIC]  = {min = 195, max = 230, colour = {0.55, 0.20, 0.08}},
+	[GAS]       = {min = 255, max = 270, colour = {0.78, 0.66, 0.46}},
+	[BARREN]    = {min = 165, max = 200, colour = {0.50, 0.48, 0.45}},
+}
+local RINGED_RADIUS = 215   -- a ringed giant is smaller, so its rings fit the capture circle
+
+local planetShader
+local shaderFailed = false
+local uniforms = {}
+local visuals = {}      -- planet index -> {kind, seed, radius, ring}
+local gameSalt
+local startTimer
+
+local VERTEX_SHADER = [[
+varying vec3 worldPos;
+void main() {
+	worldPos = gl_Vertex.xyz;
+	gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
+}
+]]
+
+-- a repeatable number in 0..1 for planet i
+local function Rand(i, salt)
+	local x = math.sin(i * 127.1 + salt * 311.7 + gameSalt) * 43758.5453
+	return x - math.floor(x)
+end
+
+local function Visual(i)
+	local v = visuals[i]
+	if v then
+		return v
+	end
+	if not gameSalt then
+		gameSalt = 0
+		local id = Game.gameID or ""
+		for n = 1, #id do
+			gameSalt = (gameSalt * 31 + id:byte(n)) % 9973
+		end
+	end
+	-- deal the kinds out like a shuffled deck, so a game shows all of them
+	-- before any kind comes up twice
+	local order = {EARTHLIKE, WATER, DESERT, ICE, VOLCANIC, GAS, BARREN}
+	for n = #order, 2, -1 do
+		local j = 1 + math.floor(Rand(n, 5) * n)
+		order[n], order[j] = order[j], order[n]
+	end
+	local round = math.floor((i - 1) / #order)
+	local kind = order[((i - 1 + round * 3) % #order) + 1]
+	local limits = KINDS[kind]
+	v = {
+		kind = kind,
+		seed = Rand(i, 1) * 1000,
+		radius = limits.min + (limits.max - limits.min) * Rand(i, 2),
+		ring = false,
+	}
+	if kind == GAS and Rand(i, 3) < 0.6 then
+		v.ring = true
+		v.radius = RINGED_RADIUS
+	end
+	visuals[i] = v
+	return v
+end
+
+local function LoadPlanetShader()
+	local fragment = VFS.LoadFile(SHADER_PATH, VFS.ZIP)
+	if not fragment then
+		spEcho("[Planets] " .. SHADER_PATH .. " is missing; planets are drawn as plain discs")
+		return nil
+	end
+	if not gl.CreateShader then
+		spEcho("[Planets] shaders are not available; planets are drawn as plain discs")
+		return nil
+	end
+	local shader = gl.CreateShader({vertex = VERTEX_SHADER, fragment = fragment})
+	if not shader then
+		spEcho("[Planets] the planet shader did not compile; planets are drawn as plain discs. Log:")
+		spEcho(gl.GetShaderLog())
+		return nil
+	end
+	for _, name in ipairs({"camPos", "center", "radius", "ptype", "seed", "time", "lightDir", "ring"}) do
+		uniforms[name] = gl.GetUniformLocation(shader, name)
+		if not uniforms[name] or uniforms[name] < 0 then
+			spEcho("[Planets] the planet shader has no uniform '" .. name .. "'")
+		end
+	end
+	return shader
+end
+
+local function QuadFunc(x, y, z, rx, ry, rz, ux, uy, uz)
+	Vertex(x - rx - ux, y - ry - uy, z - rz - uz)
+	Vertex(x + rx - ux, y + ry - uy, z + rz - uz)
+	Vertex(x + rx + ux, y + ry + uy, z + rz + uz)
+	Vertex(x - rx + ux, y - ry + uy, z - rz + uz)
+end
+
+local function DrawPlanets()
+	if not planetShader and not shaderFailed then
+		planetShader = LoadPlanetShader()
+		shaderFailed = planetShader == nil
+		startTimer = Spring.GetTimer()
+	end
+
+	if not planetShader then
+		-- plain discs in each kind's colour
+		for i, p in pairs(SYNCED.planets) do
+			local v = Visual(i)
+			local c = KINDS[v.kind].colour
+			PushMatrix()
+			Translate(p.x, PLANET_Y, p.z)
+			glScale(v.radius / occupationRange, 1, v.radius / occupationRange)
+			Color(c[1], c[2], c[3], 1)
+			CallList(circle)
+			PopMatrix()
+		end
+		Color(1, 1, 1, 1)
+		return
+	end
+
+	local cx, cy, cz = Spring.GetCameraPosition()
+	local vectors = Spring.GetCameraVectors()
+	local right, up = vectors.right, vectors.up
+
+	-- far planets first, so a nearer one's halo or rings lie over them
+	local list = {}
+	for i, p in pairs(SYNCED.planets) do
+		local dx, dy, dz = p.x - cx, PLANET_Y - cy, p.z - cz
+		list[#list + 1] = {i = i, x = p.x, z = p.z, distance = math.sqrt(dx * dx + dy * dy + dz * dz)}
+	end
+	table.sort(list, function(a, b) return a.distance > b.distance end)
+
+	glDepthTest(false)
+	gl.DepthMask(false)
+	gl.Blending(GL.ONE, GL.ONE_MINUS_SRC_ALPHA) -- the shader's colours are premultiplied
+	gl.UseShader(planetShader)
+	gl.Uniform(uniforms.camPos, cx, cy, cz)
+	gl.Uniform(uniforms.lightDir, LIGHT[1], LIGHT[2], LIGHT[3])
+	gl.Uniform(uniforms.time, Spring.DiffTimers(Spring.GetTimer(), startTimer))
+	for _, entry in ipairs(list) do
+		local v = Visual(entry.i)
+		-- the quad has to cover the sphere's outline with its halo (and the
+		-- rings), which grows as the camera comes closer
+		local reach = v.radius * (v.ring and 2.1 or 1.3)
+		local closeness = math.min(0.9, reach / math.max(entry.distance, 1))
+		local extent = reach / math.sqrt(1 - closeness * closeness) * (v.ring and 1.25 or 1.0)
+		gl.Uniform(uniforms.center, entry.x, PLANET_Y, entry.z)
+		gl.Uniform(uniforms.radius, v.radius)
+		gl.Uniform(uniforms.ptype, v.kind)
+		gl.Uniform(uniforms.seed, v.seed)
+		gl.Uniform(uniforms.ring, v.ring and 1 or 0)
+		glBeginEnd(GL.QUADS, QuadFunc, entry.x, PLANET_Y, entry.z,
+			right[1] * extent, right[2] * extent, right[3] * extent,
+			up[1] * extent, up[2] * extent, up[3] * extent)
+	end
+	gl.UseShader(0)
+	gl.Blending(GL.SRC_ALPHA, GL.ONE_MINUS_SRC_ALPHA)
+	gl.DepthMask(true)
+end
+
 function gadget:DrawWorldPreUnit()
-	glCulling(GL_BACK)
+	glCulling(false)
+	DrawPlanets()
 	for i,p in pairs(SYNCED.planets) do
-		Lighting(true)
-		PushMatrix()
-		Translate(p.x, -300, p.z)
-		UnitShape(planet, p.lastOwner or gaia)
-		PopMatrix()
-		Lighting(false)
 		if p.lastOwner then
-			glCulling(false)
 			PushMatrix()
 			local r,g,b = GetTeamColor(p.lastOwner or gaia)
 			Color(r,g,b,.2)
 			Translate(p.x, 0, p.z)
 			CallList(circle)
 			PopMatrix()
-			glCulling(GL_BACK)
 		end
 		Color(1,1,1,1)
 	end
-	glCulling(false)
 end
 
 function gadget:DrawWorld()
@@ -341,21 +512,27 @@ function gadget:DrawWorld()
 	Color(1,1,1,1)
 end
 
+-- On the minimap a planet is a disc in the colour of its kind. (The capture
+-- rings in team colours are drawn by LuaUI/widgets/gui_minimap.lua.)
 function gadget:DrawInMiniMap(mmsx, mmsy)
 	glPushMatrix()
 	glLoadIdentity()
 	glTranslate(0,1,0)
 	glScale(1/Game.mapSizeX, -1/Game.mapSizeZ, 1)
 	glRotate(270,1,0,0)
-	Lighting(true)
+	glCulling(false)
 	for i,p in pairs(SYNCED.planets) do
+		local v = Visual(i)
+		local c = KINDS[v.kind].colour
 		PushMatrix()
-		Translate(p.x, -300, p.z)
-		UnitShape(planet, p.lastOwner or gaia)
+		Translate(p.x, 0, p.z)
+		glScale(v.radius / occupationRange, 1, v.radius / occupationRange)
+		Color(c[1], c[2], c[3], 0.9)
+		CallList(circle)
 		PopMatrix()
 	end
+	Color(1,1,1,1)
 	glPopMatrix()
-	Lighting(false)
 end
 
 function gadget:Initialize()
@@ -364,6 +541,10 @@ end
 
 function gadget:Shutdown()
 	glDeleteList(circle)
+	if planetShader then
+		gl.DeleteShader(planetShader)
+		planetShader = nil
+	end
 end
 
 end
