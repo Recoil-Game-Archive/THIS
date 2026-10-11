@@ -33,7 +33,10 @@ if (System == nil) then
     GL = GL,
     CMD = CMD,
     CMDTYPE = CMDTYPE,
-    
+    LOG = LOG,
+    Engine = Engine,
+    RmlUi = RmlUi,
+
     UnitDefs        = UnitDefs,
     UnitDefNames    = UnitDefNames,
     FeatureDefs     = FeatureDefs,

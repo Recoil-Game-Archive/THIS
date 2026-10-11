@@ -1,0 +1,90 @@
+/*
+ * THIS HUD theme. Every HUD document links this file, so colours, type sizes
+ * and shared states are changed here and nowhere else.
+ *
+ * RmlUi notes: there are no default styles (hence the display rules below),
+ * rgba() alpha runs 0-255, and borders are "width colour" with no style word.
+ * Sizes are in dp: one dp is one pixel at 1920x1080 and scales from there.
+ *
+ * The accent colour is the player's team colour. It is applied from Lua
+ * (LuaUI/rml/hud.lua), so the accent rules here only give a default.
+ */
+
+body {
+	font-family: Exo 2;
+	font-size: 14dp;
+	font-weight: normal;
+	font-style: normal;
+	color: #e6edf7;
+	width: 100%;
+	height: 100%;
+	/* the HUD lets clicks through unless a panel asks for them */
+	pointer-events: none;
+}
+
+div {
+	display: block;
+}
+
+.hidden {
+	display: none;
+}
+
+/* ---- panels ------------------------------------------------------------ */
+
+.panel {
+	background-color: rgba(9, 14, 24, 217);
+	border: 1dp #33415a;
+	border-radius: 4dp;
+}
+
+.accent-line {
+	height: 2dp;
+	background-color: #66ccff;
+}
+
+/* ---- type -------------------------------------------------------------- */
+
+.label {
+	font-size: 11dp;
+	color: #8c9bb3;
+	letter-spacing: 1dp;
+}
+
+.value {
+	font-size: 20dp;
+	font-weight: bold;
+	color: #e6edf7;
+}
+
+.sub {
+	font-size: 12dp;
+	color: #8c9bb3;
+}
+
+/* ---- status colours: reserved meanings, never decoration ----------------- */
+
+.good {
+	color: #6fdc8c;
+}
+
+.warn {
+	color: #f2b84b;
+}
+
+.bad {
+	color: #ff6b5e;
+}
+
+/* ---- chips ------------------------------------------------------------- */
+
+.chip {
+	display: inline-block;
+	font-size: 12dp;
+	color: #c9d4e5;
+	background-color: rgba(9, 14, 24, 217);
+	border: 1dp #33415a;
+	border-radius: 9dp;
+	padding: 2dp 9dp 3dp 9dp;
+	margin: 0dp 3dp;
+}

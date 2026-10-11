@@ -190,8 +190,15 @@ end
 
 function widget:DrawScreen()
 	local team = spGetLocalTeamID()
-	DrawMoneyAndPerks(team)
+	-- the RmlUi top bar (gui_topbar.lua) replaces the money panel and the
+	-- messages; they are only drawn here while it is not running
+	local topBar = WG.thisTopBar
+	if not topBar then
+		DrawMoneyAndPerks(team)
+	end
 	DrawBuilds(team)
-	DrawMessage(team)
+	if not topBar then
+		DrawMessage(team)
+	end
 	glColor(1, 1, 1, 1)
 end

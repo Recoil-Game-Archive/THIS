@@ -1,0 +1,97 @@
+<rml>
+<head>
+	<title>THIS top bar</title>
+	<link type="text/rcss" href="theme.rcss"/>
+	<style>
+		/* A compact bar at the top centre. It becomes full width once the
+		   minimap is placed by the HUD (phase 6). */
+		#topbar {
+			position: absolute;
+			top: 8dp;
+			left: 50%;
+			width: 560dp;
+			margin-left: -280dp;
+		}
+		#topbar.danger {
+			border-color: #ff6b5e;
+		}
+		#stats {
+			display: flex;
+			flex-direction: row;
+			align-items: stretch;
+			padding: 6dp 0dp 7dp 0dp;
+		}
+		.stat {
+			flex: 1;
+			padding: 0dp 18dp;
+		}
+		.divider {
+			width: 1dp;
+			background-color: #33415a;
+		}
+		.row {
+			display: block;
+			margin-top: 1dp;
+		}
+		.row .sub {
+			margin-left: 7dp;
+		}
+
+		#perks {
+			position: absolute;
+			top: 64dp;
+			left: 50%;
+			width: 900dp;
+			margin-left: -450dp;
+			text-align: center;
+		}
+
+		#alert {
+			position: absolute;
+			top: 18%;
+			left: 50%;
+			width: 640dp;
+			margin-left: -320dp;
+			padding: 10dp 20dp 12dp 20dp;
+			text-align: center;
+		}
+		#alert-text {
+			font-size: 22dp;
+			font-weight: bold;
+		}
+		#alert-hint {
+			font-size: 14dp;
+			color: #b3c0d4;
+			margin-top: 3dp;
+		}
+	</style>
+</head>
+<body>
+	<div id="topbar" class="panel">
+		<div id="accent-line" class="accent-line"/>
+		<div id="stats">
+			<div class="stat">
+				<div class="label">CREDITS</div>
+				<div class="row"><span id="money" class="value">0</span><span id="income" class="sub">+0 /s</span></div>
+			</div>
+			<div class="divider"/>
+			<div class="stat">
+				<div id="planets-label" class="label">PLANETS HELD</div>
+				<div class="row"><span id="planets" class="value">0</span><span id="planets-total" class="sub">of 0</span></div>
+			</div>
+			<div class="divider"/>
+			<div class="stat">
+				<div class="label">GAME TIME</div>
+				<div class="row"><span id="clock" class="value">0:00</span></div>
+			</div>
+		</div>
+	</div>
+
+	<div id="perks"/>
+
+	<div id="alert" class="panel hidden">
+		<div id="alert-text"/>
+		<div id="alert-hint"/>
+	</div>
+</body>
+</rml>
