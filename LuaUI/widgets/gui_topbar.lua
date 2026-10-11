@@ -111,7 +111,15 @@ local function Refresh()
 	-- messages from the game
 	local alertUntil = Spring.GetTeamRulesParam(team, "alert_until") or 0
 	local showAlert = frame < alertUntil
-	if showAlert then
+	if losing then
+		-- The capture countdown is worked out here from defeat_frame instead of
+		-- being taken from the game's message, which is re-sent once a second
+		-- and can leave gaps. It also counts smoothly this way.
+		showAlert = true
+		local seconds = ceil((defeatFrame - frame) / GAME_SPEED)
+		SetText("alert-text", "You have " .. seconds .. (seconds == 1 and " second" or " seconds") .. " to capture a planet")
+		SetText("alert-hint", "Move a ship into the circle, if you don't capture a planet in time you lose the game!")
+	elseif showAlert then
 		SetText("alert-text", hud.Escape(Spring.GetTeamRulesParam(team, "alert_text")))
 		SetText("alert-hint", hud.Escape(Spring.GetTeamRulesParam(team, "alert_hint")))
 	end
