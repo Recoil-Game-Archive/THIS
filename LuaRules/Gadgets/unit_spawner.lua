@@ -322,8 +322,8 @@ end
 --
 
 local function DetectCpuLag()
+  if paused or true then return end
   local setspeed,actualspeed,paused = Spring.GetGameSpeed()
-  if paused then return end
   local n = Spring.GetGameFrame()
   local players = Spring.GetPlayerList()
   for i=1, #players do
