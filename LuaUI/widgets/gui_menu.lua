@@ -3,10 +3,14 @@
 --
 --  Game menu of the RmlUi HUD.
 --
---  Esc (or the MENU handle beside the top bar) opens a small menu: resume,
---  pause or unpause, the widget list, and quit with a confirmation. Esc or a
---  click outside the menu closes it. The menu does not pause the game by
---  itself.
+--  Esc (or the MENU handle beside the top bar) opens a small menu: the music
+--  controls, resume, pause or unpause, settings, and quit with a confirmation.
+--  Esc or a click outside the menu closes it. The menu does not pause the
+--  game by itself.
+--
+--  The music controls belong to the music widget (WG.thisMusic) and the
+--  settings window to the settings widget (WG.thisSettings); each is left out
+--  of the menu while its widget is not running.
 --
 --  Other HUD widgets get Esc first (to cancel deploy mode or close the chat
 --  history), and Esc is left alone while a chat message is being typed.
@@ -17,7 +21,7 @@
 function widget:GetInfo()
 	return {
 		name = "THIS Game Menu",
-		desc = "Esc menu: resume, pause, widget list, quit",
+		desc = "Esc menu: music, resume, pause, settings, quit",
 		author = "THIS contributors",
 		date = "2026-10-11",
 		license = "GNU GPL, v2 or later",
@@ -52,6 +56,26 @@ local function Refresh()
 	view.SetClass("confirm-items", "hidden", not confirming)
 	local _, _, paused = Spring.GetGameSpeed()
 	view.SetText("m-pause", paused and "Unpause game" or "Pause game")
+	view.SetClass("m-settings", "hidden", WG.thisSettings == nil)
+
+	local music = WG.thisMusic and WG.thisMusic.GetState()
+	view.SetClass("music", "hidden", music == nil or confirming)
+	if music then
+		local none = music.count == 0
+		view.SetText("music-track", none and "No music found" or hud.Escape(music.name or ""))
+		view.SetClass("music-track", "sub", none)
+		view.SetText("mu-pause", music.paused and "Play" or "Pause")
+		view.SetClass("mu-pause", "disabled", none)
+		view.SetClass("mu-prev", "disabled", music.count < 2)
+		view.SetClass("mu-next", "disabled", music.count < 2)
+	end
+end
+
+local function Music(action)
+	if WG.thisMusic then
+		WG.thisMusic[action]()
+		Refresh()
+	end
 end
 
 local function SetOpen(state)
@@ -105,6 +129,7 @@ function widget:Initialize()
 	view.Assume("backdrop", "hidden", true)
 	view.Assume("confirm-items", "hidden", true)
 	view.Assume("main-items", "hidden", false)
+	view.Assume("music", "hidden", true)
 
 	OnClick("menu-button", function() SetOpen(not open) end)
 	OnClick("backdrop", function() SetOpen(false) end)
@@ -113,10 +138,15 @@ function widget:Initialize()
 		Spring.SendCommands("pause")
 		SetOpen(false)
 	end)
-	OnClick("m-widgets", function()
+	OnClick("m-settings", function()
 		SetOpen(false)
-		Spring.SendCommands("luaui selector")
+		if WG.thisSettings then
+			WG.thisSettings.Open()
+		end
 	end)
+	OnClick("mu-prev", function() Music("Previous") end)
+	OnClick("mu-pause", function() Music("TogglePause") end)
+	OnClick("mu-next", function() Music("Next") end)
 	OnClick("m-quit", function()
 		confirming = true
 		Refresh()

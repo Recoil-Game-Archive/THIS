@@ -34,7 +34,7 @@
 			left: 50%;
 			width: 300dp;
 			margin-left: -150dp;
-			margin-top: -150dp;
+			margin-top: -200dp;
 			pointer-events: auto;
 		}
 		#menu-head {
@@ -45,6 +45,35 @@
 		}
 		#menu-items .button {
 			margin-top: 6dp;
+		}
+		/* music: track name, then previous / pause / next */
+		#music {
+			margin: 4dp 16dp 0dp 16dp;
+			padding: 8dp 10dp 10dp 10dp;
+			background-color: rgba(255, 255, 255, 10);
+			border-radius: 3dp;
+		}
+		#music-track {
+			margin-top: 2dp;
+			font-size: 14dp;
+			font-weight: bold;
+			color: #e6edf7;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+		#music-buttons {
+			display: flex;
+			flex-direction: row;
+			margin-top: 8dp;
+		}
+		#music-buttons .button {
+			flex: 1;
+			font-size: 12dp;
+			padding: 4dp 4dp 5dp 4dp;
+		}
+		#mu-pause {
+			margin: 0dp 6dp;
 		}
 		#confirm-text {
 			margin-top: 14dp;
@@ -61,11 +90,20 @@
 	<div id="menu" class="panel hidden">
 		<div id="menu-accent" class="accent-line"/>
 		<div id="menu-head" class="title">GAME MENU</div>
+		<div id="music" class="hidden">
+			<div class="label">MUSIC</div>
+			<div id="music-track"/>
+			<div id="music-buttons">
+				<div id="mu-prev" class="button quiet">Previous</div>
+				<div id="mu-pause" class="button quiet">Pause</div>
+				<div id="mu-next" class="button quiet">Next</div>
+			</div>
+		</div>
 		<div id="menu-items">
 			<div id="main-items">
 				<div id="m-resume" class="button">Resume</div>
 				<div id="m-pause" class="button quiet">Pause game</div>
-				<div id="m-widgets" class="button quiet">Widget list</div>
+				<div id="m-settings" class="button quiet">Settings</div>
 				<div id="m-quit" class="button quiet">Quit</div>
 			</div>
 			<div id="confirm-items" class="hidden">

@@ -1,0 +1,242 @@
+<rml>
+<head>
+	<title>THIS settings</title>
+	<link type="text/rcss" href="theme.rcss"/>
+	<style>
+		/* The settings window: tabs along the top, one row per option. The rows
+		   are built by LuaUI/widgets/gui_settings.lua from LuaUI/Configs/options. */
+		#backdrop {
+			position: absolute;
+			left: 0dp;
+			top: 0dp;
+			width: 100%;
+			height: 100%;
+			background-color: rgba(0, 0, 0, 120);
+			pointer-events: auto;
+		}
+		#settings {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			width: 720dp;
+			height: 620dp;
+			margin-left: -360dp;
+			margin-top: -310dp;
+			pointer-events: auto;
+		}
+		#head {
+			padding: 12dp 16dp 8dp 16dp;
+		}
+		#tabs {
+			display: flex;
+			flex-direction: row;
+			padding: 0dp 12dp;
+			border-bottom: 1dp #33415a;
+		}
+		.tab {
+			padding: 6dp 14dp 7dp 14dp;
+			margin: 0dp 2dp;
+			font-size: 13dp;
+			font-weight: bold;
+			letter-spacing: 1dp;
+			color: #8c9bb3;
+			border-bottom: 2dp rgba(0, 0, 0, 0);
+		}
+		.tab:hover {
+			color: #e6edf7;
+		}
+		.tab.active {
+			color: #e6edf7;
+		}
+		#list {
+			height: 478dp;
+			overflow-y: auto;
+			padding: 4dp 12dp 8dp 16dp;
+		}
+		.sep {
+			margin: 14dp 0dp 4dp 0dp;
+			padding-bottom: 4dp;
+			border-bottom: 1dp rgba(255, 255, 255, 26);
+		}
+		.row {
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+			min-height: 34dp;
+			padding: 2dp 8dp;
+			border-radius: 3dp;
+		}
+		.row:hover {
+			background-color: rgba(255, 255, 255, 12);
+		}
+		.row-text {
+			flex: 1;
+			padding-right: 12dp;
+		}
+		.row-name {
+			font-size: 14dp;
+			color: #e6edf7;
+		}
+		.row-desc {
+			font-size: 12dp;
+			color: #8c9bb3;
+		}
+		.row-control {
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+			justify-content: flex-end;
+			width: 300dp;
+		}
+		/* options that belong to the one above them */
+		.kids {
+			margin-left: 18dp;
+			border-left: 1dp rgba(255, 255, 255, 26);
+		}
+
+		/* on/off */
+		.toggle {
+			position: relative;
+			width: 40dp;
+			height: 20dp;
+			border-radius: 10dp;
+			background-color: rgba(255, 255, 255, 40);
+		}
+		.knob {
+			position: absolute;
+			top: 3dp;
+			left: 3dp;
+			width: 14dp;
+			height: 14dp;
+			border-radius: 7dp;
+			background-color: #c9d4e5;
+		}
+		.toggle.on .knob {
+			left: 23dp;
+			background-color: #0a0f18;
+		}
+		/* widget switched on, but not running */
+		.toggle.half {
+			background-color: #f2b84b;
+		}
+
+		/* slider: minus, track, plus, value */
+		.step {
+			width: 20dp;
+			height: 20dp;
+			line-height: 18dp;
+			text-align: center;
+			font-size: 15dp;
+			font-weight: bold;
+			color: #c9d4e5;
+			background-color: rgba(255, 255, 255, 20);
+			border-radius: 3dp;
+		}
+		.step:hover {
+			background-color: rgba(255, 255, 255, 50);
+		}
+		.track {
+			width: 170dp;
+			height: 20dp;
+			margin: 0dp 6dp;
+		}
+		.track-line {
+			height: 6dp;
+			margin-top: 7dp;
+			background-color: rgba(255, 255, 255, 30);
+			border-radius: 3dp;
+		}
+		.track-fill {
+			height: 6dp;
+			width: 0%;
+			background-color: #66ccff;
+			border-radius: 3dp;
+		}
+		.track:hover .track-line {
+			background-color: rgba(255, 255, 255, 50);
+		}
+		.slider-value {
+			width: 52dp;
+			text-align: right;
+			font-size: 13dp;
+			color: #e6edf7;
+		}
+
+		/* choice from a list: the current choice, and the list under the row */
+		.select {
+			min-width: 150dp;
+			text-align: center;
+			font-size: 13dp;
+			color: #e6edf7;
+			padding: 3dp 10dp 4dp 10dp;
+			background-color: rgba(255, 255, 255, 20);
+			border: 1dp #33415a;
+			border-radius: 3dp;
+		}
+		.select:hover {
+			border-color: #8c9bb3;
+		}
+		.choices {
+			display: flex;
+			flex-direction: row;
+			flex-wrap: wrap;
+			justify-content: flex-end;
+			padding: 2dp 8dp 8dp 8dp;
+		}
+		/* this document's display rule above would otherwise beat the theme's .hidden */
+		.choices.hidden {
+			display: none;
+		}
+		.choice {
+			font-size: 13dp;
+			color: #c9d4e5;
+			padding: 3dp 10dp 4dp 10dp;
+			margin: 2dp 0dp 2dp 4dp;
+			background-color: rgba(255, 255, 255, 12);
+			border: 1dp #33415a;
+			border-radius: 3dp;
+		}
+		.choice:hover {
+			border-color: #8c9bb3;
+		}
+		.choice.current {
+			color: #0a0f18;
+			background-color: #e6edf7;
+			border-color: #e6edf7;
+		}
+		.row-control .button {
+			min-width: 150dp;
+			padding: 3dp 10dp 4dp 10dp;
+			font-size: 13dp;
+		}
+
+		#foot {
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+			padding: 10dp 16dp;
+			border-top: 1dp #33415a;
+		}
+		#note {
+			flex: 1;
+			font-size: 12dp;
+		}
+		#close {
+			width: 140dp;
+		}
+	</style>
+</head>
+<body>
+	<div id="backdrop" class="hidden"/>
+	<div id="settings" class="panel hidden">
+		<div id="settings-accent" class="accent-line"/>
+		<div id="head" class="title">SETTINGS</div>
+		<div id="tabs"/>
+		<div id="list"/>
+		<div id="foot">
+			<div id="note" class="warn"/>
+			<div id="close" class="button">Close</div>
+		</div>
+	</div>
+</body>
+</rml>

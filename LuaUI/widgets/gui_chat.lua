@@ -209,6 +209,9 @@ local function EntryRML(entry)
 end
 
 local function Refresh()
+	-- the panel sits above the engine's tooltip box, or in the corner when the
+	-- settings widget has hidden that box
+	view.SetStyle("chat", "bottom", WG.thisEngineTooltipHidden and "12dp" or "250dp")
 	local typing = Spring.IsUserWriting and Spring.IsUserWriting() or false
 	local limit = expanded and HISTORY_LINES or (typing and TYPING_LINES or VISIBLE_LINES)
 	local keepOld = expanded or typing
