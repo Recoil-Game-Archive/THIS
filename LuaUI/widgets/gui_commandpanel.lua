@@ -111,11 +111,32 @@ local function LabelOf(cmd)
 	return cmd.name or ""
 end
 
-local function Signature(descs)
+-- Which commands belong on the panel. While the engine menu is hidden the
+-- engine marks every active command description as hidden, so that flag is
+-- useless there; the units' own command descriptions still carry the real
+-- one. One unit of each selected type is enough.
+local function VisibleCommandIDs()
+	local visible = {}
+	local sorted = Spring.GetSelectedUnitsSorted() or {}
+	for _, units in pairs(sorted) do
+		if type(units) == "table" and units[1] then
+			local unitDescs = Spring.GetUnitCmdDescs(units[1]) or {}
+			for i = 1, #unitDescs do
+				local cmd = unitDescs[i]
+				if not cmd.hidden then
+					visible[cmd.id] = true
+				end
+			end
+		end
+	end
+	return visible
+end
+
+local function Signature(descs, visible)
 	local parts = {}
 	for i = 1, #descs do
 		local cmd = descs[i]
-		if not cmd.hidden then
+		if visible[cmd.id] then
 			parts[#parts + 1] = cmd.id .. (cmd.disabled and "d" or "")
 		end
 	end
@@ -125,14 +146,14 @@ end
 --------------------------------------------------------------------------------
 -- building the panel for a set of commands
 
-local function Rebuild(descs)
+local function Rebuild(descs, visible)
 	orders, builds, buildIndexByDef = {}, {}, {}
 	local orderRml, buildRml = {}, {}
 	view.Forget() -- ids are about to be reused by new elements
 
 	for i = 1, #descs do
 		local cmd = descs[i]
-		if not cmd.hidden then
+		if visible[cmd.id] then
 			local defID = BuildDefOf(cmd)
 			if defID then
 				builds[#builds + 1] = {index = i, id = cmd.id, def = defID, cost = CostOf(cmd, defID)}
@@ -281,10 +302,11 @@ local function Refresh()
 		return
 	end
 
-	local signature = Signature(descs)
+	local visibleIDs = VisibleCommandIDs()
+	local signature = Signature(descs, visibleIDs)
 	if signature ~= shownSignature then
 		shownSignature = signature
-		Rebuild(descs)
+		Rebuild(descs, visibleIDs)
 		accentColour = nil -- new progress bars need the accent again
 	end
 
