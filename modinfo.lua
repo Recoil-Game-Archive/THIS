@@ -2,7 +2,7 @@ return {
   name='THIS (Spring Necromancy Edition)',
   description='Space Combat',
   shortname='THIS (SRE)',
-  version='0.13.4', --Latest Version: 0.13.4
+  version='$VERSION', --Latest Version: 0.13.4
   mutator='',
   game='THIS Happens In Space',
   shortGame='THIS',
