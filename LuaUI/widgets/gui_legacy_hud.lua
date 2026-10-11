@@ -142,7 +142,8 @@ end
 local function DrawBuilds(team)
 	-- one row per selected carrier, minelayer or hangar
 	local vpos = 1
-	local selected = spGetSelectedUnits()
+	-- the RmlUi command panel shows these rows itself
+	local selected = WG.thisCommandPanel and {} or spGetSelectedUnits()
 	for i = 1, #selected do
 		local u = selected[i]
 		local queueStr = spGetUnitRulesParam(u, "build_queue")

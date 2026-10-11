@@ -1,0 +1,221 @@
+<rml>
+<head>
+	<title>THIS command panel</title>
+	<link type="text/rcss" href="theme.rcss"/>
+	<style>
+		/* Selection, orders and production for whatever is selected. */
+		#cmdpanel {
+			position: absolute;
+			bottom: 8dp;
+			left: 50%;
+			width: 1000dp;
+			margin-left: -500dp;
+			pointer-events: auto;
+		}
+		#cmd-info {
+			height: 32dp;
+			padding: 6dp 12dp 0dp 12dp;
+			font-size: 12dp;
+			color: #c9d4e5;
+			border-bottom: 1dp #33415a;
+		}
+		#cmd-body {
+			display: flex;
+			flex-direction: row;
+			align-items: flex-start;
+			padding: 7dp 8dp 8dp 12dp;
+		}
+
+		/* ---- selection ---- */
+		#sel {
+			width: 196dp;
+			margin-right: 12dp;
+		}
+		#sel-title {
+			font-size: 15dp;
+			margin: 2dp 0dp 5dp 0dp;
+		}
+		#sel-health-text {
+			margin-top: 3dp;
+		}
+		#sel-types {
+			margin-top: 6dp;
+		}
+		#sel-types .chip {
+			margin: 0dp 3dp 3dp 0dp;
+			padding: 1dp 7dp 2dp 7dp;
+		}
+		.health-good {
+			background-color: #6fdc8c;
+		}
+		.health-warn {
+			background-color: #f2b84b;
+		}
+		.health-bad {
+			background-color: #ff6b5e;
+		}
+
+		/* ---- orders ---- */
+		#orders-wrap {
+			width: 372dp;
+			margin-right: 12dp;
+		}
+		#orders {
+			display: flex;
+			flex-direction: row;
+			flex-wrap: wrap;
+			margin-top: 3dp;
+		}
+		.cmd {
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+			width: 120dp;
+			height: 26dp;
+			margin: 0dp 4dp 4dp 0dp;
+			padding: 0dp 6dp 0dp 8dp;
+			box-sizing: border-box;
+			background-color: rgba(255, 255, 255, 16);
+			border: 1dp #33415a;
+			border-radius: 3dp;
+		}
+		.cmd:hover {
+			background-color: rgba(255, 255, 255, 40);
+			border-color: #8c9bb3;
+		}
+		.cmd-name {
+			flex: 1;
+			font-size: 12dp;
+			font-weight: bold;
+			color: #e6edf7;
+			white-space: nowrap;
+			overflow: hidden;
+		}
+		.cmd-key {
+			font-size: 11dp;
+			color: #8c9bb3;
+			margin-left: 4dp;
+		}
+		/* a setting with several states; shows the current one */
+		.cmd.mode .cmd-name {
+			font-weight: normal;
+			color: #c9d4e5;
+		}
+		/* the order waiting for a target click */
+		.cmd.active {
+			background-color: rgba(255, 255, 255, 70);
+			border-color: #e6edf7;
+		}
+		.cmd.disabled {
+			background-color: rgba(255, 255, 255, 0);
+		}
+		.cmd.disabled .cmd-name {
+			color: #56627a;
+		}
+
+		/* ---- production ---- */
+		#build-wrap {
+			flex: 1;
+		}
+		#builds {
+			display: flex;
+			flex-direction: row;
+			flex-wrap: wrap;
+			margin-top: 3dp;
+		}
+		.bcard {
+			display: block;
+			position: relative;
+			width: 60dp;
+			margin: 0dp 4dp 4dp 0dp;
+			background-color: rgba(255, 255, 255, 10);
+			border: 1dp rgba(51, 65, 90, 0);
+			border-radius: 3dp;
+		}
+		.bcard:hover {
+			background-color: rgba(255, 255, 255, 40);
+			border-color: #8c9bb3;
+		}
+		.bpic {
+			display: block;
+			width: 56dp;
+			height: 42dp;
+			margin: 2dp 2dp 0dp 2dp;
+			background-color: #1a2436;
+		}
+		.bcost {
+			display: block;
+			text-align: center;
+			font-size: 11dp;
+			color: #a9b6ca;
+			padding: 1dp 0dp 2dp 0dp;
+		}
+		.bcard.poor .bcost {
+			color: #f2b84b;
+		}
+		.bcard.disabled {
+			background-color: rgba(255, 255, 255, 0);
+		}
+		.bcard.disabled .bpic {
+			opacity: 0.3;
+		}
+		.bcard.disabled .bcost {
+			color: #56627a;
+		}
+		.bcount {
+			position: absolute;
+			top: 2dp;
+			right: 2dp;
+			font-size: 11dp;
+			padding: 0dp 5dp 1dp 5dp;
+		}
+		.bprogress {
+			position: absolute;
+			left: 0dp;
+			bottom: 0dp;
+			height: 3dp;
+			width: 0%;
+			background-color: #66ccff;
+		}
+		#bstatus {
+			margin-top: 2dp;
+		}
+		.qpic {
+			display: inline-block;
+			width: 32dp;
+			height: 24dp;
+			margin: 3dp 3dp 0dp 0dp;
+			background-color: #1a2436;
+			border: 1dp #33415a;
+		}
+		.qpic:hover {
+			border-color: #ff6b5e;
+		}
+	</style>
+</head>
+<body>
+	<div id="cmdpanel" class="panel hidden">
+		<div id="cmd-accent" class="accent-line"/>
+		<div id="cmd-info"/>
+		<div id="cmd-body">
+			<div id="sel">
+				<div class="label">SELECTED</div>
+				<div id="sel-title" class="strong"/>
+				<div class="bar"><div id="sel-health" class="bar-fill health-good"/></div>
+				<div id="sel-health-text" class="sub"/>
+				<div id="sel-types"/>
+			</div>
+			<div id="orders-wrap">
+				<div class="label">ORDERS</div>
+				<div id="orders"/>
+			</div>
+			<div id="build-wrap" class="hidden">
+				<div id="build-label" class="label">PRODUCTION</div>
+				<div id="builds"/>
+				<div id="bstatus" class="sub"/>
+				<div id="bqueue"/>
+			</div>
+		</div>
+	</div>
+</body>
+</rml>

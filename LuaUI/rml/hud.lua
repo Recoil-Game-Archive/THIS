@@ -247,11 +247,12 @@ function hud.NewView(document)
 		shownClass[id .. "." .. class] = state
 	end
 
-	-- Elements created through inner_rml are new: forget what was cached for
-	-- them. Call after replacing a container's content.
+	-- Forget everything that was cached. Call right after replacing a
+	-- container's content with inner_rml: the new elements may reuse the ids
+	-- of the old ones but start from what the new markup says.
 	function view.Forget()
 		elements = {}
-		shownStyle = {}
+		shownText, shownClass, shownStyle = {}, {}, {}
 	end
 
 	-- Styles set from outside the view (hud.ApplyAccent) are not tracked.
