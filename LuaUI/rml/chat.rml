@@ -1,38 +1,91 @@
 <rml>
 <head>
-	<title>THIS chat log</title>
+	<title>THIS chat</title>
 	<link type="text/rcss" href="theme.rcss"/>
 	<style>
-		/* Recent chat and game messages, bottom-left. Lines fade out by being
-		   dropped after a while; the whole log shows while you are typing. */
+		/* Chat at the bottom-left: a slim row of toggles with the messages
+		   above it. Normally recent lines appear and drop off again; "History"
+		   opens the scrollback for the selected toggle. */
 		#chat {
 			position: absolute;
 			left: 8dp;
 			bottom: 250dp;
-			width: 430dp;
-			padding: 6dp 10dp 7dp 10dp;
+			width: 440dp;
+		}
+		#log {
+			padding: 5dp 10dp 6dp 10dp;
 			background-color: rgba(9, 14, 24, 150);
 			border: 1dp rgba(51, 65, 90, 160);
+			border-radius: 4dp;
+		}
+		#chat.expanded #log {
+			height: 300dp;
+			overflow-y: auto;
+			background-color: rgba(9, 14, 24, 225);
+			border-color: #33415a;
+			pointer-events: auto;
 		}
 		.line {
 			display: block;
 			font-size: 13dp;
 			color: #e6edf7;
 			margin-top: 1dp;
-		}
-		/* messages from the game or engine, not from a person */
-		.line.system {
-			color: #8c9bb3;
-			font-size: 12dp;
+			/* break very long words and unbroken strings instead of overflowing */
+			word-break: break-word;
 		}
 		.line .who {
 			font-weight: bold;
 		}
+		.line.system {
+			font-size: 12dp;
+			color: #8c9bb3;
+		}
+
+		#tabs {
+			display: flex;
+			flex-direction: row;
+			margin-top: 3dp;
+		}
+		.tab {
+			font-size: 11dp;
+			letter-spacing: 1dp;
+			color: #8c9bb3;
+			background-color: rgba(9, 14, 24, 190);
+			border: 1dp #33415a;
+			border-radius: 3dp;
+			padding: 2dp 9dp 3dp 9dp;
+			margin-right: 3dp;
+			pointer-events: auto;
+		}
+		.tab:hover {
+			color: #e6edf7;
+			border-color: #8c9bb3;
+		}
+		.tab.active {
+			color: #e6edf7;
+			border-color: #e6edf7;
+			background-color: rgba(60, 74, 100, 220);
+		}
+		#tab-space {
+			flex: 1;
+		}
+		#expand {
+			margin-right: 0dp;
+		}
 	</style>
 </head>
 <body>
-	<div id="chat" class="panel hidden">
-		<div id="lines"/>
+	<div id="chat">
+		<div id="log" class="hidden">
+			<div id="lines"/>
+		</div>
+		<div id="tabs">
+			<div id="tab-1" class="tab active" data-tab="1">CHAT</div>
+			<div id="tab-2" class="tab" data-tab="2">CONSOLE</div>
+			<div id="tab-3" class="tab" data-tab="3">ALL</div>
+			<div id="tab-space"/>
+			<div id="expand" class="tab">HISTORY</div>
+		</div>
 	</div>
 </body>
 </rml>

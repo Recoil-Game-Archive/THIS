@@ -228,6 +228,41 @@ div {
 	color: #e6edf7;
 }
 
+/* ---- scrollbars -------------------------------------------------------------
+   RmlUi gives a scrollbar no size of its own; without these rules it takes
+   the whole width of a scrolling element and squeezes the content to nothing. */
+
+scrollbarvertical {
+	width: 8dp;
+	margin-left: 4dp;
+}
+
+scrollbarvertical slidertrack {
+	background-color: rgba(255, 255, 255, 14);
+	border-radius: 4dp;
+}
+
+scrollbarvertical sliderbar {
+	width: 8dp;
+	min-height: 24dp;
+	background-color: rgba(255, 255, 255, 70);
+	border-radius: 4dp;
+}
+
+scrollbarvertical sliderbar:hover {
+	background-color: rgba(255, 255, 255, 110);
+}
+
+scrollbarvertical sliderarrowdec,
+scrollbarvertical sliderarrowinc {
+	width: 0dp;
+	height: 0dp;
+}
+
+scrollbarhorizontal {
+	height: 0dp;
+}
+
 /* ---- hidden: keep this the last rule, so it wins over any display above ---- */
 
 .hidden {
