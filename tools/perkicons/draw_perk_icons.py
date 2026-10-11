@@ -225,8 +225,12 @@ ICONS = {
 def main():
     for name, draw in ICONS.items():
         mask = draw().resize((SIZE, SIZE), Image.LANCZOS)
-        icon = Image.new("RGBA", (SIZE, SIZE), COLOUR + (0,))
-        icon.putalpha(mask)
+        # The engine's RmlUi draws images as premultiplied alpha: a pixel's
+        # colour is added to the screen as it is, whatever its alpha. So the
+        # colour is multiplied by the alpha here, which leaves the transparent
+        # parts black. (With full colour there, the whole tile turns white.)
+        channels = [mask.point(lambda a, c=c: a * c // 255) for c in COLOUR]
+        icon = Image.merge("RGBA", channels + [mask])
         path = os.path.join(ROOT, "bitmaps", "perks", name + ".png")
         icon.save(path, optimize=True)
         print("drew", os.path.relpath(path, ROOT))
