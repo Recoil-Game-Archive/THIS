@@ -1,7 +1,7 @@
 """Procedural texture baker for unwrapped S3O models.
 usage: bake.py model.s3o style_module out_dir [--res 1024] [--ss 2]
 The style module provides paint(F) -> dict(albedo (n,3), team (n,), emit (n,), refl (n,)) from per-texel fields F."""
-import sys, argparse, importlib, struct, io, numpy as np
+import sys, os, json, argparse, importlib, struct, io, numpy as np
 from PIL import Image
 from scipy import ndimage
 import s3o
@@ -52,15 +52,20 @@ def seg_dist(p, a, b):
         d = np.linalg.norm(q - (a[None] + t[..., None] * ab), axis=-1); out[s:s + 200000] = d.min(1)
     return out
 
-def build(m, R):
+def build(m, R, meta=None):
     pieces = [(p, off) for p, off in m.root.walk() if len(p.verts)]
-    seen = {}; P = []; T = []; TP = []; UVs = []; first = []; base = 0; names = []; offs = []
+    seen = {}; P = []; T = []; TP = []; UVs = []; first = []; base = 0; names = []; offs = []; canon = []; bbox = {}
     for k, (p, off) in enumerate(pieces):
         key = (p.verts[:, 6:8].tobytes(), p.idx.tobytes())
         first.append(key not in seen); seen.setdefault(key, k)
-        names.append(p.name); offs.append(off)
+        names.append(p.name); offs.append(off); bbox[p.name] = (p.verts[:, :3].min(0), p.verts[:, :3].max(0))
         P.append(p.verts[:, :3] + np.array(off, np.float32)); UVs.append(p.verts[:, 6:8])
         t = s3o.triangles(p).astype(np.int64) + base; T.append(t); TP.append(np.full(len(t), k)); base += len(p.verts)
+        c = np.full(len(t), first[-1])
+        if meta is not None:                       # symmetric copies / aliases share texels: only owners get painted
+            c = np.zeros(len(t), bool); c[meta[p.name]['canonical']] = True
+        canon.append(c)
+    canon = np.concatenate(canon)
     P = np.concatenate(P).astype(np.float64); UV = np.concatenate(UVs).astype(np.float64); T = np.concatenate(T); TP = np.concatenate(TP)
     fn = np.cross(P[T[:, 1]] - P[T[:, 0]], P[T[:, 2]] - P[T[:, 0]]); area = np.linalg.norm(fn, axis=1); fn /= area[:, None] + 1e-12
     # --- facets: connected coplanar triangles within a piece
@@ -91,7 +96,7 @@ def build(m, R):
     # --- rasterise in UV space
     tri = np.full((R, R), -1, np.int32); bary = np.zeros((R, R, 2), np.float32)
     for ti, t in enumerate(T):
-        if not first[TP[ti]]: continue
+        if not canon[ti]: continue
         x = UV[t, 0] * R; y = (1 - UV[t, 1]) * R
         x0, x1 = max(int(np.floor(x.min())) - 1, 0), min(int(np.ceil(x.max())) + 1, R - 1)
         y0, y1 = max(int(np.floor(y.min())) - 1, 0), min(int(np.ceil(y.max())) + 1, R - 1)
@@ -110,7 +115,7 @@ def build(m, R):
         sub[m] = ti; bary[y0:y1 + 1, x0:x1 + 1][m] = np.stack([l0, l1], -1)[m]
     ys, xs = np.nonzero(tri >= 0); ti = tri[ys, xs]; b = bary[ys, xs].astype(np.float64)
     pos = P[T[ti, 0]] * b[:, :1] + P[T[ti, 1]] * b[:, 1:2] + P[T[ti, 2]] * (1 - b.sum(1, keepdims=True))
-    F = dict(pos=pos, nrm=fn[ti], piece=TP[ti], facet=facet[ti], names=names, xs=xs, ys=ys, R=R)
+    F = dict(pos=pos, nrm=fn[ti], piece=TP[ti], facet=facet[ti], names=names, xs=xs, ys=ys, R=R, offs=np.array(offs, np.float64), bbox=bbox)
     F['lpos'] = pos - np.array(offs)[TP[ti]]
     F['y'] = pos[:, 1]; F['r'] = np.hypot(pos[:, 0], pos[:, 2]); F['theta'] = np.arctan2(pos[:, 2], pos[:, 0])
     # --- facet frames + edge distances
@@ -131,17 +136,38 @@ def build(m, R):
     F['mesh'] = (P, T)
     return F
 
-def bake_ao(F, rays=64, seed=1):
+def roty(a):
+    return np.array([[np.cos(a), 0, np.sin(a)], [0, 1, 0], [-np.sin(a), 0, np.cos(a)]])
+
+def bake_ao(F, rays=48, seed=1, meta=None, step=2):
+    """Ambient occlusion on a coarse texel lattice. Texels shared by symmetric copies or repeated pieces get
+    the average occlusion over every place they appear on the model."""
     import trimesh
-    P, T = F['mesh']; mesh = trimesh.Trimesh(P, T, process=False)
-    n = F['nrm']; o = F['pos'] + n * 0.03
+    P, T = F['mesh']; mesh = trimesh.Trimesh(P, T, process=False); R = F['R']; names = F['names']; offs = F['offs']
+    sel = np.nonzero((F['xs'] % step == 0) & (F['ys'] % step == 0))[0]
+    n = F['nrm'][sel]; o = F['pos'][sel] + n * 0.03; pc = F['piece'][sel]
+    copies = {}
+    for k, nm in enumerate(names):
+        sym = meta[nm].get('sym', 1) if meta else 1
+        inst = [k] + ([j for j, q in enumerate(names) if meta[q].get('alias_of') == nm] if meta else [])
+        copies[k] = [(roty(2 * np.pi * r / sym), offs[j] - offs[k]) for r in range(sym) for j in inst]
     t = np.cross(n, np.where(np.abs(n[:, :1]) < 0.9, [[1.0, 0, 0]], [[0, 1.0, 0]])); t /= np.linalg.norm(t, axis=1)[:, None]; b = np.cross(n, t)
     rng = np.random.default_rng(seed); hit = np.zeros(len(o))
     for k in range(rays):
         u1 = (k + rng.random(len(o))) / rays; u2 = rng.random(len(o)); rr = np.sqrt(u1); ph = 2 * np.pi * u2
         d = t * (rr * np.cos(ph))[:, None] + b * (rr * np.sin(ph))[:, None] + n * np.sqrt(1 - u1)[:, None]
-        hit += mesh.ray.intersects_any(o, d)
-    return 1 - hit / rays
+        oo = o.copy(); dd = d.copy()
+        for p, cl in copies.items():
+            Rm, dt = cl[k % len(cl)]
+            if len(cl) == 1: continue
+            m = pc == p
+            if m.any(): oo[m] = (o[m] - offs[p]) @ Rm.T + offs[p] + dt; dd[m] = d[m] @ Rm.T
+        hit += mesh.ray.intersects_any(oo, dd)
+    img = np.zeros((R // step, R // step), np.float32); mask = np.zeros_like(img, bool)
+    img[F['ys'][sel] // step, F['xs'][sel] // step] = 1 - hit / rays; mask[F['ys'][sel] // step, F['xs'][sel] // step] = True
+    idx = ndimage.distance_transform_edt(~mask, return_distances=False, return_indices=True); img = img[idx[0], idx[1]]
+    img = ndimage.zoom(img, step, order=1) if step > 1 else img
+    return img[F['ys'], F['xs']].astype(np.float64)
 
 def to_image(F, vals, R):
     ch = 1 if vals.ndim == 1 else vals.shape[1]
@@ -167,32 +193,42 @@ def dds_dxt5(img, path):
     caps = struct.unpack_from('<I', hdr, 108)[0] | 0x400008; struct.pack_into('<I', hdr, 108, caps)
     open(path, 'wb').write(bytes(hdr) + b''.join(l[128:] for l in levels))
 
+def paint_chunked(style, F, chunk=1500000):
+    n = len(F['pos']); outs = []
+    for s0 in range(0, n, chunk):
+        sub = {k: (v[s0:s0 + chunk] if isinstance(v, np.ndarray) and len(v) == n and k not in ('offs',) else v) for k, v in F.items()}
+        outs.append(style.paint(sub))
+    return {k: np.concatenate([o[k] for o in outs]).astype(np.float32) for k in outs[0]}
+
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument('model'); ap.add_argument('style'); ap.add_argument('out')
-    ap.add_argument('--res', type=int, default=1024); ap.add_argument('--ss', type=int, default=2); ap.add_argument('--rays', type=int, default=64)
+    ap.add_argument('--res', type=int, default=1024); ap.add_argument('--ss', type=int, default=2); ap.add_argument('--rays', type=int, default=48)
+    ap.add_argument('--tex2-div', type=int, default=1, help='tex2 is written at res/N')
     a = ap.parse_args()
     m = s3o.load(a.model); R = a.res * a.ss
-    F = build(m, R); print('texels', len(F['pos']), 'facets', F['facet'].max() + 1)
-    F['ao'] = bake_ao(F, a.rays)
-    style = importlib.import_module(a.style); out = style.paint(F)
+    mp = a.model.rsplit('.', 1)[0] + '.uvmeta.json'; meta = json.load(open(mp))['pieces'] if os.path.exists(mp) else None
+    F = build(m, R, meta); print('texels', len(F['pos']), 'facets', F['facet'].max() + 1, 'fill %.0f%%' % (100 * len(F['pos']) / R / R))
+    F['ao'] = bake_ao(F, a.rays, meta=meta, step=2 if a.ss > 1 else 1)
+    style = importlib.import_module(a.style); out = paint_chunked(style, F)
     alb, mask = to_image(F, np.clip(out['albedo'], 0, 1), R); team, _ = to_image(F, np.clip(out['team'], 0, 1), R)
     emit, _ = to_image(F, np.clip(out['emit'], 0, 1), R); refl, _ = to_image(F, np.clip(out['refl'], 0, 1), R)
     # light spill around emissive texels
-    glowsrc = np.zeros((R, R, 3), np.float32); gm = np.zeros((R, R), np.float32)
+    glowsrc = np.zeros((R, R, 3), np.float32)
     gv = np.clip(out.get('glow', out['emit']), 0, 1)
     glowsrc[F['ys'], F['xs']] = out['albedo'] * gv[:, None]
-    glow = ndimage.gaussian_filter(glowsrc, (3 * a.ss, 3 * a.ss, 0)) * 1.2
+    sg = getattr(style, 'GLOW_SIGMA', 0.18) * a.ss * a.res / 64.0
+    glow = np.dstack([ndimage.gaussian_filter(glowsrc[..., c], sg) for c in range(3)]) * getattr(style, 'GLOW_GAIN', 1.2)
     alb = np.clip(alb + glow * 0.5, 0, 1); emit = np.clip(emit[..., 0] + glow.max(-1) * 0.6, 0, 1)
-    def down(x):
-        x = x.reshape(a.res, a.ss, a.res, a.ss, -1).mean((1, 3)); return x
-    alb = down(alb); team = down(team)[..., 0]; emit = down(emit)[..., 0]; refl = down(refl)[..., 0]
+    def down(x, f=a.ss):
+        r = x.shape[0] // f; return x.reshape(r, f, r, f, -1).mean((1, 3))
+    alb = down(alb); team = down(team)[..., 0]; emit = down(emit[..., None], a.ss * a.tex2_div)[..., 0]; refl = down(refl, a.ss * a.tex2_div)[..., 0]
     u8 = lambda x: (np.clip(x, 0, 1) * 255 + 0.5).astype(np.uint8)
     t1 = Image.fromarray(np.dstack([u8(alb), u8(team)]), 'RGBA')
     t2 = Image.fromarray(np.dstack([u8(emit), u8(refl), np.zeros_like(u8(emit)), np.full_like(u8(emit), 255)]), 'RGBA')
     base = m.tex1.rsplit('.', 1)[0]; base2 = m.tex2.rsplit('.', 1)[0]
     t1.save(f'{a.out}/{base}.png'); t2.save(f'{a.out}/{base2}.png')
     dds_dxt5(t1, f'{a.out}/{m.tex1}'); dds_dxt5(t2, f'{a.out}/{m.tex2}')
-    print('wrote', m.tex1, m.tex2)
+    print('wrote', m.tex1, t1.size, m.tex2, t2.size)
 
 if __name__ == '__main__':
     main()

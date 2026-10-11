@@ -17,10 +17,11 @@ def sample(tex, u, v):
     return (g(x0, y0) * (1 - fx) + g(x0 + 1, y0) * fx) * (1 - fy) + (g(x0, y0 + 1) * (1 - fx) + g(x0 + 1, y0 + 1) * fx) * fy
 
 def render(P, N, UV, T, tex1, tex2, team=(0.9, 0.1, 0.1), az=35, el=30, size=640, flip_v=True, fov=30,
-           light=(0.5, 0.8, 0.4), ambient=0.35, bg=(8, 10, 18), ss=2):
+           light=(0.5, 0.8, 0.4), ambient=0.35, bg=(8, 10, 18), ss=2, target=None, zoom=1.0):
     S = size * ss
     c = (P.min(0) + P.max(0)) / 2; rad = np.linalg.norm(P - c, axis=1).max()
-    dist = rad / np.sin(np.radians(fov / 2)) * 1.05
+    dist = rad / np.sin(np.radians(fov / 2)) * 1.05 / zoom
+    if target is not None: c = np.array(target, float)
     eye, R = look(az, el, dist, c)
     V = (P - eye) @ R.T
     f = 1 / np.tan(np.radians(fov / 2))
