@@ -40,6 +40,10 @@ end
 local planet = UnitDefNames.planet.id
 local incomePerPlanet = spGetModOptions().income or 10
 local occupationRange = 500
+-- Planets hang below the plane the ships fly in. Their capture rings lie in
+-- the plane through their centres; LuaUI reads the height from the game
+-- rules param planet_plane_y (altitude lines, gfx_altitude_lines.lua).
+local PLANET_Y = -300
 local defaultOccupationStrength=.5
 local pubSupportMult=1.2
 
@@ -207,6 +211,7 @@ function gadget:Initialize()
 		end
 	end
 
+	Spring.SetGameRulesParam("planet_plane_y", PLANET_Y)
 	GG.planets = planets
 	GG.occupationRange = occupationRange
 	_G.planets = planets
@@ -357,7 +362,6 @@ end
 -- so they differ from game to game but are the same for every player.
 -- tools/planets/make_preview.py shows the same shader in a web browser.
 
-local PLANET_Y = -300   -- planets hang below the plane the ships fly in
 local SHADER_PATH = "LuaRules/Gadgets/Shaders/planet.frag"
 local LIGHT = {-0.52, 0.68, -0.52}   -- direction towards the sun
 
@@ -649,7 +653,7 @@ local function DrawRings()
 				r, g, b = GetTeamColor(owner)
 				state = OWNED
 			end
-			data[n + 1], data[n + 2], data[n + 3], data[n + 4] = p.x, 0, p.z, occupationRange
+			data[n + 1], data[n + 2], data[n + 3], data[n + 4] = p.x, PLANET_Y, p.z, occupationRange
 			data[n + 5], data[n + 6], data[n + 7], data[n + 8] = r, g, b, state
 			data[n + 9], data[n + 10], data[n + 11], data[n + 12] = capturedAt[i] and (now - capturedAt[i]) or -1, (i * 0.618) % 1, 0, 0
 			n = n + 12
@@ -671,8 +675,12 @@ end
 
 function gadget:DrawWorldPreUnit()
 	glCulling(false)
+	-- The rings lie in the plane through the planets' centres. They are drawn
+	-- first, so that each planet covers the part of its ring's field that
+	-- passes through it.
+	local ringsDrawn = DrawRings()
 	DrawPlanets()
-	if DrawRings() then
+	if ringsDrawn then
 		return
 	end
 	-- plain version: a tinted disc for an owned planet (the outline is drawn in DrawWorld)
@@ -681,7 +689,7 @@ function gadget:DrawWorldPreUnit()
 			PushMatrix()
 			local r,g,b = GetTeamColor(p.lastOwner or gaia)
 			Color(r,g,b,.2)
-			Translate(p.x, 0, p.z)
+			Translate(p.x, PLANET_Y, p.z)
 			CallList(circle)
 			PopMatrix()
 		end
@@ -707,9 +715,9 @@ function gadget:DrawWorld()
 			if spValidUnitID(p.lastOccupier) then
 				local x,y,z=spGetUnitPosition(p.lastOccupier)
 				glDepthTest(GL_LEQUAL)
+				-- dashed link in the ring's plane, from under the occupying ship to the planet
 				glLineStipple("bla")
-				DrawGroundCircle(x, 0, z, 30, 12)
-				glBeginEnd(GL_LINES,Line,x,0,z,p.x,0,p.z)
+				glBeginEnd(GL_LINES,Line,x,PLANET_Y,z,p.x,PLANET_Y,p.z)
 				glLineStipple(false)
 				glDepthTest(false)
 			end
