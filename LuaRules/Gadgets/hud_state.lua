@@ -109,7 +109,7 @@ end
 
 local function PublishTeams()
 	local money, income = GG.money, GG.lastIncome
-	local globalbuild, ready, message = GG.globalbuild, GG.ready, GG.message
+	local globalbuild, ready = GG.globalbuild, GG.ready
 	for i = 1, #teams do
 		local team = teams[i]
 		if money and money[team] then
@@ -125,7 +125,20 @@ local function PublishTeams()
 			SetTeam(team, "gb_ready", ready and ready[team] or 0, ALLIED)
 			SetTeam(team, "gb_queue", EncodeQueue(gb.first), ALLIED)
 		end
-		local m = message and message[team]
+	end
+end
+
+-- Alerts are published every frame, not every PERIOD frames: a repeating
+-- message (the capture countdown) is renewed one frame before it expires, so
+-- a late copy would leave the alert switched off for a few frames each time.
+local function PublishAlerts()
+	local message = GG.message
+	if not message then
+		return
+	end
+	for i = 1, #teams do
+		local team = teams[i]
+		local m = message[team]
 		if m then
 			SetTeam(team, "alert_text", m.text or "", PRIVATE)
 			SetTeam(team, "alert_hint", m.hint or "", PRIVATE)
@@ -196,6 +209,7 @@ function gadget:Initialize()
 end
 
 function gadget:GameFrame(f)
+	PublishAlerts()
 	if f % PERIOD == 0 then
 		Publish()
 	end
