@@ -8,8 +8,8 @@ local weaponDefs = {
 		myGravity = .001,
 		size = 1,
 
-		soundstart = "weapons\\pmediumfire",
-		soundhit = "weapons\\pmediumhit",
+		soundstart = "pmediumfire",
+		soundhit = "pmediumhit",
 
 		turret = true,
 		range = 250,
@@ -57,8 +57,8 @@ local weaponDefs = {
 		texture2 = "null",
 		corethickness = 0,
 
-		soundstart = "weapons\\pmediumfire",
-		soundhit = "weapons\\pmediumhit",
+		soundstart = "pmediumfire",
+		soundhit = "pmediumhit",
 
 		turret = true,
 		range = 400,

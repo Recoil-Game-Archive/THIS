@@ -16,11 +16,6 @@ local unitDef = {
 	idleAutoHeal = 0,
 	ObjectName = "quasar.s3o",
 	Side = "ALL",
-	sounds = {
-		arrived = { "commandgiven" },
-		ok = { "commandgiven" },
-		select = { "select" },
-	},
 	collisionVolumeScales = "160 72 400",
 	collisionVolumeOffset = "0 0 0",
 	collisionVolumeType = "Box",
@@ -380,8 +375,8 @@ local unitDef = {
 			impactOnly = true,
 			duration = .01,
 
-			soundstart = "weapons\\klightfire",
-			soundhit = "weapons\\klighthit",
+			soundstart = "klightfire",
+			soundhit = "klighthit",
 
 			turret = true,
 			range = 700,
@@ -429,7 +424,7 @@ local unitDef = {
 			beamdecay = .8,
 			beamburst = true,
 
-			soundstart = "weapons\\lmediumfire",
+			soundstart = "lmediumfire",
 			soundhit = "",
 			minIntensity = 1,
 
@@ -517,8 +512,8 @@ local unitDef = {
 			texture2 = "null",
 			corethickness = 0,
 
-			soundstart = "weapons\\pmediumfire",
-			soundhit = "weapons\\pmediumhit",
+			soundstart = "pmediumfire",
+			soundhit = "pmediumhit",
 
 			turret = true,
 			range = 750,
@@ -588,8 +583,8 @@ local unitDef = {
 			model = "missile_small.s3o",
 			smoketrail = true,
 
-			soundstart = "weapons\\mlightfire2",
-			soundhit = "weapons\\mlighthit",
+			soundstart = "mlightfire2",
+			soundhit = "mlighthit",
 			burnblow = true,
 
 			turret = true,
@@ -704,6 +699,7 @@ local unitDef = {
 
 	customParams = {
 		type = "large",
+		death_sounds = "huge",
 		cost = 10500,
 		buildtime = 105,
 		nobuild = "true",

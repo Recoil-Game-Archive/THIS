@@ -15,7 +15,6 @@ local unitDef = {
 	idleAutoHeal = 0,
 	ObjectName = "probe.s3o",
 	Side = "ALL",
-	--SoundCategory = "FIGHTER", -- no such category in gamedata/SOUND.TDF, never had any effect
 	collisionVolumeType = "CylZ",
 	collisionVolumeScales = "12 12 20",
 	collisionVolumeTest = true,

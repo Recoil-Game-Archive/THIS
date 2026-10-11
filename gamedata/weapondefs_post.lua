@@ -59,6 +59,39 @@ end
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
+-- Impact sound classes (LuaRules/Gadgets/unit_impact_sounds.lua)
+--
+-- customParams.impact_sounds names a folder in sounds/impacts/. A weapondef
+-- that sets it keeps what it says; everything else gets a class from the
+-- effect it explodes with. Beam lasers are skipped, they damage their target
+-- every frame. Weapons that end up without a class use "generic".
+
+local impactSoundsByEffect = {
+	["custom:kinetic"]     = "kinetic",
+	["custom:plasma"]      = "plasma",
+	["custom:smallplasma"] = "plasma",
+	["custom:partillery"]  = "artillery",
+	["custom:missile"]     = "missile",
+	["custom:torpedo"]     = "torpedo",
+	["custom:antimatter"]  = "antimatter",
+}
+
+for _, weaponDef in pairs(WeaponDefs) do
+	local weaponType = string.lower(tostring(weaponDef.weapontype))
+	local effect = weaponDef.explosiongenerator
+	if weaponType ~= "beamlaser" and type(effect) == "string" then
+		local class = impactSoundsByEffect[string.lower(effect)]
+		if class then
+			weaponDef.customparams = weaponDef.customparams or {}
+			if not weaponDef.customparams.impact_sounds then
+				weaponDef.customparams.impact_sounds = class
+			end
+		end
+	end
+end
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 -- Convert all CustomParams to strings
 
 for _, weaponDef in pairs(WeaponDefs) do

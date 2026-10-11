@@ -12,7 +12,7 @@ local weaponDefs = {
 		beamdecay = .9,
 		size = 2,
 
-		soundstart = "weapons\\lmediumfire",
+		soundstart = "lmediumfire",
 		soundhit = "",
 
 		turret = true,

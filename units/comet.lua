@@ -15,11 +15,6 @@ local unitDef = {
 	idleAutoHeal = 0,
 	ObjectName = "comet.s3o",
 	Side = "ALL",
-	sounds = {
-		arrived = { "commandgiven" },
-		ok = { "commandgiven" },
-		select = { "select" },
-	},
 	collisionVolumeType = "Box",
 	collisionVolumeScales = "52 32 136",
 	collide = false,
@@ -113,8 +108,8 @@ local unitDef = {
 			texture2 = "null",
 			corethickness = 0,
 
-			soundstart = "weapons\\pmediumfire",
-			soundhit = "weapons\\pmediumhit",
+			soundstart = "pmediumfire",
+			soundhit = "pmediumhit",
 
 			turret = true,
 			range = 750,
@@ -157,8 +152,8 @@ local unitDef = {
 			impactOnly = true,
 			duration = .01,
 
-			soundstart = "weapons\\klightfire",
-			soundhit = "weapons\\klighthit",
+			soundstart = "klightfire",
+			soundhit = "klighthit",
 
 			turret = true,
 			range = 700,

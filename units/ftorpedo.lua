@@ -16,7 +16,6 @@ local unitDef = {
 	ObjectName = "torpedo.s3o",
 	--BuildPic=dagger.tga;
 	Side = "ALL",
-	--SoundCategory = "FIGHTER", -- no such category in gamedata/SOUND.TDF, never had any effect
 	collisionVolumeType = "CylZ",
 	collisionVolumeScales = "9 9 12",
 	collisionVolumeTest = true,
@@ -78,7 +77,7 @@ local unitDef = {
 			--smoketrail=1;
 
 			--soundstart=mlightfire;
-			soundhit = "weapons\\mlighthit",
+			soundhit = "mlighthit",
 			burnblow = true,
 
 			turret = false,
@@ -126,7 +125,7 @@ local unitDef = {
 			--smoketrail=1;
 
 			--soundstart=mlightfire;
-			soundhit = "weapons\\mlighthit",
+			soundhit = "mlighthit",
 			burnblow = true,
 
 			turret = true,

@@ -15,7 +15,6 @@ local unitDef = {
 	idleAutoHeal = 0,
 	ObjectName = "mace.s3o",
 	Side = "ALL",
-	--SoundCategory = "FIGHTER", -- no such category in gamedata/SOUND.TDF, never had any effect
 	collisionVolumeType = "Box",
 	collisionVolumeScales = "16 8 16",
 	collisionVolumeTest = true,
@@ -83,7 +82,7 @@ local unitDef = {
 			beamdecay = .8,
 			beamburst = true,
 
-			soundstart = "weapons\\llightfire",
+			soundstart = "llightfire",
 			soundhit = "",
 			minIntensity = 1,
 
@@ -127,7 +126,7 @@ local unitDef = {
 			beamdecay = .8,
 			beamburst = true,
 
-			soundstart = "weapons\\llightfire",
+			soundstart = "llightfire",
 			soundhit = "",
 			minIntensity = 1,
 

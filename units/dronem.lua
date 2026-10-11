@@ -16,7 +16,6 @@ local unitDef = {
 	ObjectName = "dronek.s3o",
 	--BuildPic=dagger.tga;
 	Side = "ALL",
-	--SoundCategory = "FIGHTER", -- no such category in gamedata/SOUND.TDF, never had any effect
 	collisionVolumeType = "Box",
 	collisionVolumeScales = "20 12 10",
 	collisionVolumeTest = true,
@@ -75,7 +74,7 @@ local unitDef = {
 			smoketrail = true,
 
 			soundstart = "mtinyfire",
-			soundhit = "weapons\\mlighthit",
+			soundhit = "mlighthit",
 
 			turret = true,
 			range = 250,

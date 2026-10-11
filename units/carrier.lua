@@ -14,7 +14,6 @@ local unitDef = {
 	idleTime = 0,
 	idleAutoHeal = 0,
 	objectName = "carrier.s3o",
-	soundCategory = "CARRIER",
 	collisionVolumeType = "Box",
 	collisionVolumeScales = "92 40 180",
 	collisionVolumeTest = true,
@@ -93,8 +92,8 @@ local unitDef = {
 			impactOnly = true,
 			duration = .02,
 
-			soundstart = "weapons\\klightfire",
-			soundhit = "weapons\\klighthit",
+			soundstart = "klightfire",
+			soundhit = "klighthit",
 
 			turret = true,
 			range = 500,

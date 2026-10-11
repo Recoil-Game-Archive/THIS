@@ -15,7 +15,6 @@ local unitDef = {
 	idleAutoHeal = 0,
 	ObjectName = "shuriken.s3o",
 	Side = "ALL",
-	--SoundCategory = "FIGHTER", -- no such category in gamedata/SOUND.TDF, never had any effect
 	collisionVolumeType = "Box",
 	collisionVolumeScales = "20 6 22",
 	collisionVolumeTest = true,

@@ -15,7 +15,6 @@ local unitDef = {
 	idleAutoHeal = 0,
 	ObjectName = "starslayer.s3o",
 	Side = "ALL",
-	--SoundCategory = "CRUISER", -- no such category in gamedata/SOUND.TDF, never had any effect
 	collisionVolumeType = "Box",
 	collisionVolumeScales = "136 96 80",
 	collisionVolumeTest = true,
@@ -89,8 +88,8 @@ local unitDef = {
 			myGravity = .001,
 			texture1 = "null",
 
-			soundstart = "weapons\\partyfire",
-			soundhit = "weapons\\partyhit",
+			soundstart = "partyfire",
+			soundhit = "partyhit",
 
 			turret = true,
 			range = 2100,
@@ -135,8 +134,8 @@ local unitDef = {
 			burnblow = true,
 			myGravity = .001,
 
-			soundstart = "weapons\\pmediumfire",
-			soundhit = "weapons\\pmediumhit",
+			soundstart = "pmediumfire",
+			soundhit = "pmediumhit",
 
 			turret = true,
 			range = 550,

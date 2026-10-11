@@ -15,11 +15,6 @@ local unitDef = {
 	idleAutoHeal = 0,
 	ObjectName = "imperator_hardpoint.s3o",
 	Side = "ALL",
-	sounds = {
-		arrived = { "commandgiven" },
-		ok = { "commandgiven" },
-		select = { "select" },
-	},
 	collisionVolumeType = "Box",
 	collisionVolumeScales = "64 64 64",
 	collisionVolumeOffsets = "0 -70 0",

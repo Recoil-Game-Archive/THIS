@@ -16,11 +16,6 @@ local unitDef = {
 	idleAutoHeal = 0,
 	ObjectName = "supportcarrier.s3o",
 	Side = "ALL",
-	sounds = {
-		arrived = { "commandgiven" },
-		ok = { "commandgiven" },
-		select = { "select" },
-	},
 	collisionVolumeType = "Box",
 	collisionVolumeScales = "64 48 136",
 	collisionVolumeTest = true,
@@ -101,8 +96,8 @@ local unitDef = {
 			myGravity = .001,
 			texture1 = "null",
 
-			soundstart = "weapons\\partyfire",
-			soundhit = "weapons\\partyhit",
+			soundstart = "partyfire",
+			soundhit = "partyhit",
 
 			turret = true,
 			range = 1600,
@@ -147,8 +142,8 @@ local unitDef = {
 			impactOnly = true,
 			duration = .02,
 
-			soundstart = "weapons\\klightfire",
-			soundhit = "weapons\\klighthit",
+			soundstart = "klightfire",
+			soundhit = "klighthit",
 
 			turret = true,
 			range = 500,
@@ -196,7 +191,7 @@ local unitDef = {
 			beamdecay = .8,
 			beamburst = true,
 
-			soundstart = "weapons\\llightfire",
+			soundstart = "llightfire",
 			soundhit = "",
 			minIntensity = 1,
 
@@ -238,8 +233,8 @@ local unitDef = {
 			myGravity = .001,
 			texture1 = "null",
 
-			soundstart = "weapons\\partyfire",
-			soundhit = "weapons\\partyhit",
+			soundstart = "partyfire",
+			soundhit = "partyhit",
 
 			turret = true,
 			range = 1600,

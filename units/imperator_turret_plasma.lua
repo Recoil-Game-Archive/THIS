@@ -15,7 +15,6 @@ local unitDef = {
 	idleAutoHeal = 0,
 	ObjectName = "imperator_turret_plasma2.s3o",
 	Side = "ALL",
-	--SoundCategory = "CRUISER", -- no such category in gamedata/SOUND.TDF, never had any effect
 	collisionVolumeType = "Box",
 	collisionVolumeScales = "96 56 96",
 	collisionVolumeOffset = "0 30 0",
@@ -79,8 +78,8 @@ local unitDef = {
 			myGravity = .001,
 			texture1 = "null",
 
-			soundstart = "weapons\\partyfire",
-			soundhit = "weapons\\partyhit",
+			soundstart = "partyfire",
+			soundhit = "partyhit",
 
 			turret = true,
 			range = 2100,

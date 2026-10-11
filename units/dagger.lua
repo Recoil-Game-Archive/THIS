@@ -16,7 +16,6 @@ local unitDef = {
 	ObjectName = "dagger.s3o",
 	--BuildPic=dagger.tga;
 	Side = "ALL",
-	--SoundCategory = "FIGHTER", -- no such category in gamedata/SOUND.TDF, never had any effect
 	collisionVolumeType = "Box",
 	collisionVolumeScales = "16 6 22",
 	collisionVolumeTest = true,
@@ -93,8 +92,8 @@ local unitDef = {
 			impactOnly = true,
 			duration = .02,
 
-			soundstart = "weapons\\klightfire",
-			soundhit = "weapons\\klighthit",
+			soundstart = "klightfire",
+			soundhit = "klighthit",
 
 			turret = true,
 			range = 500,

@@ -13,11 +13,6 @@ local unitDef = {
 	MaxDamage = 25000,
 	ObjectName = "planet.s3o",
 	Side = "ALL",
-	sounds = {
-		arrived = { "commandgiven" },
-		ok = { "commandgiven" },
-		select = { "select" },
-	},
 	collisionVolumeType = "Box",
 	collisionVolumeScales = "92 40 180",
 	collide = false,
@@ -89,8 +84,8 @@ local unitDef = {
 			impactOnly = true,
 			duration = .02,
 
-			soundstart = "weapons\\klightfire",
-			soundhit = "weapons\\klighthit",
+			soundstart = "klightfire",
+			soundhit = "klighthit",
 
 			turret = true,
 			range = 500,

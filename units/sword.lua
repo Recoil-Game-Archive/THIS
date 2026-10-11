@@ -15,7 +15,6 @@ local unitDef = {
 	idleAutoHeal = 0,
 	ObjectName = "sword.s3o",
 	Side = "ALL",
-	--SoundCategory = "FIGHTER", -- no such category in gamedata/SOUND.TDF, never had any effect
 	collisionVolumeType = "Box",
 	collisionVolumeScales = "16 14 20",
 	collisionVolumeTest = true,
@@ -83,8 +82,8 @@ local unitDef = {
 			model = "missile_small.s3o",
 			smoketrail = true,
 
-			soundstart = "weapons\\mlightfire2",
-			soundhit = "weapons\\mlighthit",
+			soundstart = "mlightfire2",
+			soundhit = "mlighthit",
 			burnblow = true,
 
 			turret = true,
@@ -137,8 +136,8 @@ local unitDef = {
 			impactOnly = true,
 			duration = .02,
 
-			soundstart = "weapons\\klightfire",
-			soundhit = "weapons\\klighthit",
+			soundstart = "klightfire",
+			soundhit = "klighthit",
 
 			turret = true,
 			range = 350,

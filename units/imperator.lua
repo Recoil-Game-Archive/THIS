@@ -15,11 +15,6 @@ local unitDef = {
 	idleAutoHeal = 0,
 	ObjectName = "imperator.s3o",
 	Side = "ALL",
-	sounds = {
-		arrived = { "commandgiven" },
-		ok = { "commandgiven" },
-		select = { "select" },
-	},
 	collisionVolumeType = "Box",
 	collisionVolumeScales = "120 280 230",
 	collisionVolumeOffsets = "0 0 0",
@@ -76,6 +71,7 @@ local unitDef = {
 
 	customParams = {
 		type = "large",
+		death_sounds = "huge",
 		cost = 4500,
 		buildtime = 50,
 		limit = 1,

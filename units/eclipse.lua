@@ -15,7 +15,6 @@ local unitDef = {
 	idleTime = 0,
 	idleAutoHeal = 0,
 	objectName = "eclipse.s3o",
-	soundCategory = "CARRIER",
 	collisionVolumeType = "Box",
 	collisionVolumeScales = "110 50 220",
 	collisionVolumeTest = true,
@@ -126,8 +125,8 @@ local unitDef = {
 			impactOnly = true,
 			duration = .02,
 
-			soundstart = "weapons\\kheavyfire",
-			soundhit = "weapons\\kheavyhit",
+			soundstart = "kheavyfire",
+			soundhit = "kheavyhit",
 
 			turret = true,
 			range = 700,
@@ -160,6 +159,7 @@ local unitDef = {
 				default = 1200,
 			},
 			customParams = {
+				impact_sounds = "kinetic_heavy",
 				spray_boost = 50,
 				rof_boost = 16,
 			},
@@ -174,8 +174,8 @@ local unitDef = {
 			model = "missile_small.s3o",
 			--smoketrail=1;
 
-			soundstart = "weapons\\mlightfire",
-			soundhit = "weapons\\mlighthit",
+			soundstart = "mlightfire",
+			soundhit = "mlighthit",
 
 			turret = true,
 			range = 550,
@@ -272,8 +272,8 @@ local unitDef = {
 			impactOnly = true,
 			duration = .02,
 
-			soundstart = "weapons\\klightfire",
-			soundhit = "weapons\\klighthit",
+			soundstart = "klightfire",
+			soundhit = "klighthit",
 
 			turret = true,
 			range = 600,
@@ -319,7 +319,7 @@ local unitDef = {
 			beamdecay = .8,
 			beamburst = true,
 
-			soundstart = "weapons\\lmediumfire",
+			soundstart = "lmediumfire",
 			soundhit = "",
 			minIntensity = 1,
 

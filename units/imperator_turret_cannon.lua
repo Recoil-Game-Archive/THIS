@@ -15,7 +15,6 @@ local unitDef = {
 	idleAutoHeal = 0,
 	ObjectName = "imperator_turret_cannon.s3o",
 	Side = "ALL",
-	--SoundCategory = "CRUISER", -- no such category in gamedata/SOUND.TDF, never had any effect
 	collisionVolumeType = "Box",
 	collisionVolumeScales = "48 64 48",
 	collisionVolumeOffset = "0 0 0",
@@ -83,8 +82,8 @@ local unitDef = {
 			impactOnly = true,
 			duration = .02,
 
-			soundstart = "weapons\\kheavyfire",
-			soundhit = "weapons\\kheavyhit",
+			soundstart = "kheavyfire",
+			soundhit = "kheavyhit",
 
 			turret = true,
 			range = 600,
@@ -116,6 +115,7 @@ local unitDef = {
 				default = 1200,
 			},
 			customParams = {
+				impact_sounds = "kinetic_heavy",
 				spray_boost = 10,
 				rof_boost = 96,
 			},
@@ -133,8 +133,8 @@ local unitDef = {
 			texture2 = "null",
 			corethickness = 0,
 
-			soundstart = "weapons\\pmediumfire",
-			soundhit = "weapons\\pmediumhit",
+			soundstart = "pmediumfire",
+			soundhit = "pmediumhit",
 
 			turret = true,
 			range = 700,

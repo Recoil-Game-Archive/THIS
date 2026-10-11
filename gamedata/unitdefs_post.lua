@@ -133,6 +133,33 @@ end
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
+-- Death sound classes (LuaRules/Gadgets/unit_death_sounds.lua)
+--
+-- customParams.death_sounds names a folder in sounds/deathsounds/. A unitdef
+-- that sets it keeps what it says; everything else gets a class from its
+-- type. "none" is silent: torpedoes and drones already go off with their
+-- warhead's own sound.
+
+local deathSoundsByType = {
+	small     = "small",
+	probe     = "small",
+	gunstar   = "small",
+	turret    = "medium",
+	large     = "large",
+	drone     = "none",
+	torpedo   = "none",
+	hardpoint = "none",
+}
+
+for name, ud in pairs(UnitDefs) do
+	local cp = ud.customparams
+	if cp and not cp.death_sounds then
+		cp.death_sounds = deathSoundsByType[cp["type"]]
+	end
+end
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 -- enable big ships
 local modOptions = Spring.GetModOptions()
 if not modOptions.startmoney then -- load via file

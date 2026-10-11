@@ -15,7 +15,6 @@ local unitDef = {
 	idleAutoHeal = 0,
 	ObjectName = "gunstar_torpedo.s3o",
 	Side = "ALL",
-	--SoundCategory = "FIGHTER", -- no such category in gamedata/SOUND.TDF, never had any effect
 	collisionVolumeType = "Box",
 	collisionVolumeScales = "16 6 22",
 	collisionVolumeTest = true,
@@ -116,7 +115,7 @@ local unitDef = {
 			beamdecay = .9,
 			size = 2,
 
-			soundstart = "weapons\\llightfire2",
+			soundstart = "llightfire2",
 			soundhit = "",
 
 			turret = true,

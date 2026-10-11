@@ -8,8 +8,8 @@ local weaponDefs = {
 		noselfdamage = true,
 		duration = .02,
 
-		soundstart = "weapons\\klightfire",
-		soundhit = "weapons\\klighthit",
+		soundstart = "klightfire",
+		soundhit = "klighthit",
 
 		turret = true,
 		range = 800,

@@ -37,7 +37,7 @@ local weaponDefs = {
 		--smoketrail=1;
 
 		--soundstart=mlightfire;
-		soundhit = "weapons\\mlighthit",
+		soundhit = "mlighthit",
 		burnblow = true,
 
 		turret = false,

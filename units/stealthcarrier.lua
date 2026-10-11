@@ -16,11 +16,6 @@ local unitDef = {
 	idleAutoHeal = 0,
 	ObjectName = "stealthcarrier.s3o",
 	Side = "ALL",
-	sounds = {
-		arrived = { "commandgiven" },
-		ok = { "commandgiven" },
-		select = { "select" },
-	},
 	collisionVolumeType = "Box",
 	collisionVolumeScales = "64 48 136",
 	collisionVolumeTest = true,
@@ -94,8 +89,8 @@ local unitDef = {
 			burnblow = true,
 			myGravity = .001,
 
-			soundstart = "weapons\\pmediumfire",
-			soundhit = "weapons\\pmediumhit",
+			soundstart = "pmediumfire",
+			soundhit = "pmediumhit",
 
 			turret = true,
 			range = 550,
@@ -144,7 +139,7 @@ local unitDef = {
 			beamdecay = .9,
 			size = 2,
 
-			soundstart = "weapons\\llightfire2",
+			soundstart = "llightfire2",
 			soundhit = "",
 
 			turret = true,

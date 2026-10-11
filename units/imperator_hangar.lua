@@ -15,7 +15,6 @@ local unitDef = {
 	idleAutoHeal = 0,
 	ObjectName = "imperator_hangar.s3o",
 	Side = "ALL",
-	--SoundCategory = "CRUISER", -- no such category in gamedata/SOUND.TDF, never had any effect
 	collisionVolumeType = "Box",
 	collisionVolumeScales = "80 40 80",
 	collisionVolumeOffset = "0 0 0",

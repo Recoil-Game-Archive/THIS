@@ -14,7 +14,6 @@ local unitDef = {
 	idleTime = 0,
 	idleAutoHeal = 0,
 	objectName = "wraith.s3o",
-	SoundCategory = "FIGHTER",
 	collisionVolumeType = "Box",
 	collisionVolumeScales = "16 6 24",
 	collisionVolumeTest = true,
@@ -78,7 +77,7 @@ local unitDef = {
 			beamdecay = .9,
 			size = 2,
 
-			soundstart = "weapons\\llightfire2",
+			soundstart = "llightfire2",
 			soundhit = "",
 
 			turret = true,
@@ -124,7 +123,7 @@ local unitDef = {
 			beamdecay = .8,
 			beamburst = true,
 
-			soundstart = "weapons\\llightfire",
+			soundstart = "llightfire",
 			soundhit = "",
 			minIntensity = 1,
 

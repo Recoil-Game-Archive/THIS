@@ -15,7 +15,6 @@ local unitDef = {
 	idleAutoHeal = 0,
 	ObjectName = "lasermine.s3o",
 	Side = "ALL",
-	--SoundCategory = "FIGHTER", -- no such category in gamedata/SOUND.TDF, never had any effect
 	collisionVolumeType = "CylZ",
 	collisionVolumeScales = "9 9 12",
 	collisionVolumeTest = true,
@@ -88,7 +87,7 @@ local unitDef = {
 			beamdecay = .8,
 			beamburst = true,
 
-			soundstart = "weapons\\lmediumfire",
+			soundstart = "lmediumfire",
 			soundhit = "",
 			minIntensity = 1,
 
@@ -132,7 +131,7 @@ local unitDef = {
 			--smoketrail=1;
 
 			--soundstart=mlightfire;
-			soundhit = "weapons\\mlighthit",
+			soundhit = "mlighthit",
 			burnblow = true,
 
 			turret = true,

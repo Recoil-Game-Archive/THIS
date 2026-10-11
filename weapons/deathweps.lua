@@ -3,7 +3,6 @@ local weaponDefs = {
 		name = "Small Unit Explosion",
 		weaponType = "Melee",
 
-		soundhit = "ex_small2",
 		burnblow = true,
 
 		reloadtime = 2,
@@ -25,6 +24,9 @@ local weaponDefs = {
 		--explosiongenerator=custom:death_huge;
 
 		interceptedbyshieldtype = 2, --missile
+		customParams = {
+			impact_sounds = "none", -- the death sound covers it
+		},
 		damage = {
 			default = 100,
 		},
@@ -34,7 +36,6 @@ local weaponDefs = {
 		name = "Big Unit Explosion",
 		weaponType = "Melee",
 
-		soundhit = "deathmed",
 		burnblow = true,
 
 		reloadtime = 2,
@@ -56,6 +57,9 @@ local weaponDefs = {
 		--explosiongenerator=custom:death_huge;
 
 		interceptedbyshieldtype = 2, --missile
+		customParams = {
+			impact_sounds = "none", -- the death sound covers it
+		},
 		damage = {
 			default = 2500,
 		},
@@ -65,7 +69,6 @@ local weaponDefs = {
 		name = "Big Unit Explosion",
 		weaponType = "Melee",
 
-		soundhit = "deathmed",
 		burnblow = true,
 
 		reloadtime = 2,
@@ -87,6 +90,9 @@ local weaponDefs = {
 		--explosiongenerator=custom:death_huge;
 
 		interceptedbyshieldtype = 2, --missile
+		customParams = {
+			impact_sounds = "none", -- the death sound covers it
+		},
 		damage = {
 			default = 10000,
 		},
@@ -97,7 +103,6 @@ local weaponDefs = {
 		weaponType = "Melee",
 
 		--soundstart=mlightfire;
-		soundhit = "ex_large3",
 		burnblow = true,
 
 		targetBorder = true,
@@ -121,6 +126,9 @@ local weaponDefs = {
 		--cegTag=trail_missile;
 
 		interceptedbyshieldtype = 2, --missile
+		customParams = {
+			impact_sounds = "none", -- the death sound covers it
+		},
 		damage = {
 			default = 50000,
 		},

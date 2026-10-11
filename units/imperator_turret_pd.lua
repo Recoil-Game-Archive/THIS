@@ -15,7 +15,6 @@ local unitDef = {
 	idleAutoHeal = 0,
 	ObjectName = "imperator_turret_pd.s3o",
 	Side = "ALL",
-	--SoundCategory = "CRUISER", -- no such category in gamedata/SOUND.TDF, never had any effect
 	collisionVolumeType = "Box",
 	collisionVolumeScales = "32 32 64",
 	collisionVolumeOffset = "0 0 0",
@@ -95,7 +94,7 @@ local unitDef = {
 			beamdecay = .9,
 			size = 2,
 
-			soundstart = "weapons\\llightfire2",
+			soundstart = "llightfire2",
 			soundhit = "",
 
 			turret = true,

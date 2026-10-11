@@ -16,7 +16,6 @@ local unitDef = {
 	ObjectName = "blank.s3o",
 	--BuildPic=dagger.tga;
 	Side = "ALL",
-	--SoundCategory = "FIGHTER", -- no such category in gamedata/SOUND.TDF, never had any effect
 	collisionVolumeType = "CylZ",
 	collisionVolumeScales = "9 9 12",
 	collisionVolumeTest = true,

@@ -15,11 +15,6 @@ local unitDef = {
 	idleAutoHeal = 0,
 	ObjectName = "minelayer.s3o",
 	Side = "ALL",
-	sounds = {
-		arrived = { "commandgiven" },
-		ok = { "commandgiven" },
-		select = { "select" },
-	},
 	collisionVolumeType = "Box",
 	collisionVolumeScales = "48 24 72",
 	collisionVolumeOffset = "0 0 12",
@@ -80,8 +75,8 @@ local unitDef = {
 			model = "missile_small.s3o",
 			smoketrail = true,
 
-			soundstart = "weapons\\mlightfire2",
-			soundhit = "weapons\\mlighthit",
+			soundstart = "mlightfire2",
+			soundhit = "mlighthit",
 			burnblow = true,
 
 			turret = true,

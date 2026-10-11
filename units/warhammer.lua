@@ -15,7 +15,6 @@ local unitDef = {
 	idleAutoHeal = 0,
 	ObjectName = "warhammer.s3o",
 	Side = "ALL",
-	--SoundCategory = "FIGHTER", -- no such category in gamedata/SOUND.TDF, never had any effect
 	collisionVolumeType = "Box",
 	collisionVolumeScales = "14 6 14",
 	collisionVolumeTest = true,
@@ -77,8 +76,8 @@ local unitDef = {
 			model = "missile_small.s3o",
 			--smoketrail=1;
 
-			soundstart = "weapons\\mlightfire",
-			soundhit = "weapons\\mlighthit",
+			soundstart = "mlightfire",
+			soundhit = "mlighthit",
 
 			turret = true,
 			range = 400,

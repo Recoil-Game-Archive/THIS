@@ -15,11 +15,6 @@ local unitDef = {
 	idleAutoHeal = 0,
 	ObjectName = "starbase.s3o",
 	Side = "ALL",
-	sounds = {
-		arrived = { "commandgiven" },
-		ok = { "commandgiven" },
-		select = { "select" },
-	},
 	collisionVolumeType = "CylY",
 	collisionVolumeScales = "126 114 126",
 	collisionVolumeOffsets = "0 -32 0",
@@ -93,8 +88,8 @@ local unitDef = {
 			impactOnly = true,
 			duration = .02,
 
-			soundstart = "weapons\\klightfire",
-			soundhit = "weapons\\klighthit",
+			soundstart = "klightfire",
+			soundhit = "klighthit",
 
 			turret = true,
 			range = 700,
@@ -140,7 +135,7 @@ local unitDef = {
 			beamdecay = .8,
 			beamburst = true,
 
-			soundstart = "weapons\\lmediumfire",
+			soundstart = "lmediumfire",
 			soundhit = "",
 			minIntensity = 1,
 

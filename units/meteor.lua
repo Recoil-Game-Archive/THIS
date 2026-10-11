@@ -15,11 +15,6 @@ local unitDef = {
 	idleAutoHeal = 0,
 	ObjectName = "meteor.s3o",
 	Side = "ALL",
-	sounds = {
-		arrived = { "commandgiven" },
-		ok = { "commandgiven" },
-		select = { "select" },
-	},
 	collisionVolumeType = "Box",
 	collisionVolumeScales = "32 24 72",
 	collisionVolumeOffset = "0 0 36",
@@ -101,8 +96,8 @@ local unitDef = {
 			model = "missile_small.s3o",
 			smoketrail = true,
 
-			soundstart = "weapons\\mlightfire2",
-			soundhit = "weapons\\mlighthit",
+			soundstart = "mlightfire2",
+			soundhit = "mlighthit",
 			burnblow = true,
 
 			turret = true,
@@ -155,7 +150,7 @@ local unitDef = {
 			beamdecay = .8,
 			beamburst = true,
 
-			soundstart = "weapons\\lmediumfire",
+			soundstart = "lmediumfire",
 			soundhit = "",
 			minIntensity = 1,
 
@@ -201,7 +196,7 @@ local unitDef = {
 			beamdecay = .9,
 			size = 2,
 
-			soundstart = "weapons\\llightfire2",
+			soundstart = "llightfire2",
 			soundhit = "",
 
 			turret = true,
@@ -246,8 +241,8 @@ local unitDef = {
 			impactOnly = true,
 			duration = .02,
 
-			soundstart = "weapons\\klightfire",
-			soundhit = "weapons\\klighthit",
+			soundstart = "klightfire",
+			soundhit = "klighthit",
 
 			turret = true,
 			range = 500,
