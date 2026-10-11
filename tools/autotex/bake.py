@@ -54,18 +54,20 @@ def seg_dist(p, a, b):
 
 def build(m, R, meta=None):
     pieces = [(p, off) for p, off in m.root.walk() if len(p.verts)]
-    seen = {}; P = []; T = []; TP = []; UVs = []; first = []; base = 0; names = []; offs = []; canon = []; bbox = {}
+    seen = {}; P = []; T = []; TP = []; UVs = []; first = []; base = 0; names = []; offs = []; canon = []; bbox = {}; shared = []
     for k, (p, off) in enumerate(pieces):
         key = (p.verts[:, 6:8].tobytes(), p.idx.tobytes())
         first.append(key not in seen); seen.setdefault(key, k)
         names.append(p.name); offs.append(off); bbox[p.name] = (p.verts[:, :3].min(0), p.verts[:, :3].max(0))
         P.append(p.verts[:, :3] + np.array(off, np.float32)); UVs.append(p.verts[:, 6:8])
         t = s3o.triangles(p).astype(np.int64) + base; T.append(t); TP.append(np.full(len(t), k)); base += len(p.verts)
-        c = np.full(len(t), first[-1])
+        c = np.full(len(t), first[-1]); sh = np.zeros(len(t), bool)
+        if meta is not None: sh[meta[p.name].get('shared', [])] = True; sh |= any(q.get('alias_of') == p.name for q in meta.values())
+        shared.append(sh)
         if meta is not None:                       # symmetric copies / aliases share texels: only owners get painted
             c = np.zeros(len(t), bool); c[meta[p.name]['canonical']] = True
         canon.append(c)
-    canon = np.concatenate(canon)
+    canon = np.concatenate(canon); shared = np.concatenate(shared)
     P = np.concatenate(P).astype(np.float64); UV = np.concatenate(UVs).astype(np.float64); T = np.concatenate(T); TP = np.concatenate(TP)
     fn = np.cross(P[T[:, 1]] - P[T[:, 0]], P[T[:, 2]] - P[T[:, 0]]); area = np.linalg.norm(fn, axis=1); fn /= area[:, None] + 1e-12
     # --- facets: connected coplanar triangles within a piece
@@ -116,7 +118,7 @@ def build(m, R, meta=None):
     ys, xs = np.nonzero(tri >= 0); ti = tri[ys, xs]; b = bary[ys, xs].astype(np.float64)
     pos = P[T[ti, 0]] * b[:, :1] + P[T[ti, 1]] * b[:, 1:2] + P[T[ti, 2]] * (1 - b.sum(1, keepdims=True))
     F = dict(pos=pos, nrm=fn[ti], piece=TP[ti], facet=facet[ti], names=names, xs=xs, ys=ys, R=R, offs=np.array(offs, np.float64), bbox=bbox)
-    F['lpos'] = pos - np.array(offs)[TP[ti]]
+    F['lpos'] = pos - np.array(offs)[TP[ti]]; F['shared'] = shared[ti]
     F['y'] = pos[:, 1]; F['r'] = np.hypot(pos[:, 0], pos[:, 2]); F['theta'] = np.arctan2(pos[:, 2], pos[:, 0])
     # --- facet frames + edge distances
     a = np.zeros(len(pos)); bb = np.zeros(len(pos)); dcv = np.full(len(pos), 1e9); dcc = np.full(len(pos), 1e9)
@@ -148,9 +150,10 @@ def bake_ao(F, rays=48, seed=1, meta=None, step=2):
     n = F['nrm'][sel]; o = F['pos'][sel] + n * 0.03; pc = F['piece'][sel]
     copies = {}
     for k, nm in enumerate(names):
-        sym = meta[nm].get('sym', 1) if meta else 1
-        inst = [k] + ([j for j, q in enumerate(names) if meta[q].get('alias_of') == nm] if meta else [])
-        copies[k] = [(roty(2 * np.pi * r / sym), offs[j] - offs[k]) for r in range(sym) for j in inst]
+        mt = meta[nm] if meta else {}
+        ops = [np.array(o) for o in mt['ops']] if 'ops' in mt else [roty(2 * np.pi * r / mt.get('sym', 1)) for r in range(mt.get('sym', 1))]
+        inst = [(np.eye(3), np.zeros(3))] + ([(np.array(meta[q].get('alias_op', np.eye(3))), offs[j] - offs[k]) for j, q in enumerate(names) if meta[q].get('alias_of') == nm] if meta else [])
+        copies[k] = [(A @ g, dt) for g in ops for A, dt in inst]
     t = np.cross(n, np.where(np.abs(n[:, :1]) < 0.9, [[1.0, 0, 0]], [[0, 1.0, 0]])); t /= np.linalg.norm(t, axis=1)[:, None]; b = np.cross(n, t)
     rng = np.random.default_rng(seed); hit = np.zeros(len(o))
     for k in range(rays):

@@ -18,16 +18,27 @@ a tex1/tex2 pair for it. Each unit has one file, `style_<unit>.py`, holding its 
 `unwrap2.py` spends texture space only where it buys detail:
 
 * `sym {piece: k}` — the piece is k-fold symmetric about its Y axis; one sector is unwrapped and the others
-  reuse it. Repeated pieces (identical turrets) are detected and shared automatically.
+  reuse it.
+* `mirror {piece: 'x'}` — the piece is mirror-symmetric; one side is unwrapped, the other reuses it.
+* Repeated pieces (identical turrets) and mirror-image pieces (left/right pods) are detected and shared
+  automatically.
+* `unique(name, centroid, normal)` — keep a face out of the sharing. Needed under lettering, which would
+  read backwards on the mirrored side.
 * `unbend {piece: R0}` — a ring is unrolled so its arcs pack as straight strips.
 * `planar [...]` — flat-faceted pieces: each coplanar facet is projected exactly, so there is no distortion.
   Anything else is charted by xatlas.
 * `scale(name, centroid, normal)` — relative texel density per face (undersides lower, turrets higher).
+* `occlusion True` — faces buried in crevices automatically get less texture space.
 
 It writes `<model>.uvmeta.json` next to the output, which tells the baker which triangles own texels.
 `unwrap.py` is the older plain xatlas unwrap without any of this.
 
 ## Paint (`paint(F)` in the style file)
+
+`hullkit.py` holds the shared fleet look (panelled grey hull, slate stencils, team blocks, lit windows, running
+lights, hazard stripes, engine nozzles, standard turret). A unit's style builds a `Painter`, lays those out over
+its own geometry and returns `painter.finish()` — see `style_carrier.py`. (`style_starbase.py` predates the kit
+and carries its own copy.)
 
 `paint(F)` gets per-texel fields (world position, face normal, piece name, facet-local coords `a`/`b`,
 distance to convex/concave facet edges `dcv`/`dcc`, ambient occlusion `ao`) and returns albedo, team-colour
