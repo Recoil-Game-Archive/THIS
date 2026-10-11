@@ -57,6 +57,8 @@ local function Refresh()
 	local _, _, paused = Spring.GetGameSpeed()
 	view.SetText("m-pause", paused and "Unpause game" or "Pause game")
 	view.SetClass("m-settings", "hidden", WG.thisSettings == nil)
+	-- once the game is over, the results window can be brought back from here
+	view.SetClass("m-results", "hidden", not (WG.thisEndGraph and WG.thisEndGraph.Available()))
 
 	local music = WG.thisMusic and WG.thisMusic.GetState()
 	view.SetClass("music", "hidden", music == nil or confirming)
@@ -130,6 +132,7 @@ function widget:Initialize()
 	view.Assume("confirm-items", "hidden", true)
 	view.Assume("main-items", "hidden", false)
 	view.Assume("music", "hidden", true)
+	view.Assume("m-results", "hidden", true)
 
 	OnClick("menu-button", function() SetOpen(not open) end)
 	OnClick("backdrop", function() SetOpen(false) end)
@@ -142,6 +145,12 @@ function widget:Initialize()
 		SetOpen(false)
 		if WG.thisSettings then
 			WG.thisSettings.Open()
+		end
+	end)
+	OnClick("m-results", function()
+		SetOpen(false)
+		if WG.thisEndGraph then
+			WG.thisEndGraph.Open()
 		end
 	end)
 	OnClick("mu-prev", function() Music("Previous") end)

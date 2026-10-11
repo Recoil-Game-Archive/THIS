@@ -102,6 +102,7 @@
 		<div id="menu-items">
 			<div id="main-items">
 				<div id="m-resume" class="button">Resume</div>
+				<div id="m-results" class="button quiet hidden">Results</div>
 				<div id="m-pause" class="button quiet">Pause game</div>
 				<div id="m-settings" class="button quiet">Settings</div>
 				<div id="m-quit" class="button quiet">Quit</div>

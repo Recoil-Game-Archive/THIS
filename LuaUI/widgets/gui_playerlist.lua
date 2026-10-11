@@ -39,6 +39,7 @@ local lastUpdate
 local shownRows
 local showSpectators = false
 local accentTeam, accentColour
+local engineRoster -- the engine roster setting found at start
 
 --------------------------------------------------------------------------------
 
@@ -219,12 +220,27 @@ function widget:Initialize()
 		end
 	end)
 
+	-- This list takes the place of the engine's own player roster ("/info").
+	-- The engine keeps that choice in its settings, so it is put back when the
+	-- widget shuts down.
+	engineRoster = Spring.GetConfigInt("ShowPlayerInfo", 1)
+	if engineRoster ~= 0 then
+		Spring.SendCommands("info") -- a plain "info" switches it off when it is on
+	end
+
 	Refresh()
 	hud.ShowPassive(document)
 	lastUpdate = Spring.GetTimer()
 end
 
 function widget:Shutdown()
+	if engineRoster and engineRoster ~= 0 then
+		if Spring.GetConfigInt("ShowPlayerInfo", 1) == 0 then
+			Spring.SendCommands("info")
+		end
+		Spring.SetConfigInt("ShowPlayerInfo", engineRoster)
+		engineRoster = nil
+	end
 	if document then
 		document:Close()
 		document = nil

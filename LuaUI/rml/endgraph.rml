@@ -1,0 +1,203 @@
+<rml>
+<head>
+	<title>THIS end of game</title>
+	<link type="text/rcss" href="theme.rcss"/>
+	<style>
+		/* Shown when the game ends: the result, a line chart with one line per
+		   team, and a table of the teams. Built by LuaUI/widgets/gui_endgraph.lua. */
+		#backdrop {
+			position: absolute;
+			left: 0dp;
+			top: 0dp;
+			width: 100%;
+			height: 100%;
+			background-color: rgba(0, 0, 0, 120);
+			pointer-events: auto;
+		}
+		#results {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			width: 860dp;
+			margin-left: -430dp;
+			margin-top: -330dp;
+			pointer-events: auto;
+		}
+		#head {
+			display: flex;
+			flex-direction: row;
+			align-items: flex-end;
+			padding: 14dp 20dp 10dp 20dp;
+		}
+		#outcome {
+			font-size: 26dp;
+			font-weight: bold;
+			letter-spacing: 2dp;
+		}
+		#summary {
+			flex: 1;
+			margin: 0dp 0dp 4dp 14dp;
+			font-size: 13dp;
+			color: #8c9bb3;
+		}
+		#tabs {
+			display: flex;
+			flex-direction: row;
+			padding: 0dp 16dp;
+			border-bottom: 1dp #33415a;
+		}
+		.tab {
+			padding: 6dp 14dp 7dp 14dp;
+			margin: 0dp 2dp;
+			font-size: 13dp;
+			font-weight: bold;
+			letter-spacing: 1dp;
+			color: #8c9bb3;
+			border-bottom: 2dp rgba(0, 0, 0, 0);
+		}
+		.tab:hover {
+			color: #e6edf7;
+		}
+		.tab.active {
+			color: #e6edf7;
+		}
+		#chart-title {
+			padding: 12dp 20dp 0dp 20dp;
+			font-size: 12dp;
+			color: #8c9bb3;
+		}
+		/* the plot: 740 x 260 dp, with room on the left for the scale and
+		   underneath for the times */
+		#chart {
+			position: relative;
+			width: 740dp;
+			height: 260dp;
+			margin: 10dp 20dp 26dp 64dp;
+		}
+		.grid {
+			position: absolute;
+			left: 0dp;
+			width: 740dp;
+			height: 1dp;
+			background-color: rgba(255, 255, 255, 20);
+		}
+		.grid.base {
+			background-color: rgba(255, 255, 255, 70);
+		}
+		.ylabel {
+			position: absolute;
+			left: -60dp;
+			width: 52dp;
+			text-align: right;
+			font-size: 11dp;
+			color: #8c9bb3;
+		}
+		.xlabel {
+			position: absolute;
+			top: 266dp;
+			width: 60dp;
+			margin-left: -30dp;
+			text-align: center;
+			font-size: 11dp;
+			color: #8c9bb3;
+		}
+		/* one piece of a team's line, turned to point at the next sample */
+		.seg {
+			position: absolute;
+			height: 2dp;
+			transform-origin: 0% 50%;
+		}
+		.end-dot {
+			position: absolute;
+			width: 6dp;
+			height: 6dp;
+			border-radius: 3dp;
+		}
+		#no-data {
+			position: absolute;
+			top: 120dp;
+			width: 740dp;
+			text-align: center;
+			color: #8c9bb3;
+		}
+
+		#table {
+			padding: 0dp 14dp 6dp 14dp;
+			max-height: 176dp;
+			overflow-y: auto;
+		}
+		.trow {
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+			height: 22dp;
+			padding: 0dp 6dp;
+			font-size: 13dp;
+			border-radius: 3dp;
+		}
+		.trow.head {
+			font-size: 10dp;
+			letter-spacing: 1dp;
+			color: #8c9bb3;
+		}
+		.trow.me {
+			background-color: rgba(255, 255, 255, 16);
+		}
+		.dot {
+			width: 10dp;
+			height: 10dp;
+			margin-right: 8dp;
+			border-radius: 5dp;
+			border: 1dp rgba(255, 255, 255, 60);
+		}
+		.t-name {
+			flex: 1;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+		.t-num {
+			width: 98dp;
+			text-align: right;
+			white-space: nowrap;
+		}
+		.t-num.shown {
+			font-weight: bold;
+		}
+		.tag {
+			font-size: 10dp;
+			letter-spacing: 1dp;
+			margin-left: 8dp;
+		}
+		#foot {
+			display: flex;
+			flex-direction: row;
+			justify-content: flex-end;
+			padding: 10dp 16dp;
+			border-top: 1dp #33415a;
+		}
+		#foot .button {
+			width: 150dp;
+			margin-left: 8dp;
+		}
+	</style>
+</head>
+<body>
+	<div id="backdrop" class="hidden"/>
+	<div id="results" class="panel hidden">
+		<div id="results-accent" class="accent-line"/>
+		<div id="head">
+			<div id="outcome">GAME OVER</div>
+			<div id="summary"/>
+		</div>
+		<div id="tabs"/>
+		<div id="chart-title"/>
+		<div id="chart"/>
+		<div id="table"/>
+		<div id="foot">
+			<div id="quit" class="button quiet">Quit</div>
+			<div id="close" class="button">Keep watching</div>
+		</div>
+	</div>
+</body>
+</rml>
