@@ -69,7 +69,9 @@
 			width: 40dp;
 			height: 40dp;
 			margin: 0dp 12dp 0dp 14dp;
-			background-color: #8792a6;
+			/* the icons are light symbols on transparent, so the tile is dark */
+			background-color: rgba(255, 255, 255, 16);
+			border: 1dp #33415a;
 			border-radius: 3dp;
 		}
 		.perk-text {
