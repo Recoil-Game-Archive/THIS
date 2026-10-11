@@ -88,42 +88,46 @@ function gadget:UnitCreated(unitID, unitDefID, teamID, builderID)
 			local weapNumPos = pieceName:find("_") or 0
 			local weapNumEndPos = pieceName:find("_", weapNumPos+1) or 0
 			local weaponNum = tonumber(pieceName:sub(weapNumPos+1,weapNumEndPos-1) or -1)
-			if weaponNum and FindPieceProgenitor(unitID, pieceName) then info.moreGuns[weaponNum] = true end
-			if pieceName:find("pivot_") then
-				info.pivotIDs[weaponNum] = pieceNum
-			elseif pieceName:find("turret_") then
-				info.turretIDs[weaponNum] = pieceNum
-			elseif pieceName:find("sleeve_") then
-				info.sleeveIDs[weaponNum] = pieceNum
-			elseif pieceName:find("gbarrel_") then
-				info.numGBarrels[weaponNum] = (info.numGBarrels[weaponNum] or 0) + 1
-				info.gBarrelIDs[weaponNum] = info.gBarrelIDs[weaponNum] or {}
-				info.gBarrelIDs[weaponNum][info.numGBarrels[weaponNum]] = pieceNum
-			elseif pieceName:find("gp_") then
-				info.numGPs[weaponNum] = (info.numGPs[weaponNum] or 0) + 1
-				info.gpIDs[weaponNum] = info.gpIDs[weaponNum] or {}
-				info.gpIDs[weaponNum][info.numGPs[weaponNum]] = pieceNum
-			elseif pieceName:find("barrel_") then
-				info.barrelIDs[weaponNum] = pieceNum
-			elseif pieceName:find("flare_") then
-				info.flareIDs[weaponNum] = pieceNum
-			elseif pieceName:find("tp") then
-				info.torpedoPieces[weaponNum] = info.torpedoPieces[weaponNum] or {}
-				table.insert(info.torpedoPieces[weaponNum], pieceNum)
-			elseif pieceName:find("torp") then
-				info.torpedoLaunchers[weaponNum] = info.torpedoLaunchers[weaponNum] or {}
-				table.insert(info.torpedoLaunchers[weaponNum], pieceNum) -- TODO: Danger will robinson! assumes same order as the flare pieces
-			elseif pieceName:find("drone") then
-				info.dronePieces[weaponNum] = info.dronePieces[weaponNum] or {}
-				table.insert(info.dronePieces[weaponNum], pieceNum)
-			elseif pieceName:find("damage") then
-				table.insert(info.damages, pieceNum)
-			elseif pieceName:find("bay") then
-				table.insert(info.bays, pieceNum)
-			elseif pieceName:find("extra") then
-				table.insert(info.extras, pieceNum)
-			elseif pieceName:find("grav") then
-				info.grav = pieceNum
+			if weaponNum then
+				if FindPieceProgenitor(unitID, pieceName) then info.moreGuns[weaponNum] = true end
+				if pieceName:find("pivot_") then
+					info.pivotIDs[weaponNum] = pieceNum
+				elseif pieceName:find("turret_") then
+					info.turretIDs[weaponNum] = pieceNum
+				elseif pieceName:find("sleeve_") then
+					info.sleeveIDs[weaponNum] = pieceNum
+				elseif pieceName:find("gbarrel_") then
+					info.numGBarrels[weaponNum] = (info.numGBarrels[weaponNum] or 0) + 1
+					info.gBarrelIDs[weaponNum] = info.gBarrelIDs[weaponNum] or {}
+					info.gBarrelIDs[weaponNum][info.numGBarrels[weaponNum]] = pieceNum
+				elseif pieceName:find("gp_") then
+					info.numGPs[weaponNum] = (info.numGPs[weaponNum] or 0) + 1
+					info.gpIDs[weaponNum] = info.gpIDs[weaponNum] or {}
+					info.gpIDs[weaponNum][info.numGPs[weaponNum]] = pieceNum
+				elseif pieceName:find("barrel_") then
+					info.barrelIDs[weaponNum] = pieceNum
+				elseif pieceName:find("flare_") then
+					info.flareIDs[weaponNum] = pieceNum
+				elseif pieceName:find("tp") then
+					info.torpedoPieces[weaponNum] = info.torpedoPieces[weaponNum] or {}
+					table.insert(info.torpedoPieces[weaponNum], pieceNum)
+				elseif pieceName:find("torp") then
+					info.torpedoLaunchers[weaponNum] = info.torpedoLaunchers[weaponNum] or {}
+					table.insert(info.torpedoLaunchers[weaponNum], pieceNum) -- TODO: Danger will robinson! assumes same order as the flare pieces
+				elseif pieceName:find("drone") then
+					info.dronePieces[weaponNum] = info.dronePieces[weaponNum] or {}
+					table.insert(info.dronePieces[weaponNum], pieceNum)
+				end
+			else -- no weapNum
+				if pieceName:find("damage") then
+					table.insert(info.damages, pieceNum)
+				elseif pieceName:find("bay") then
+					table.insert(info.bays, pieceNum)
+				elseif pieceName:find("extra") then
+					table.insert(info.extras, pieceNum)
+				elseif pieceName:find("grav") then
+					info.grav = pieceNum
+				end
 			end
 		end
 	end
