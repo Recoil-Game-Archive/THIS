@@ -1,0 +1,108 @@
+<rml>
+<head>
+	<title>THIS fleet yard</title>
+	<link type="text/rcss" href="theme.rcss"/>
+	<style>
+		/* The large-ship column on the right edge: order, watch, deploy. */
+		#fleetyard {
+			position: absolute;
+			top: 96dp;
+			right: 8dp;
+			width: 236dp;
+			pointer-events: auto;
+		}
+		#header {
+			padding: 6dp 10dp 5dp 10dp;
+		}
+		#hulls {
+			padding: 0dp 4dp 2dp 4dp;
+		}
+		.card-progress {
+			position: absolute;
+			left: 0dp;
+			bottom: 0dp;
+			height: 3dp;
+			width: 0%;
+			background-color: #66ccff;
+		}
+		#status {
+			border-top: 1dp #33415a;
+			padding: 7dp 10dp 10dp 10dp;
+		}
+		#info {
+			color: #c9d4e5;
+			margin-bottom: 7dp;
+		}
+		#build-row {
+			margin: 1dp 0dp 5dp 0dp;
+		}
+		#build-eta {
+			margin-left: 7dp;
+		}
+		#queue-wrap {
+			margin-top: 8dp;
+		}
+		#queue {
+			margin-top: 3dp;
+		}
+		.qpic {
+			display: inline-block;
+			width: 32dp;
+			height: 24dp;
+			margin: 0dp 3dp 3dp 0dp;
+			background-color: #1a2436;
+			border: 1dp #33415a;
+		}
+		.qpic:hover {
+			border-color: #ff6b5e;
+		}
+		#deploy {
+			margin-top: 9dp;
+		}
+		#deploy.armed {
+			background-color: #e6edf7;
+		}
+
+		/* shown in the middle of the screen while choosing where to deploy */
+		#deploy-hint {
+			position: absolute;
+			top: 26%;
+			left: 50%;
+			width: 520dp;
+			margin-left: -260dp;
+			padding: 8dp 16dp 9dp 16dp;
+			text-align: center;
+		}
+		#deploy-hint-text {
+			font-size: 16dp;
+			font-weight: bold;
+		}
+	</style>
+</head>
+<body>
+	<div id="fleetyard" class="panel">
+		<div id="fleet-accent" class="accent-line"/>
+		<div id="header" class="label">FLEET YARD</div>
+		<div id="hulls"/>
+		<div id="status">
+			<div id="info" class="sub hidden"/>
+			<div id="idle" class="sub">Nothing in production</div>
+			<div id="build-now" class="hidden">
+				<div class="label">BUILDING</div>
+				<div id="build-row"><span id="build-name" class="strong"/><span id="build-eta" class="sub"/></div>
+				<div class="bar"><div id="build-fill" class="bar-fill"/></div>
+			</div>
+			<div id="queue-wrap" class="hidden">
+				<div class="label">QUEUE</div>
+				<div id="queue"/>
+			</div>
+			<div id="deploy" class="button hidden">DEPLOY</div>
+		</div>
+	</div>
+
+	<div id="deploy-hint" class="panel hidden">
+		<div id="deploy-hint-text"/>
+		<div id="deploy-hint-sub" class="sub">Right-click or Esc to cancel</div>
+	</div>
+</body>
+</rml>

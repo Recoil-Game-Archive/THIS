@@ -158,7 +158,10 @@ local function DrawBuilds(team)
 		end
 	end
 
-	-- the team's large-ship build
+	-- the team's large-ship build, unless the RmlUi fleet yard shows it
+	if WG.thisFleetYard then
+		return
+	end
 	local vert = gbpBottom + cbpHeight
 	local current = DefParam(spGetTeamRulesParam(team, "gb_current"))
 	if current then

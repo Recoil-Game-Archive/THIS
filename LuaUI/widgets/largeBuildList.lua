@@ -96,6 +96,8 @@ function widget:ViewResize(x, y)
 end
 
 function widget:DrawScreen()
+	-- replaced by the RmlUi fleet yard (gui_fleetyard.lua) while that is running
+	if WG.thisFleetYard then return end
 	local isGrey = false
 	gl.Rect(vsx - right, vsy - top, vsx - right- width, vsy - top - height)
 	--Spring.Echo(top.." "..right.." "..height.." "..width)
@@ -116,6 +118,7 @@ function widget:DrawScreen()
 end
 
 function widget:IsAbove(x,y)
+	if WG.thisFleetYard then return false end
 	if y < vsy - top and y > vsy - top - height and x > vsx - right - width and x < vsx - right then
 		return true
 	end
@@ -132,6 +135,7 @@ function widget:GetTooltip(x,y)
 end
 
 function widget:MousePress(x,y,button)
+	if WG.thisFleetYard then return false end
 	if y < vsy - top and y > vsy - top - height and x > vsx - right - width and x < vsx - right then
 		local team = Spring.GetLocalTeamID()
 		local pos = math.floor((-y - top + vsy) / buttonHeight)

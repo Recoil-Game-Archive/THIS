@@ -41,6 +41,8 @@ local function GetReady()
 end
 
 function widget:Update()
+	-- replaced by the RmlUi fleet yard (gui_fleetyard.lua) while that is running
+	if WG.thisFleetYard then return end
 	ready = GetReady()
 	if not ready then
 		active = false
@@ -48,6 +50,7 @@ function widget:Update()
 end
 
 function widget:DrawScreen()
+	if WG.thisFleetYard then return end
 	if ready then
 		gl.Texture("#"..ready)
 		gl.TexRect(left, bottom + buttonHeight, left + buttonWidth, bottom, false, true)
@@ -64,6 +67,7 @@ function widget:DrawScreen()
 end
 
 function widget:DrawWorld()
+	if WG.thisFleetYard then return end
 	local team = Spring.GetLocalTeamID()
 	if active then
 		gl.Color(.2,.2,1,1)
@@ -78,6 +82,7 @@ function widget:DrawWorld()
 end
 
 function widget:IsAbove(x,y)
+	if WG.thisFleetYard then return false end
 	if ready and x > left and x < left + buttonWidth and y > bottom and y < bottom + buttonHeight then
 		return true
 	end
@@ -92,6 +97,7 @@ function widget:GetTooltip(x,y)
 end
 
 function widget:MousePress(x,y,button)
+	if WG.thisFleetYard then return false end
 	if active and button==3 then
 		active = false
 		return true

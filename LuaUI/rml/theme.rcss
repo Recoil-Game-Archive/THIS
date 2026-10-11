@@ -26,10 +26,6 @@ div {
 	display: block;
 }
 
-.hidden {
-	display: none;
-}
-
 /* ---- panels ------------------------------------------------------------ */
 
 .panel {
@@ -87,4 +83,128 @@ div {
 	border-radius: 9dp;
 	padding: 2dp 9dp 3dp 9dp;
 	margin: 0dp 3dp;
+}
+
+/* ---- cards: one buildable thing (a hull, a ship, a turret) -------------- */
+
+.strong {
+	font-size: 13dp;
+	font-weight: bold;
+	color: #e6edf7;
+}
+
+.card {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	position: relative;
+	height: 44dp;
+	margin: 0dp 0dp 2dp 0dp;
+	padding: 0dp 8dp 0dp 0dp;
+	background-color: rgba(255, 255, 255, 10);
+	border: 1dp rgba(51, 65, 90, 0);
+	border-radius: 3dp;
+}
+
+.card:hover {
+	background-color: rgba(255, 255, 255, 34);
+	border-color: #5b6f91;
+}
+
+.card:active {
+	background-color: rgba(255, 255, 255, 56);
+}
+
+/* pictures of units; the background shows while a picture is missing */
+.pic {
+	display: block;
+	width: 56dp;
+	height: 42dp;
+	margin: 0dp 8dp 0dp 1dp;
+	background-color: #1a2436;
+}
+
+.card-text {
+	flex: 1;
+}
+
+.card-name {
+	font-size: 13dp;
+	font-weight: bold;
+	color: #e6edf7;
+}
+
+.card-cost {
+	font-size: 12dp;
+	color: #8c9bb3;
+}
+
+/* cannot be afforded outright at the moment (it can still be queued) */
+.card.poor .card-cost {
+	color: #f2b84b;
+}
+
+/* needs a perk the player does not have */
+.card.locked {
+	background-color: rgba(255, 255, 255, 0);
+}
+
+.card.locked .pic {
+	opacity: 0.3;
+}
+
+.card.locked .card-name {
+	color: #6c7a91;
+}
+
+.card.locked .card-cost {
+	color: #a8823a;
+}
+
+.badge {
+	font-size: 12dp;
+	font-weight: bold;
+	color: #0a0f18;
+	background-color: #e6edf7;
+	border-radius: 9dp;
+	padding: 1dp 7dp 2dp 7dp;
+}
+
+/* ---- progress bars -------------------------------------------------------- */
+
+.bar {
+	height: 6dp;
+	background-color: #1a2436;
+	border-radius: 3dp;
+}
+
+.bar-fill {
+	height: 6dp;
+	width: 0%;
+	background-color: #66ccff;
+	border-radius: 3dp;
+}
+
+/* ---- buttons ---------------------------------------------------------------- */
+
+.button {
+	display: block;
+	text-align: center;
+	font-size: 14dp;
+	font-weight: bold;
+	color: #0a0f18;
+	background-color: #66ccff;
+	border: 1dp rgba(255, 255, 255, 90);
+	border-radius: 3dp;
+	padding: 7dp 8dp 8dp 8dp;
+}
+
+.button:hover {
+	border-color: #ffffff;
+}
+
+/* ---- hidden: keep this the last rule, so it wins over any display above ---- */
+
+.hidden {
+	display: none;
 }
