@@ -175,6 +175,8 @@ function widget:Initialize()
 		return
 	end
 
+	hud.LoadFonts() -- before the document, so its text is laid out with them
+
 	local ok, result = pcall(context.LoadDocument, context, DOCUMENT_PATH, widget)
 	if not ok or not result then
 		Spring.Echo("[THIS Top Bar] could not load " .. DOCUMENT_PATH .. ", keeping the legacy HUD", ok and "" or result)
@@ -182,6 +184,7 @@ function widget:Initialize()
 		return
 	end
 	document = result
+	hud.PrepareDocument(document)
 
 	-- the "hidden" class is set in the markup, so start the cache from there
 	shownClass["alert.hidden"] = true

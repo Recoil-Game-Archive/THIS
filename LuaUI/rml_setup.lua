@@ -11,20 +11,10 @@ end
 -- don't allow this initialization code to be run multiple times
 RmlGuard = true
 
--- Fonts. Exo 2 is the HUD typeface (SIL Open Font License, see
--- LuaUI/Fonts/Exo2-OFL.txt). FreeMonoBold comes with the engine and is only a
--- fallback for glyphs Exo 2 does not have.
-local fontFiles = {
-	{"LuaUI/Fonts/Exo2-Regular.ttf", false},
-	{"LuaUI/Fonts/Exo2-Bold.ttf", false},
-	{"Fonts/FreeMonoBold.ttf", true},
-}
-for _, font in ipairs(fontFiles) do
-	local ok, loaded = pcall(RmlUi.LoadFontFace, font[1], font[2])
-	if not ok or loaded == false then
-		Spring.Echo("[rml_setup] could not load font " .. font[1])
-	end
-end
+Spring.Echo("[rml_setup] THIS RmlUi setup")
+
+-- The HUD fonts are loaded by LuaUI/rml/hud.lua when the first HUD widget
+-- starts, so the HUD does not depend on this file having run.
 
 -- Mouse cursor aliases: lets RCSS use the standard CSS cursor names.
 RmlUi.SetMouseCursorAlias("default", 'cursornormal')

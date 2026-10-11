@@ -10,6 +10,43 @@ local CONTEXT_NAME = "shared"
 local BASE_WIDTH = 1920
 local BASE_HEIGHT = 1080
 
+-- Exo 2 is the HUD typeface (SIL Open Font License, LuaUI/Fonts/Exo2-OFL.txt).
+local FONT_FILES = {
+	"LuaUI/Fonts/Exo2-Regular.ttf",
+	"LuaUI/Fonts/Exo2-Bold.ttf",
+}
+-- Used when Exo 2 cannot be loaded; the engine loads this face itself.
+local FALLBACK_FAMILY = "FreeSans"
+
+-- Loads the HUD fonts once per LuaUI session (WG is shared by all widgets).
+-- Returns true when Exo 2 is available.
+function hud.LoadFonts()
+	if WG.thisHudFonts ~= nil then
+		return WG.thisHudFonts
+	end
+	local allLoaded = true
+	for _, path in ipairs(FONT_FILES) do
+		local ok, loaded = pcall(RmlUi.LoadFontFace, path, false)
+		if not ok or loaded == false then
+			allLoaded = false
+			Spring.Echo("[THIS HUD] could not load font " .. path .. (ok and "" or (": " .. tostring(loaded))))
+		end
+	end
+	WG.thisHudFonts = allLoaded
+	return allLoaded
+end
+
+-- Call after loading a HUD document: makes sure its font exists, and switches
+-- the document to the engine's own font if Exo 2 could not be loaded, so the
+-- text is never simply missing.
+function hud.PrepareDocument(document)
+	if not hud.LoadFonts() then
+		pcall(function()
+			document.style["font-family"] = FALLBACK_FAMILY
+		end)
+	end
+end
+
 -- The context every HUD document lives in (created in LuaUI/rml_setup.lua).
 function hud.GetContext()
 	local context = RmlUi.GetContext(CONTEXT_NAME)

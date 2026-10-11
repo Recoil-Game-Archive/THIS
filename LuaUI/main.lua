@@ -13,7 +13,9 @@
 
 Spring.SendCommands({"ctrlpanel " .. LUAUI_DIRNAME .. "ctrlpanel.txt"})
 
-VFS.Include(LUAUI_DIRNAME .. "rml_setup.lua",  nil)--, VFS.ZIP)
+-- VFS.ZIP: always take the game's rml_setup.lua (or base content's), never a
+-- loose copy in the data directory
+VFS.Include(LUAUI_DIRNAME .. "rml_setup.lua",  nil, VFS.ZIP)
 VFS.Include(LUAUI_DIRNAME .. 'utils.lua', nil)--, VFS.ZIP)
 
 include("setupdefs.lua")
