@@ -1,6 +1,6 @@
 [UNITINFO]
 {
-	Name=Spectre;
+	Name=Ring;
 	Unitname=minelayer;
 	Description=Minelayer frigate (deploys defenses);
 
