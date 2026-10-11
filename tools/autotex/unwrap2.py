@@ -14,7 +14,7 @@ The plan module has a UVPLAN dict:
   planar  [prefixes]     flat-faceted pieces: every coplanar facet is projected exactly (no distortion);
                          other pieces are charted by xatlas
   scale   f(name, centroid, normal) -> relative texel density of a face
-Identical pieces (repeated turrets) and mirror-image pieces (left/right pods) share UV space as well. Writes <out>.uvmeta.json naming the
+Identical pieces (repeated turrets) and mirrored or flipped copies (left/right pods) share UV space as well. Writes <out>.uvmeta.json naming the
 triangles that own texture space so the baker paints each texel once."""
 import sys, json, argparse, importlib, numpy as np, xatlas
 import s3o
@@ -127,7 +127,7 @@ def unwrap(m, plan, res=2048, padding=3):
         Tp = s3o.triangles(p); Tq = s3o.triangles(q); kq = [tuple(x) for x in np.round(q.verts[:, :3] * 50).astype(int)]
         table = {}
         for j, t in enumerate(Tq): table.setdefault(tuple(sorted(kq[v] for v in t)), []).append(j)
-        for op in (np.eye(3), np.diag([-1.0, 1, 1])):
+        for op in [np.diag(sg).astype(float) for sg in ((1, 1, 1), (-1, 1, 1), (1, 1, -1), (-1, 1, -1), (1, -1, 1), (-1, -1, 1), (1, -1, -1), (-1, -1, -1))]:
             kp = [tuple(x) for x in np.round((p.verts[:, :3] @ op.T) * 50).astype(int)]; tm = []; cm = []; used = set()
             for t in Tp:
                 c = [j for j in table.get(tuple(sorted(kp[v] for v in t)), []) if j not in used]
