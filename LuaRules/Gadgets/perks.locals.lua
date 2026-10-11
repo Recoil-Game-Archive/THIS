@@ -79,6 +79,7 @@ local function PerkPicked(team, perk)
 	end
 	
 	Spring.SetTeamRulesParam(team, "hasperk_"..perk, 1)
+	Spring.SetTeamRulesParam(team, "perks_left", perks[team].left)
 end
 
 GG.PickPerk = PerkPicked
@@ -113,6 +114,9 @@ function gadget:Initialize()
 	if (chickenTeamID) then
 		perks[chickenTeamID].left = 20
 	end
+	for t,p in pairs(perks) do
+		Spring.SetTeamRulesParam(t, "perks_left", p.left)
+	end
 	GG.perks = perks
 	_G.perks = perks
 end
@@ -120,42 +124,9 @@ end
 else
 
 --UNSYNCED
+-- Perk state is published as team rules params (hasperk_<n>, perks_left)
+-- and drawn by LuaUI.
 
-local GL_ONE                 = GL.ONE
-local GL_ONE_MINUS_SRC_ALPHA = GL.ONE_MINUS_SRC_ALPHA
-local glBlending             = gl.Blending
-local glTexRect              = gl.TexRect
-local glTexture              = gl.Texture
-
-function gadget:Update()
-	if Script.LuaUI("PerkState") then
-		Script.LuaUI.PerkState(SYNCED.perks[spGetLocalTeamID()].left)
-	end
-end
-
-
-local panelTop=60
-local panelRight=0
-local panelWidth=128
-local panelHeight=128
-
-local top = panelTop + 64
-local right = panelRight + 16
-local height = 32
-local width = 32
-
-function gadget:DrawScreen(vsx, vsy)
-	--glBlending(GL_ONE, GL_ONE_MINUS_SRC_ALPHA)
-	glTexture("bitmaps/ui/money_perks.png")
-	glTexRect(vsx - panelRight - panelWidth, vsy - panelTop - panelHeight, vsx - panelRight, vsy - panelTop, false, false)
-	local n = 0
-	for p,_ in pairs(SYNCED.perks[spGetLocalTeamID()].have) do
-		glTexture(perkList[p][3])
-		glTexRect(vsx - right - n*width - width, vsy - top, vsx - right - n*width, vsy - top - height, false, true)
-		n=n+1
-	end
-	glTexture(false)
-end
-
+return false
 
 end

@@ -26,8 +26,6 @@ local height = 0
 local right = 0
 local width = 0
 
-local CMD_BUILD = 31000
-
 local buttonHeight=60
 local buttonWidth=80
 
@@ -138,16 +136,14 @@ function widget:MousePress(x,y,button)
 		local team = Spring.GetLocalTeamID()
 		local pos = math.floor((-y - top + vsy) / buttonHeight)
 		local d = buttonToUnit[pos]
-		local opts = {}
-		if button == 3 then
-			opts[#opts+1] = "right"
-		end
-		if Spring.GetModKeyState() then
-			opts[#opts+1] = "alt"
-		end
-		for _,u in ipairs(Spring.GetTeamUnits(team)) do
-			Spring.GiveOrderToUnit(u, CMD_BUILD + d, {}, opts)
-			break
+		if d then
+			if button == 3 then
+				Spring.SendLuaRulesMsg("gcancel:" .. d)
+			elseif Spring.GetModKeyState() then -- alt: put it at the front of the queue
+				Spring.SendLuaRulesMsg("gbuild:" .. d .. ":alt")
+			else
+				Spring.SendLuaRulesMsg("gbuild:" .. d)
+			end
 		end
 		return true
 	end

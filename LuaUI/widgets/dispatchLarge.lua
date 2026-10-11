@@ -19,9 +19,6 @@ local vsx, vsy =600
 local bottom = 100
 local left = 280
 
-local CMD_BUILD = 31000
-local CMD_PLACE = 32333
-
 local buttonHeight=60
 local buttonWidth=80
 
@@ -32,6 +29,22 @@ local phase = 0
 
 function widget:ViewResize(x, y)
 	vsx, vsy = widgetHandler:GetViewSizes()
+end
+
+-- unitDefID of the finished large ship waiting to be placed, or nil
+local function GetReady()
+	local r = Spring.GetTeamRulesParam(Spring.GetLocalTeamID(), "gb_ready")
+	if r and r > 0 and UnitDefs[r] then
+		return r
+	end
+	return nil
+end
+
+function widget:Update()
+	ready = GetReady()
+	if not ready then
+		active = false
+	end
 end
 
 function widget:DrawScreen()
@@ -93,19 +106,13 @@ function widget:MousePress(x,y,button)
 	else
 		if active and button==1 then
 			local s,c = Spring.TraceScreenRay(x,y,true)
-			--TODO: Check if this is right!
-			for _,u in ipairs(Spring.GetTeamUnits(team)) do
-				Spring.GiveOrderToUnit(u, CMD_PLACE, c, {})
-				break
+			if c then
+				Spring.SendLuaRulesMsg(string.format("gplace:%.1f:%.1f", c[1], c[3]))
 			end
 			active = false
 			return true
 		end
 	end
-end
-
-local function ReadyIs(type)
-	ready = type
 end
 
 function widget:Initialize()
@@ -116,7 +123,6 @@ function widget:Initialize()
 		end
 	end
 	vsx, vsy = widgetHandler:GetViewSizes()
-	widgetHandler:RegisterGlobal("ReadyIs", ReadyIs)
 end
 
 

@@ -145,6 +145,7 @@ function gadget:Initialize()
 	
 	money = GG.money
 	_G.buildstate = buildstate
+	GG.buildstate = buildstate
 	_G.globalbuild = globalbuild
 	GG.globalbuild=globalbuild
 	_G.ready = ready
@@ -298,6 +299,97 @@ local function removeBuild(list,u,n)
 	return n == 0
 end
 
+-- Large-ship (global) build orders. Shared by the legacy unit-command path in
+-- AllowCommand and by the gbuild/gcancel/gplace Lua messages sent by the HUD.
+local function QueueLarge(team, defID, alt)
+	local d = large[defID]
+	if not d then return end
+	if d.perk and not perks[team].have[d.perk] then return end
+	pushBuild(globalbuild[team], defID, alt)
+end
+
+local function CancelLarge(team, defID)
+	if not large[defID] then return end
+	local b = globalbuild[team]
+	if not removeBuild(b, defID) and b.current == defID then
+		b.current = nil
+		money[team] = money[team] + b.spent
+		b.progress = 0
+		b.spent = 0
+	end
+end
+
+local function PlaceLarge(team, x, z)
+	if not ready[team] then return end
+	for _,d in pairs(spawnList) do
+		if d.team == team then return end -- already jumping in this frame
+	end
+	local canDo = false
+	for _,u in ipairs(spGetUnitsInCylinder(x, z, jumpDist)) do
+		if buildstate[u] and spAreTeamsAllied(spGetUnitTeam(u), team) then
+			canDo=true
+			break
+		end
+	end
+
+	if not canDo then
+		for _,p in pairs(GG.planets) do
+			if allyTeam[p.lastOwner] == allyTeam[team] then
+				local dist = math.sqrt((x - p.x)*(x - p.x) + (z - p.z)*(z - p.z))
+				if dist < GG.occupationRange then
+					canDo = true
+					break
+				end
+			end
+		end
+	end
+
+	if canDo then
+		table.insert(spawnList, {
+			type = ready[team],
+			x=x,
+			y=80,
+			z=z,
+			team = team,
+		})
+	else
+		GG.message[team].text="Invalid jump location"
+		GG.message[team].hint="Select a location closer to a friendly carrier or planet."
+		GG.message[team].timeout = spGetGameFrame() + 100
+	end
+end
+
+-- Messages from LuaUI:
+--   gbuild:<unitDefID>        queue a large ship
+--   gbuild:<unitDefID>:alt    queue it at the front
+--   gcancel:<unitDefID>       remove one from the queue, or cancel the active build
+--   gplace:<x>:<z>            jump the finished ship in at this map position
+function gadget:RecvLuaMsg(msg, playerID)
+	local cmd, a, b = msg:match("^(g%a+):([^:]+):?([^:]*)$")
+	if cmd ~= "gbuild" and cmd ~= "gcancel" and cmd ~= "gplace" then
+		return
+	end
+	local _,_,spec,team = Spring.GetPlayerInfo(playerID)
+	if spec or not globalbuild[team] then
+		return true
+	end
+	a = tonumber(a)
+	if not a or a ~= a then
+		return true
+	end
+	if cmd == "gbuild" then
+		QueueLarge(team, a, b == "alt")
+	elseif cmd == "gcancel" then
+		CancelLarge(team, a)
+	else
+		b = tonumber(b)
+		if b and b == b and a >= 0 and a <= Game.mapSizeX and b >= 0 and b <= Game.mapSizeZ then
+			PlaceLarge(team, a, b)
+		end
+	end
+	return true
+end
+
 function gadget:AllowCommand(u, ud, team, cmd, param, opts)
 	if small[cmd - CMD_BUILD] then
 		if buildstate[u] then
@@ -329,59 +421,15 @@ function gadget:AllowCommand(u, ud, team, cmd, param, opts)
 			return false
 		end
 	elseif large[cmd - CMD_BUILD] then
-		local b = globalbuild[team]
-		local p = large[cmd - CMD_BUILD].perk
-		if not p or perks[team].have[p] then
-			if not opts.right then
-				pushBuild(b,cmd - CMD_BUILD, opts.alt)
-				return false
-			else
-				if not removeBuild(b,cmd-CMD_BUILD,count) and b.current == cmd - CMD_BUILD then
-					b.current = nil
-					money[team] = money[team] + b.spent
-					b.progress = 0
-					b.spent = 0
-				end
-				return false
-			end
+		if opts.right then
+			CancelLarge(team, cmd - CMD_BUILD)
+		else
+			QueueLarge(team, cmd - CMD_BUILD, opts.alt)
 		end
+		return false
 	elseif cmd == CMD_PLACE then
-		--Spawn large ship
-
-		if param[2] and ready[team] then
-			local canDo = false
-			for _,u in ipairs(spGetUnitsInCylinder(param[1], param[3], jumpDist)) do
-				if buildstate[u] and spAreTeamsAllied(spGetUnitTeam(u), team) then
-					canDo=true
-					break
-				end
-			end
-
-			if not canDo then
-				for _,p in pairs(GG.planets) do
-					if allyTeam[p.lastOwner] == allyTeam[team] then
-						local dist = math.sqrt((param[1] - p.x)*(param[1] - p.x) + (param[3] - p.z)*(param[3] - p.z))
-						if dist < GG.occupationRange then
-							canDo = true
-							break
-						end
-					end
-				end
-			end
-
-			if canDo then
-				table.insert(spawnList, {
-					type = ready[team],
-					x=param[1],
-					y=80,
-					z=param[3],
-					team = team,
-				})
-			else
-				GG.message[team].text="Invalid jump location"
-				GG.message[team].hint="Select a location closer to a friendly carrier or planet."
-				GG.message[team].timeout = spGetGameFrame() + 100
-			end
+		if param[2] then
+			PlaceLarge(team, param[1], param[3])
 		end
 		return false
 	elseif cmd==CMD_REPEAT_BUILD then
@@ -576,74 +624,8 @@ local glTranslate            = gl.Translate
 local glVertex               = gl.Vertex
 local glDepthTest=gl.DepthTest
 
-local buildstate
-
-local myTeam = Spring.GetMyTeamID()
-
-local cbpWidth=80
-local cbpHeight=60
-local cbpLeft = 280
-local gbpBottom = 100
-
-local qbpWidth=40
-local qbpHeight=30
-local qbpTop=160
-local qbpLeft=330
-
-local qbpRowHeight=70
-
-function gadget:DrawScreen(vsx,vsy)
-	local vpos = 1
-	local team = spGetLocalTeamID()
-	for _,u in ipairs(spGetSelectedUnits()) do
-		local b = buildstate[u]
-		if b then
-			local vert = vsy - qbpTop - qbpRowHeight * vpos
-			if b.current and b.progress < 1 then
-				glTexture("#"..b.current)
-				glTexRect(cbpLeft, vert, cbpLeft + cbpWidth, vert - cbpHeight,false,true)
-				glTexture(false)
-				glColor(1,1,1,.3)
-				glRect(cbpLeft, vert, cbpLeft + (cbpWidth * b.progress), vert - cbpHeight)
-				glColor(1,1,1,1)
-			end
-			local hpos = 1
-			local current = b.first
-			while current do
-				local t = current.build
-				glTexture("#"..t)
-				glTexRect(qbpLeft + hpos * qbpWidth, vert, qbpLeft + qbpWidth + hpos * qbpWidth, vert - qbpHeight,false,true)
-				hpos = hpos + 1
-				current = current.next
-			end
-			vpos = vpos + 1
-		end
-	end
-
-	local b = globalbuild[team]
-	local vert = gbpBottom + cbpHeight
-	if b.current then
-		glTexture("#"..b.current)
-		glTexRect(cbpLeft, vert, cbpLeft + cbpWidth, vert - cbpHeight,false,true)
-		glTexture(false)
-		if b.progress < 1 then
-			glColor(1,1,1,.3)
-			glRect(cbpLeft, vert, cbpLeft + (cbpWidth * b.progress), vert - cbpHeight)
-			glColor(1,1,1,1)
-		end
-	end
-	local hpos = 1
-	local current = b.first
-	while current do
-		local t = current.build
-		glTexture("#"..t)
-		glTexRect(qbpLeft + hpos * qbpWidth, vert, qbpLeft + qbpWidth + hpos * qbpWidth, vert - qbpHeight,false,true)
-		hpos = hpos + 1
-		current = current.next
-	end
-
-	glTexture(false)
-end
+-- Screen-space drawing lives in LuaUI (see gui_legacy_hud.lua); this gadget
+-- only draws rally points in the world.
 
 local size=40
 
@@ -697,9 +679,6 @@ function gadget:DrawWorld()
 end
 
 function gadget:Initialize()
-	buildstate = SYNCED.buildstate
-	globalbuild = SYNCED.globalbuild
-	perks = SYNCED.perks
 	squareList=glCreateList(glBeginEnd,GL_TRIANGLE_STRIP,Square)
 end
 
@@ -707,12 +686,6 @@ function gadget:Shutdown()
 	glDeleteList(squareList)
 end
 
-function gadget:Update()
-	local team = spGetLocalTeamID()
-	if Script.LuaUI("ReadyIs") then
-		Script.LuaUI.ReadyIs(SYNCED.ready[team])
-	end
-end
 
 
 end

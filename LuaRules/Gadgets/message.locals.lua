@@ -43,14 +43,9 @@ end
 else
 
 --UNSYNCED
-local glText           = gl.Text
+-- Messages are published as team rules params by hud_state.lua and drawn
+-- by LuaUI.
 
-function gadget:DrawScreen(vsx, vsy)
-	local team = spGetLocalTeamID()
-	if spGetGameFrame() < SYNCED.message[team].timeout then
-		glText(SYNCED.message[team].text, vsx*.5, vsy*.8, 24, "oc")
-		glText(SYNCED.message[team].hint, vsx*.5, vsy*.8 - 40, 15, "oc")
-	end
-end
+return false
 
 end

@@ -27,9 +27,6 @@ local perkList = include("perks/perks.lua")
 local posToIndex = {}
 
 local perksleft
-local function PerkState(p)
-	perksleft = p
-end
 
 function widget:Initialize()
 	vsx, vsy = widgetHandler:GetViewSizes()
@@ -41,7 +38,6 @@ function widget:Initialize()
 		posToIndex[n]=i
 		n=n+1
 	end
-	widgetHandler:RegisterGlobal("PerkState", PerkState)
 end
 
 function widget:ViewResize(x, y)
@@ -52,6 +48,7 @@ end
 
 function widget:DrawScreen()
 	local isGrey = false
+	perksleft = Spring.GetTeamRulesParam(Spring.GetLocalTeamID(), "perks_left")
 	if perksleft then
 		if perksleft > 0 then
 			gl.Text("Points left: "..perksleft, vsx - right - 200, bottom + 30 + 2* buttonHeight, 16, "c")

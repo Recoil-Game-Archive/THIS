@@ -61,12 +61,9 @@ end
 else
 
 --UNSYNCED
+-- Money and income are published as team rules params by hud_state.lua
+-- and drawn by LuaUI.
 
-local glText           = gl.Text
-function gadget:DrawScreen(vsx, vsy)
-	local team = spGetLocalTeamID()
-	glText(floor(SYNCED.money[team]), vsx-20, vsy-98, 16, "ro")
-	glText("(+"..floor(SYNCED.lastIncome[team])..")", vsx-20, vsy-108, 12, "ro")
-end
+return false
 
 end

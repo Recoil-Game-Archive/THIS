@@ -28,6 +28,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
 local lastIncome
 local deathTimer={}
+local published={}
 local chickenTeamID
 
 local enabled=(spGetModOptions().fastend or "0") == "1"
@@ -53,6 +54,12 @@ function gadget:GameFrame(f)
 				else
 					deathTimer[t]=f+1800
 				end
+			end
+			-- frame at which this team loses for holding no planets, 0 = no timer
+			local defeatFrame = deathTimer[t] or 0
+			if published[t] ~= defeatFrame then
+				published[t] = defeatFrame
+				Spring.SetTeamRulesParam(t, "defeat_frame", defeatFrame, {allied = true})
 			end
 		end
 	end
