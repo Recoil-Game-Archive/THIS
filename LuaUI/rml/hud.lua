@@ -149,6 +149,50 @@ function hud.ShowPassive(document)
 	end
 end
 
+-- RML for a unit's picture. The picture is loaded as a plain image file from
+-- unitpics/, the same file the engine uses as the build picture. A unit with
+-- no picture gets an empty box of the same size.
+local PICTURE_EXTENSIONS = {"png", "dds", "tga", "jpg", "bmp", "pcx"}
+local picturePaths = {}
+
+function hud.GetUnitPicturePath(unitDefID)
+	local path = picturePaths[unitDefID]
+	if path == nil then
+		path = false
+		local def = UnitDefs[unitDefID]
+		if def then
+			local candidates = {}
+			local named = def.buildPic or def.buildpicname
+			if type(named) == "string" and named ~= "" then
+				candidates[#candidates + 1] = "unitpics/" .. named
+			end
+			for _, extension in ipairs(PICTURE_EXTENSIONS) do
+				candidates[#candidates + 1] = "unitpics/" .. def.name .. "." .. extension
+			end
+			for _, candidate in ipairs(candidates) do
+				if VFS.FileExists(candidate) then
+					path = candidate
+					break
+				end
+			end
+		end
+		picturePaths[unitDefID] = path
+	end
+	return path or nil
+end
+
+-- class: the RCSS class that sizes the picture; attributes: extra RML
+-- attributes for the element, e.g. 'data-def="12"'
+function hud.UnitPictureRML(unitDefID, class, attributes)
+	local path = hud.GetUnitPicturePath(unitDefID)
+	attributes = attributes and (" " .. attributes) or ""
+	if path then
+		-- the leading slash makes the path absolute instead of relative to the document
+		return string.format('<img class="%s" src="/%s"%s/>', class, path, attributes)
+	end
+	return string.format('<div class="%s"%s/>', class, attributes)
+end
+
 -- Text coming from the game (messages, names) must be escaped before it is
 -- assigned to inner_rml.
 function hud.Escape(text)

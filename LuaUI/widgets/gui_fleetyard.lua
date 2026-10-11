@@ -168,7 +168,7 @@ local function BuildCards()
 		local id = hull.id
 		rml[#rml + 1] = string.format(
 			'<div id="hull-%d" class="card" data-def="%d">' ..
-				'<texture class="pic" src="#%d"/>' ..
+				'%s' ..
 				'<div class="card-text">' ..
 					'<div class="card-name">%s</div>' ..
 					'<div id="hull-%d-cost" class="card-cost">%d</div>' ..
@@ -176,7 +176,7 @@ local function BuildCards()
 				'<span id="hull-%d-badge" class="badge hidden"/>' ..
 				'<div id="hull-%d-bar" class="card-progress"/>' ..
 			'</div>',
-			id, id, id, hud.Escape(hull.name), id, hull.cost, id, id)
+			id, id, hud.UnitPictureRML(id, "pic"), hud.Escape(hull.name), id, hull.cost, id, id)
 		-- these start hidden / empty in the markup
 		shownClass["hull-" .. id .. "-badge.hidden"] = true
 	end
@@ -331,7 +331,7 @@ local function Refresh()
 	SetClass("queue-wrap", "hidden", #queue == 0)
 	local queueRml = {}
 	for i = 1, #queue do
-		queueRml[i] = string.format('<texture class="qpic" src="#%d" data-def="%d"/>', queue[i], queue[i])
+		queueRml[i] = hud.UnitPictureRML(queue[i], "qpic", 'data-def="' .. queue[i] .. '"')
 	end
 	SetText("queue", table.concat(queueRml))
 
