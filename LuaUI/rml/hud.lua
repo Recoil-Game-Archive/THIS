@@ -279,6 +279,24 @@ function hud.EventAttribute(event, attribute)
 	return nil
 end
 
+-- Hide-GUI (F5) support: call at the start of a widget's Update. Hides the
+-- document while the engine's GUI is hidden and shows it again afterwards.
+-- Returns true while hidden, so the widget can skip its refresh.
+local guiHidden = false
+
+function hud.FollowGuiHidden(document)
+	local hidden = Spring.IsGUIHidden() and true or false
+	if hidden ~= guiHidden then
+		guiHidden = hidden
+		if hidden then
+			document:Hide()
+		else
+			hud.ShowPassive(document)
+		end
+	end
+	return hidden
+end
+
 -- Text coming from the game (messages, names) must be escaped before it is
 -- assigned to inner_rml.
 function hud.Escape(text)

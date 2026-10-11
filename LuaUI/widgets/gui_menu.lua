@@ -164,7 +164,10 @@ function widget:KeyPress(key, mods, isRepeat)
 end
 
 function widget:Update()
-	if not document or not open then
+	if not document then
+		return
+	end
+	if hud.FollowGuiHidden(document) or not open then
 		return
 	end
 	local now = Spring.GetTimer()

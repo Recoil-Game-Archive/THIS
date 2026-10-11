@@ -189,6 +189,9 @@ function widget:Update()
 	if not document then
 		return
 	end
+	if hud.FollowGuiHidden(document) then
+		return -- hidden with the rest of the GUI (F5)
+	end
 	local now = Spring.GetTimer()
 	local elapsed = Spring.DiffTimers(now, lastUpdate)
 	if elapsed >= UPDATE_INTERVAL then

@@ -299,7 +299,7 @@ local function removeBuild(list,u,n)
 	return n == 0
 end
 
--- Large-ship (global) build orders. Shared by the legacy unit-command path in
+-- Large-ship (global) build orders. Shared by the unit-command path in
 -- AllowCommand and by the gbuild/gcancel/gplace Lua messages sent by the HUD.
 local function QueueLarge(team, defID, alt)
 	local d = large[defID]
@@ -624,7 +624,7 @@ local glTranslate            = gl.Translate
 local glVertex               = gl.Vertex
 local glDepthTest=gl.DepthTest
 
--- Screen-space drawing lives in LuaUI (see gui_legacy_hud.lua); this gadget
+-- Screen-space drawing lives in LuaUI (the gui_* widgets and LuaUI/rml); this gadget
 -- only draws rally points in the world.
 
 local size=40

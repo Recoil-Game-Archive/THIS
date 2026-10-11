@@ -7,10 +7,6 @@
 --  game's messages. Everything is read from rules params published by
 --  LuaRules/Gadgets/hud_state.lua.
 --
---  While this widget is running it sets WG.thisTopBar, which tells the legacy
---  HUD widget to stop drawing the old money panel and messages. If RmlUi is
---  missing or the document fails to load, the legacy drawing stays.
---
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
@@ -126,7 +122,7 @@ end
 
 function widget:Initialize()
 	if not RmlUi then
-		Spring.Echo("[THIS Top Bar] RmlUi is not available, keeping the legacy HUD")
+		Spring.Echo("[THIS Top Bar] RmlUi is not available")
 		widgetHandler:RemoveWidget()
 		return
 	end
@@ -136,7 +132,7 @@ function widget:Initialize()
 
 	local context = hud.UpdateScale()
 	if not context then
-		Spring.Echo("[THIS Top Bar] no RmlUi context, keeping the legacy HUD")
+		Spring.Echo("[THIS Top Bar] no RmlUi context")
 		widgetHandler:RemoveWidget()
 		return
 	end
@@ -145,7 +141,7 @@ function widget:Initialize()
 
 	local ok, result = pcall(context.LoadDocument, context, DOCUMENT_PATH, widget)
 	if not ok or not result then
-		Spring.Echo("[THIS Top Bar] could not load " .. DOCUMENT_PATH .. ", keeping the legacy HUD", ok and "" or result)
+		Spring.Echo("[THIS Top Bar] could not load " .. DOCUMENT_PATH .. "", ok and "" or result)
 		widgetHandler:RemoveWidget()
 		return
 	end
@@ -159,11 +155,9 @@ function widget:Initialize()
 	Refresh()
 	hud.ShowPassive(document)
 	lastUpdate = Spring.GetTimer()
-	WG.thisTopBar = true
 end
 
 function widget:Shutdown()
-	WG.thisTopBar = nil
 	if document then
 		document:Close()
 		document = nil
@@ -179,6 +173,9 @@ end
 function widget:Update()
 	if not document then
 		return
+	end
+	if hud.FollowGuiHidden(document) then
+		return -- hidden with the rest of the GUI (F5)
 	end
 	local now = Spring.GetTimer()
 	if Spring.DiffTimers(now, lastUpdate) >= UPDATE_INTERVAL then

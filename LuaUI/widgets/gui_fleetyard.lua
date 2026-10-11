@@ -13,9 +13,6 @@
 --  out as the gbuild / gcancel / gplace Lua messages handled by the build
 --  gadget.
 --
---  While this widget runs it sets WG.thisFleetYard, which switches off the
---  old build list, dispatch button and queue drawing.
---
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
@@ -341,7 +338,7 @@ end
 
 function widget:Initialize()
 	if not RmlUi then
-		Spring.Echo("[THIS Fleet Yard] RmlUi is not available, keeping the legacy build list")
+		Spring.Echo("[THIS Fleet Yard] RmlUi is not available")
 		widgetHandler:RemoveWidget()
 		return
 	end
@@ -352,7 +349,7 @@ function widget:Initialize()
 
 	local context = hud.UpdateScale()
 	if not context then
-		Spring.Echo("[THIS Fleet Yard] no RmlUi context, keeping the legacy build list")
+		Spring.Echo("[THIS Fleet Yard] no RmlUi context")
 		widgetHandler:RemoveWidget()
 		return
 	end
@@ -360,7 +357,7 @@ function widget:Initialize()
 	hud.LoadFonts()
 	local ok, result = pcall(context.LoadDocument, context, DOCUMENT_PATH, widget)
 	if not ok or not result then
-		Spring.Echo("[THIS Fleet Yard] could not load " .. DOCUMENT_PATH .. ", keeping the legacy build list", ok and "" or result)
+		Spring.Echo("[THIS Fleet Yard] could not load " .. DOCUMENT_PATH .. "", ok and "" or result)
 		widgetHandler:RemoveWidget()
 		return
 	end
@@ -386,11 +383,9 @@ function widget:Initialize()
 	Refresh()
 	hud.ShowPassive(document)
 	lastUpdate = Spring.GetTimer()
-	WG.thisFleetYard = true
 end
 
 function widget:Shutdown()
-	WG.thisFleetYard = nil
 	if document then
 		document:Close()
 		document = nil
@@ -406,6 +401,9 @@ end
 function widget:Update()
 	if not document then
 		return
+	end
+	if hud.FollowGuiHidden(document) then
+		return -- hidden with the rest of the GUI (F5)
 	end
 	local now = Spring.GetTimer()
 	if Spring.DiffTimers(now, lastUpdate) >= UPDATE_INTERVAL then
