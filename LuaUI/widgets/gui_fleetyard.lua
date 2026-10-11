@@ -43,10 +43,8 @@ local AUTOMATION_FACTOR = 0.85
 local hud
 local perkList
 local document
-local elements = {}
-local shownText = {}
-local shownClass = {}
-local shownStyle = {}
+local view
+local Element, SetText, SetClass, SetStyle
 local lastUpdate
 
 local hulls = {}       -- ordered list of {id=, name=, cost=, buildtime=, perk=, tooltip=}
@@ -61,50 +59,6 @@ local accentR, accentG, accentB = 0.4, 0.8, 1
 
 local floor = math.floor
 local ceil = math.ceil
-
---------------------------------------------------------------------------------
--- DOM helpers: only touch the document when something changed
-
-local function Element(id)
-	local element = elements[id]
-	if element == nil then
-		element = document:GetElementById(id) or false
-		elements[id] = element
-	end
-	return element
-end
-
-local function SetText(id, text)
-	if shownText[id] ~= text then
-		local element = Element(id)
-		if element then
-			element.inner_rml = text
-		end
-		shownText[id] = text
-	end
-end
-
-local function SetClass(id, class, state)
-	local key = id .. "." .. class
-	if shownClass[key] ~= state then
-		local element = Element(id)
-		if element then
-			element:SetClass(class, state)
-		end
-		shownClass[key] = state
-	end
-end
-
-local function SetStyle(id, property, value)
-	local key = id .. "." .. property
-	if shownStyle[key] ~= value then
-		local element = Element(id)
-		if element then
-			element.style[property] = value
-		end
-		shownStyle[key] = value
-	end
-end
 
 --------------------------------------------------------------------------------
 -- data
@@ -177,25 +131,14 @@ local function BuildCards()
 				'<div id="hull-%d-bar" class="card-progress"/>' ..
 			'</div>',
 			id, id, hud.UnitPictureRML(id, "pic"), hud.Escape(hull.name), id, hull.cost, id, id)
-		-- these start hidden / empty in the markup
-		shownClass["hull-" .. id .. "-badge.hidden"] = true
+		view.Assume("hull-" .. id .. "-badge", "hidden", true) -- as written above
 	end
 	Element("hulls").inner_rml = table.concat(rml)
 end
 
--- the hull card an event happened on, if any
+-- the hull card (or queue entry) an event happened on, if any
 local function EventDef(event)
-	local element = event.target_element
-	for _ = 1, 6 do
-		if not element then
-			return nil
-		end
-		if element:HasAttribute("data-def") then
-			return tonumber(element:GetAttribute("data-def"))
-		end
-		element = element.parent_node
-	end
-	return nil
+	return hud.EventAttribute(event, "data-def")
 end
 
 --------------------------------------------------------------------------------
@@ -273,7 +216,7 @@ local function Refresh()
 		hud.ApplyAccent(document, team, {}, {"fleet-accent", "build-fill", "deploy"})
 		local r, g, b = hud.GetAccent(team)
 		accentR, accentG, accentB = r / 255, g / 255, b / 255
-		shownStyle = {} -- card progress bars pick the colour up again below
+		view.ForgetStyles() -- card progress bars pick the colour up again below
 	end
 
 	local money = Spring.GetTeamRulesParam(team, "money") or 0
@@ -424,12 +367,14 @@ function widget:Initialize()
 	document = result
 	hud.PrepareDocument(document)
 
+	view = hud.NewView(document)
+	Element, SetText, SetClass, SetStyle = view.Element, view.SetText, view.SetClass, view.SetStyle
 	-- classes set in the markup
-	shownClass["build-now.hidden"] = true
-	shownClass["queue-wrap.hidden"] = true
-	shownClass["deploy.hidden"] = true
-	shownClass["deploy-hint.hidden"] = true
-	shownClass["info.hidden"] = true
+	view.Assume("build-now", "hidden", true)
+	view.Assume("queue-wrap", "hidden", true)
+	view.Assume("deploy", "hidden", true)
+	view.Assume("deploy-hint", "hidden", true)
+	view.Assume("info", "hidden", true)
 
 	BuildCards()
 	Element("hulls"):AddEventListener("mousedown", OnHullMouseDown)

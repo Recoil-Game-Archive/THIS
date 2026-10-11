@@ -193,6 +193,91 @@ function hud.UnitPictureRML(unitDefID, class, attributes)
 	return string.format('<div class="%s"%s/>', class, attributes)
 end
 
+-- A view wraps a document and only touches it when a value actually changes,
+-- so a widget can simply restate everything on every refresh.
+function hud.NewView(document)
+	local view = {document = document}
+	local elements = {}
+	local shownText, shownClass, shownStyle = {}, {}, {}
+
+	function view.Element(id)
+		local element = elements[id]
+		if element == nil then
+			element = document:GetElementById(id) or false
+			elements[id] = element
+		end
+		return element
+	end
+
+	function view.SetText(id, text)
+		if shownText[id] ~= text then
+			local element = view.Element(id)
+			if element then
+				element.inner_rml = text
+			end
+			shownText[id] = text
+		end
+	end
+
+	function view.SetClass(id, class, state)
+		local key = id .. "." .. class
+		if shownClass[key] ~= state then
+			local element = view.Element(id)
+			if element then
+				element:SetClass(class, state)
+			end
+			shownClass[key] = state
+		end
+	end
+
+	function view.SetStyle(id, property, value)
+		local key = id .. "." .. property
+		if shownStyle[key] ~= value then
+			local element = view.Element(id)
+			if element then
+				element.style[property] = value
+			end
+			shownStyle[key] = value
+		end
+	end
+
+	-- Tell the view what the markup already says, so the first refresh does
+	-- not rewrite it (e.g. an element that starts with class "hidden").
+	function view.Assume(id, class, state)
+		shownClass[id .. "." .. class] = state
+	end
+
+	-- Elements created through inner_rml are new: forget what was cached for
+	-- them. Call after replacing a container's content.
+	function view.Forget()
+		elements = {}
+		shownStyle = {}
+	end
+
+	-- Styles set from outside the view (hud.ApplyAccent) are not tracked.
+	function view.ForgetStyles()
+		shownStyle = {}
+	end
+
+	return view
+end
+
+-- For event handlers on a container: the numeric value of the given attribute
+-- on the element the event happened on, or on one of its ancestors.
+function hud.EventAttribute(event, attribute)
+	local element = event.target_element
+	for _ = 1, 8 do
+		if not element then
+			return nil
+		end
+		if element:HasAttribute(attribute) then
+			return tonumber(element:GetAttribute(attribute))
+		end
+		element = element.parent_node
+	end
+	return nil
+end
+
 -- Text coming from the game (messages, names) must be escaped before it is
 -- assigned to inner_rml.
 function hud.Escape(text)

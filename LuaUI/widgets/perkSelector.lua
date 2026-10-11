@@ -47,6 +47,8 @@ function widget:ViewResize(x, y)
 end
 
 function widget:DrawScreen()
+	-- replaced by the RmlUi perk picker (gui_perkpicker.lua) while that is running
+	if WG.thisPerkPicker then return end
 	local isGrey = false
 	perksleft = Spring.GetTeamRulesParam(Spring.GetLocalTeamID(), "perks_left")
 	if perksleft then
@@ -74,6 +76,7 @@ function widget:DrawScreen()
 end
 
 function widget:IsAbove(x,y)
+	if WG.thisPerkPicker then return false end
 	if visible and x > vsx - right - width and x < vsx - right and y > bottom and y < bottom + height then
 		return true
 	end
@@ -90,6 +93,7 @@ function widget:GetTooltip(x,y)
 end
 
 function widget:MousePress(x,y,button)
+	if WG.thisPerkPicker then return false end
 	local team = Spring.GetLocalTeamID()
 	if visible and x > vsx - right - width and x < vsx - right and y > bottom and y < bottom + height then
 		local pos = math.floor((vsx - right - x)/buttonWidth) * 2 + math.floor((y - bottom)/buttonHeight) % 2

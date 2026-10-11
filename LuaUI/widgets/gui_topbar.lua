@@ -33,47 +33,13 @@ local GAME_SPEED = 30       -- sim frames per second
 local hud
 local perkList
 local document
-local elements = {}   -- id -> element
-local shownText = {}  -- id -> last inner_rml written
-local shownClass = {} -- id .. class -> last state written
+local view
+local SetText, SetClass
 local lastUpdate
 local accentTeam, accentColour
 
 local floor = math.floor
 local ceil = math.ceil
-
---------------------------------------------------------------------------------
--- small DOM helpers that only touch the document when something changed
-
-local function Element(id)
-	local element = elements[id]
-	if element == nil then
-		element = document:GetElementById(id) or false
-		elements[id] = element
-	end
-	return element
-end
-
-local function SetText(id, text)
-	if shownText[id] ~= text then
-		local element = Element(id)
-		if element then
-			element.inner_rml = text
-		end
-		shownText[id] = text
-	end
-end
-
-local function SetClass(id, class, state)
-	local key = id .. "." .. class
-	if shownClass[key] ~= state then
-		local element = Element(id)
-		if element then
-			element:SetClass(class, state)
-		end
-		shownClass[key] = state
-	end
-end
 
 --------------------------------------------------------------------------------
 
@@ -186,8 +152,9 @@ function widget:Initialize()
 	document = result
 	hud.PrepareDocument(document)
 
-	-- the "hidden" class is set in the markup, so start the cache from there
-	shownClass["alert.hidden"] = true
+	view = hud.NewView(document)
+	SetText, SetClass = view.SetText, view.SetClass
+	view.Assume("alert", "hidden", true) -- set in the markup
 
 	Refresh()
 	hud.ShowPassive(document)

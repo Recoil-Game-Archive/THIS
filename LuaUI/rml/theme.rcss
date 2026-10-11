@@ -203,6 +203,31 @@ div {
 	border-color: #ffffff;
 }
 
+/* a secondary action next to a main one */
+.button.quiet {
+	color: #c9d4e5;
+	background-color: rgba(255, 255, 255, 20);
+	border-color: #33415a;
+}
+
+.button.quiet:hover {
+	border-color: #8c9bb3;
+}
+
+/* cannot be used right now; the widget also ignores clicks on it */
+.button.disabled {
+	color: #6c7a91;
+	background-color: rgba(255, 255, 255, 14);
+	border-color: #33415a;
+}
+
+.title {
+	font-size: 16dp;
+	font-weight: bold;
+	letter-spacing: 1dp;
+	color: #e6edf7;
+}
+
 /* ---- hidden: keep this the last rule, so it wins over any display above ---- */
 
 .hidden {

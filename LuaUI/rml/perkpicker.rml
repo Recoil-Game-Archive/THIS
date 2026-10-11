@@ -1,0 +1,167 @@
+<rml>
+<head>
+	<title>THIS perk picker</title>
+	<link type="text/rcss" href="theme.rcss"/>
+	<style>
+		/* Reminder under the top bar while perk points are unspent. */
+		#pill {
+			position: absolute;
+			top: 94dp;
+			left: 50%;
+			width: 300dp;
+			margin-left: -150dp;
+			pointer-events: auto;
+			font-size: 13dp;
+			padding: 5dp 8dp 6dp 8dp;
+		}
+
+		/* The picker itself. It never pauses or blocks the game. */
+		#picker {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			width: 780dp;
+			margin-left: -390dp;
+			margin-top: -260dp;
+			pointer-events: auto;
+		}
+		#picker-head {
+			padding: 12dp 16dp 10dp 16dp;
+		}
+		#points {
+			margin-left: 12dp;
+			font-size: 14dp;
+		}
+		#perk-grid {
+			display: flex;
+			flex-direction: row;
+			flex-wrap: wrap;
+			padding: 0dp 10dp 0dp 14dp;
+		}
+		.perk {
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+			position: relative;
+			width: 372dp;
+			height: 60dp;
+			margin: 0dp 4dp 4dp 0dp;
+			background-color: rgba(255, 255, 255, 10);
+			border: 1dp rgba(51, 65, 90, 0);
+			border-radius: 3dp;
+		}
+		.perk:hover {
+			background-color: rgba(255, 255, 255, 34);
+			border-color: #5b6f91;
+		}
+		/* the accent stripe of a selected perk; coloured from Lua */
+		.perk-mark {
+			display: none;
+			position: absolute;
+			left: 0dp;
+			top: 0dp;
+			width: 4dp;
+			height: 60dp;
+			background-color: #66ccff;
+		}
+		.perk-icon {
+			display: block;
+			width: 40dp;
+			height: 40dp;
+			margin: 0dp 12dp 0dp 14dp;
+			background-color: #8792a6;
+			border-radius: 3dp;
+		}
+		.perk-text {
+			flex: 1;
+			padding-right: 10dp;
+		}
+		.perk-name {
+			font-size: 14dp;
+			font-weight: bold;
+			color: #e6edf7;
+		}
+		.perk-desc {
+			font-size: 12dp;
+			color: #a9b6ca;
+		}
+		.perk-tag {
+			display: none;
+			font-size: 11dp;
+			font-weight: bold;
+			letter-spacing: 1dp;
+			color: #6fdc8c;
+			margin-right: 12dp;
+		}
+
+		.perk.selected {
+			background-color: rgba(255, 255, 255, 46);
+			border-color: #e6edf7;
+		}
+		.perk.selected .perk-mark {
+			display: block;
+		}
+
+		/* already chosen earlier */
+		.perk.owned {
+			background-color: rgba(111, 220, 140, 20);
+			border-color: rgba(51, 65, 90, 0);
+		}
+		.perk.owned .perk-tag {
+			display: block;
+		}
+		.perk.owned .perk-desc {
+			color: #8c9bb3;
+		}
+
+		/* every point is already spent or selected */
+		.perk.full {
+			background-color: rgba(255, 255, 255, 0);
+			border-color: rgba(51, 65, 90, 0);
+		}
+		.perk.full .perk-name {
+			color: #6c7a91;
+		}
+		.perk.full .perk-desc {
+			color: #56627a;
+		}
+		.perk.full .perk-icon {
+			opacity: 0.35;
+		}
+
+		#picker-foot {
+			display: flex;
+			flex-direction: row;
+			justify-content: flex-end;
+			border-top: 1dp #33415a;
+			margin-top: 6dp;
+			padding: 10dp 14dp 12dp 14dp;
+		}
+		#foot-note {
+			flex: 1;
+			padding-top: 8dp;
+		}
+		#later {
+			width: 130dp;
+			margin-right: 8dp;
+		}
+		#confirm {
+			width: 210dp;
+		}
+	</style>
+</head>
+<body>
+	<div id="pill" class="button hidden"/>
+
+	<div id="picker" class="panel hidden">
+		<div id="picker-accent" class="accent-line"/>
+		<div id="picker-head"><span class="title">CHOOSE YOUR PERKS</span><span id="points" class="sub"/></div>
+		<div id="perk-grid"/>
+		<div id="picker-foot">
+			<div id="foot-note" class="sub">Perks are permanent for this game.</div>
+			<div id="later" class="button quiet">Decide later</div>
+			<div id="confirm" class="button disabled">Select a perk</div>
+		</div>
+	</div>
+</body>
+</rml>
