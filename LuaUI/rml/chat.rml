@@ -1,0 +1,38 @@
+<rml>
+<head>
+	<title>THIS chat log</title>
+	<link type="text/rcss" href="theme.rcss"/>
+	<style>
+		/* Recent chat and game messages, bottom-left. Lines fade out by being
+		   dropped after a while; the whole log shows while you are typing. */
+		#chat {
+			position: absolute;
+			left: 8dp;
+			bottom: 250dp;
+			width: 430dp;
+			padding: 6dp 10dp 7dp 10dp;
+			background-color: rgba(9, 14, 24, 150);
+			border: 1dp rgba(51, 65, 90, 160);
+		}
+		.line {
+			display: block;
+			font-size: 13dp;
+			color: #e6edf7;
+			margin-top: 1dp;
+		}
+		/* messages from the game or engine, not from a person */
+		.line.system {
+			color: #8c9bb3;
+			font-size: 12dp;
+		}
+		.line .who {
+			font-weight: bold;
+		}
+	</style>
+</head>
+<body>
+	<div id="chat" class="panel hidden">
+		<div id="lines"/>
+	</div>
+</body>
+</rml>
