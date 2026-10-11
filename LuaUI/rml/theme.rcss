@@ -214,6 +214,13 @@ div {
 	border-color: #8c9bb3;
 }
 
+/* something that cannot be undone */
+.button.danger {
+	color: #ffffff;
+	background-color: #b3352b;
+	border-color: #ff6b5e;
+}
+
 /* cannot be used right now; the widget also ignores clicks on it */
 .button.disabled {
 	color: #6c7a91;

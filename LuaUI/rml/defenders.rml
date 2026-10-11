@@ -1,0 +1,72 @@
+<rml>
+<head>
+	<title>THIS defenders panel</title>
+	<link type="text/rcss" href="theme.rcss"/>
+	<style>
+		/* Status of the Defenders of the Galaxy mode, under the minimap. */
+		#defenders {
+			position: absolute;
+			top: 284dp;
+			left: 8dp;
+			width: 240dp;
+		}
+		#def-body {
+			padding: 7dp 10dp 9dp 10dp;
+		}
+		#def-mode {
+			margin: 1dp 0dp 7dp 0dp;
+		}
+		#def-timer {
+			font-size: 20dp;
+			font-weight: bold;
+			color: #e6edf7;
+		}
+		#def-timer-label {
+			margin-left: 6dp;
+		}
+		#def-bar {
+			margin: 4dp 0dp 8dp 0dp;
+		}
+		#def-fill {
+			background-color: #f2b84b;
+		}
+		.stat-row {
+			display: flex;
+			flex-direction: row;
+			font-size: 12dp;
+			color: #a9b6ca;
+			margin-top: 2dp;
+		}
+		.stat-name {
+			flex: 1;
+		}
+		.stat-value {
+			font-weight: bold;
+			color: #e6edf7;
+		}
+		#def-event {
+			margin-top: 8dp;
+			padding-top: 6dp;
+			border-top: 1dp #33415a;
+			font-size: 13dp;
+			font-weight: bold;
+			color: #f2b84b;
+		}
+	</style>
+</head>
+<body>
+	<div id="defenders" class="panel hidden">
+		<div class="accent-line" id="def-accent"/>
+		<div id="def-body">
+			<div class="label">DEFENDERS OF THE GALAXY</div>
+			<div id="def-mode" class="sub"/>
+			<div><span id="def-timer"/><span id="def-timer-label" class="sub"/></div>
+			<div id="def-bar" class="bar"><div id="def-fill" class="bar-fill"/></div>
+			<div class="stat-row"><span class="stat-name">Enemy starbases</span><span id="def-bases" class="stat-value"/></div>
+			<div class="stat-row"><span class="stat-name">Enemy ships</span><span id="def-ships" class="stat-value"/></div>
+			<div class="stat-row"><span class="stat-name">Destroyed</span><span id="def-kills" class="stat-value"/></div>
+			<div id="def-event" class="hidden"/>
+		</div>
+	</div>
+</body>
+</rml>
