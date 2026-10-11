@@ -89,9 +89,9 @@ local options= {
 		section="Chicken",
 	},
 	{
-		key="enablequasar",
-		name="Enable Quasar",
-		desc="Enables the Quasar assault battlecruiser (may not be balanced)",
+		key="enablebigships",
+		name="Enable Big Ships",
+		desc="Enables the KingRaptors big ships; Eclipse cruiser & Quasar battlecruiser",
 		type="bool",
 		def=true,
 		section="Experimental",

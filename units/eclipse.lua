@@ -1,6 +1,6 @@
-local unitName = "shadowofeden"
+local unitName = "eclipse"
 local unitDef = {
-	Name = "Shadow of Eden",
+	Name = "Eclipse",
 	Description = "Advanced command-and-control cruiser",
 
 	-- Required Tags
@@ -14,7 +14,7 @@ local unitDef = {
 	autoheal = 10,
 	idleTime = 0,
 	idleAutoHeal = 0,
-	objectName = "shadowofeden.s3o",
+	objectName = "eclipse.s3o",
 	soundCategory = "CARRIER",
 	collisionVolumeType = "Box",
 	collisionVolumeScales = "110 50 220",
@@ -121,7 +121,7 @@ local unitDef = {
 	
 	-- Misc
 	selfDestructCountdown = 6,
-	script = "shadowofeden.lua",
+	script = "eclipse.lua",
 
 	sfxTypes = {
 		explosionGenerators = {

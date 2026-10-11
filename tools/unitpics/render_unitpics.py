@@ -43,7 +43,7 @@ AMBIENT = 0.20
 # Units with a picture. unit name -> model file is read from units/*.
 UNITS = [
     "carrier", "supportcarrier", "stealthcarrier", "starbase", "minelayer", "meteor",
-    "comet", "starslayer", "quasar", "imperator",
+    "comet", "starslayer", "eclipse", "quasar", "imperator",
     "dagger", "sword", "mace", "claymore", "wraith", "longbow", "warhammer",
     "dronelauncherm", "gunstar_cannon", "gunstar_torpedo", "probe",
     "imperator_hangar", "imperator_hive", "imperator_turret_am",
