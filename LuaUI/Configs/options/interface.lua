@@ -20,6 +20,8 @@ return {
 			Spring.SendCommands("tooltip 1")
 			WG.thisEngineTooltipHidden = nil
 		  end },
+		{ id = "playerslist", name = "Players list", type = "bool", widget = "THIS Players List", requires = "THIS Players List",
+		  desc = "Players, planets held and ping in the bottom-right corner." },
 		{ id = "simpleminimapcolors", name = "Simple minimap colours", type = "bool", config = "SimpleMiniMapColors", cmd = "minimap simplecolors %d",
 		  desc = "Your units, allies and enemies each in one colour on the minimap." },
 

@@ -1,0 +1,120 @@
+<rml>
+<head>
+	<title>THIS players list</title>
+	<link type="text/rcss" href="theme.rcss"/>
+	<style>
+		/* Players in the bottom-right corner: one row per player, grouped by
+		   alliance, with planets held and ping. Spectators fold into one line. */
+		#players {
+			position: absolute;
+			right: 8dp;
+			bottom: 8dp;
+			width: 236dp;
+		}
+		#head {
+			display: flex;
+			flex-direction: row;
+			padding: 6dp 10dp 4dp 10dp;
+		}
+		#head .label {
+			font-size: 10dp;
+		}
+		.c-name {
+			flex: 1;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+		.c-planets {
+			width: 52dp;
+			text-align: right;
+		}
+		.c-ping {
+			width: 48dp;
+			text-align: right;
+		}
+		#rows {
+			padding: 0dp 6dp 5dp 6dp;
+		}
+		.prow {
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+			height: 22dp;
+			padding: 0dp 4dp;
+			font-size: 13dp;
+			border-radius: 3dp;
+		}
+		/* you */
+		.prow.me {
+			background-color: rgba(255, 255, 255, 16);
+		}
+		.prow.me .c-name {
+			font-weight: bold;
+		}
+		.dot {
+			width: 10dp;
+			height: 10dp;
+			margin-right: 7dp;
+			border-radius: 5dp;
+			border: 1dp rgba(255, 255, 255, 60);
+		}
+		.tag {
+			font-size: 10dp;
+			letter-spacing: 1dp;
+			color: #8c9bb3;
+			margin-left: 6dp;
+		}
+		.prow .c-planets {
+			font-weight: bold;
+		}
+		.prow .c-ping {
+			font-size: 12dp;
+			color: #8c9bb3;
+		}
+		/* defeated, or left the game */
+		.prow.out .c-name,
+		.prow.out .c-planets {
+			color: #6c7a91;
+		}
+		.prow.out .dot {
+			opacity: 0.35;
+		}
+		/* between alliances */
+		.gap {
+			height: 1dp;
+			margin: 4dp 4dp;
+			background-color: rgba(255, 255, 255, 26);
+		}
+		#specs {
+			padding: 5dp 10dp 6dp 10dp;
+			border-top: 1dp #33415a;
+			font-size: 12dp;
+			color: #8c9bb3;
+			pointer-events: auto;
+		}
+		#specs:hover {
+			color: #e6edf7;
+		}
+		#spec-names {
+			padding: 0dp 10dp 7dp 10dp;
+			font-size: 12dp;
+			color: #c9d4e5;
+			word-break: break-word;
+		}
+	</style>
+</head>
+<body>
+	<div id="players" class="panel hidden">
+		<div id="players-accent" class="accent-line"/>
+		<div id="head">
+			<div class="label c-name">PLAYERS</div>
+			<div class="label c-planets">PLANETS</div>
+			<div class="label c-ping">PING</div>
+		</div>
+		<div id="rows"/>
+		<div id="specs" class="hidden"/>
+		<div id="spec-names" class="hidden"/>
+	</div>
+</body>
+</rml>
