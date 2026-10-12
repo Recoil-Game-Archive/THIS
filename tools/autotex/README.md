@@ -52,3 +52,16 @@ mask, emission and reflectivity. Patterns are defined in model space, so they li
 
 Conventions: tex1 RGB = diffuse, A = team colour (fully opaque wherever team colour goes, otherwise it washes
 out); tex2 R = glow, G = reflectivity. DDS is DXT5 with mipmaps, V flipped the way the engine expects for DDS.
+
+## Giant hulls: tileset texturing (tiles.py, dice.py)
+
+A hull the size of the Imperator (2245 units long, ten million square units of surface) would get about
+1.3 texels per unit from a unique 4096 texture, against 12-18 for the rest of the fleet. For such hulls:
+
+    python3 dice.py in.s3o out_dir style_module
+
+`tiles.py` paints a sheet of 8x8 plating tiles (each covers 40 model units at 11.6 texels per unit, with a
+wrapped gutter), and `dice.py` cuts every face along a 40-unit world lattice so that each cell shows one tile.
+The style module supplies `TILES` and `tile_for(piece, centre, normal, axis, iu, iv, ao)`, which chooses the
+tile and its rotation for each cell (lanes, pads, window walls, engines ...). The shape is unchanged; the
+triangle count grows (Imperator: 640 -> 24k). There is no baked ambient occlusion in this mode.

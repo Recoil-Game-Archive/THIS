@@ -243,15 +243,16 @@ def unwrap(m, plan, res=2048, padding=3, pack_tries=None):
                 f.append(vmapd[key]); owner.append((gi, i, c))
             F.append(f)
     V = np.array(V, np.float32); F = np.array(F, np.uint32)
+    work = min(res, 2048); pad_w = max(1, int(round(padding * work / res)))      # pack on a <=2048 grid (the packer is slow beyond that), then scale
     def pack(tpu, brute=True):
         a = xatlas.Atlas(); a.add_uv_mesh(V, F)
-        po = xatlas.PackOptions(); po.resolution = 0; po.padding = padding; po.texels_per_unit = tpu; po.bruteForce = brute
+        po = xatlas.PackOptions(); po.resolution = 0; po.padding = pad_w; po.texels_per_unit = tpu; po.bruteForce = brute
         po.rotate_charts = True; po.rotate_charts_to_axis = True; po.blockAlign = False
         a.generate(xatlas.ChartOptions(), po); return a
     # Let the packer size the atlas freely, then rescale so it fills the texture. Layouts differ with the working
     # resolution, so try several and keep the densest.
     e1 = V[F[:, 1]] - V[F[:, 0]]; e2 = V[F[:, 2]] - V[F[:, 0]]; area = np.abs(e1[:, 0] * e2[:, 1] - e1[:, 1] * e2[:, 0]).sum() / 2
-    t = res * np.sqrt(0.72 / area); best = None; tried = []; rng = np.random.default_rng(7)
+    full = res; res = work; t = res * np.sqrt(0.72 / area); best = None; tried = []; rng = np.random.default_rng(7)
     for it in range(pack_tries or plan.get('pack_tries', 28)):
         a = pack(t); side = max(a.width, a.height); lo_side = min(a.width, a.height)
         sides = (a.width, a.height) if lo_side > 0.9 * side else (side, side)       # <=10% stretch is invisible; use the full square
@@ -259,10 +260,10 @@ def unwrap(m, plan, res=2048, padding=3, pack_tries=None):
         if side <= res * 1.03 and (best is None or eff > best[0]): best = (eff, a, sides)
         tried.append(round(eff, 2))
         t = (best[0] if best else eff) * rng.uniform(0.9, 1.03)
-    tpu, a, sides = best
+    tpu, a, sides = best; tpu *= full / work; res = full
     vmap, idx, uvn = a[0]
     newuv = np.zeros((len(V), 2)); newuv[vmap] = uvn * np.array([a.width, a.height]) / np.array(sides)
-    print(f'packed {a.width}x{a.height} -> {res}: {tpu:.2f} texels/unit at density 1.0, fill {area * tpu * tpu / res / res:.0%}, charts {a.chart_count}, tries {min(tried)}..{max(tried)}')
+    print(f'packed {a.width}x{a.height} (x{full // work}) -> {res}: {tpu:.2f} texels/unit at density 1.0, fill {area * tpu * tpu / res / res:.0%}, charts {a.chart_count}')
     # write back owned corners, then derive copies through each chart's affine map
     for g in groups: g['new'] = np.zeros_like(g['uv'])
     for (gi, i, c), v in zip(owner, F.reshape(-1)): groups[gi]['new'][i, c] = newuv[v]
