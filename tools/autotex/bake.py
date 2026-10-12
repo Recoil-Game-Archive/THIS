@@ -148,12 +148,18 @@ def bake_ao(F, rays=48, seed=1, meta=None, step=2):
     P, T = F['mesh']; mesh = trimesh.Trimesh(P, T, process=False); R = F['R']; names = F['names']; offs = F['offs']
     sel = np.nonzero((F['xs'] % step == 0) & (F['ys'] % step == 0))[0]
     n = F['nrm'][sel]; o = F['pos'][sel] + n * 0.03; pc = F['piece'][sel]
-    copies = {}
+    copies = {}                                   # piece -> [(R, t, instance offset)]: every place its texels appear
     for k, nm in enumerate(names):
         mt = meta[nm] if meta else {}
-        ops = [np.array(o) for o in mt['ops']] if 'ops' in mt else [roty(2 * np.pi * r / mt.get('sym', 1)) for r in range(mt.get('sym', 1))]
-        inst = [(np.eye(3), np.zeros(3))] + ([(np.array(meta[q].get('alias_op', np.eye(3))), offs[j] - offs[k]) for j, q in enumerate(names) if meta[q].get('alias_of') == nm] if meta else [])
-        copies[k] = [(A @ g, dt) for g in ops for A, dt in inst]
+        if 'ops' in mt: ops = [(np.array(o), np.array(t)) for o, t in zip(mt['ops'], mt.get('ops_t', [[0, 0, 0]] * len(mt['ops'])))]
+        else: ops = [(roty(2 * np.pi * r / mt.get('sym', 1)), np.zeros(3)) for r in range(mt.get('sym', 1))]
+        inst = [(np.eye(3), np.zeros(3), offs[k])]
+        if meta:
+            for j, q in enumerate(names):
+                if meta[q].get('alias_of') == nm:
+                    A = np.array(meta[q].get('alias_op', np.eye(3))); s = np.array(meta[q].get('alias_shift', [0, 0, 0]))
+                    inst.append((A, -A @ s, offs[j]))                 # src_local = A x + s  =>  x = A (src_local - s) for these flips
+        copies[k] = [(A @ g, A @ gt + t, off) for g, gt in ops for A, t, off in inst]
     t = np.cross(n, np.where(np.abs(n[:, :1]) < 0.9, [[1.0, 0, 0]], [[0, 1.0, 0]])); t /= np.linalg.norm(t, axis=1)[:, None]; b = np.cross(n, t)
     rng = np.random.default_rng(seed); hit = np.zeros(len(o))
     for k in range(rays):
@@ -161,10 +167,10 @@ def bake_ao(F, rays=48, seed=1, meta=None, step=2):
         d = t * (rr * np.cos(ph))[:, None] + b * (rr * np.sin(ph))[:, None] + n * np.sqrt(1 - u1)[:, None]
         oo = o.copy(); dd = d.copy()
         for p, cl in copies.items():
-            Rm, dt = cl[k % len(cl)]
+            Rm, tl, off = cl[k % len(cl)]
             if len(cl) == 1: continue
             m = pc == p
-            if m.any(): oo[m] = (o[m] - offs[p]) @ Rm.T + offs[p] + dt; dd[m] = d[m] @ Rm.T
+            if m.any(): oo[m] = (o[m] - offs[p]) @ Rm.T + tl + off; dd[m] = d[m] @ Rm.T
         hit += mesh.ray.intersects_any(oo, dd)
     img = np.zeros((R // step, R // step), np.float32); mask = np.zeros_like(img, bool)
     img[F['ys'][sel] // step, F['xs'][sel] // step] = 1 - hit / rays; mask[F['ys'][sel] // step, F['xs'][sel] // step] = True

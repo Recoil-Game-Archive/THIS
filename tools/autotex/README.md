@@ -20,8 +20,10 @@ a tex1/tex2 pair for it. Each unit has one file, `style_<unit>.py`, holding its 
 * `sym {piece: k}` — the piece is k-fold symmetric about its Y axis; one sector is unwrapped and the others
   reuse it.
 * `mirror {piece: 'x'}` — the piece is mirror-symmetric; one side is unwrapped, the other reuses it.
-* Repeated pieces (identical turrets) and mirror-image pieces (left/right pods) are detected and shared
-  automatically.
+* `mirror_center` / `tol` — where the mirror plane sits and how far the halves may disagree and still share.
+  Some of the old hulls are a few tenths of a unit off true symmetry (see `style_stealthcarrier.py`).
+* Pieces that are copies of one another — identical, mirrored, flipped or shifted, even if triangulated
+  differently — are detected and shared automatically.
 * `unique(name, centroid, normal)` — keep a face out of the sharing. Needed under lettering, which would
   read backwards on the mirrored side.
 * `unbend {piece: R0}` — a ring is unrolled so its arcs pack as straight strips.
@@ -37,7 +39,8 @@ It writes `<model>.uvmeta.json` next to the output, which tells the baker which 
 
 `hullkit.py` holds the shared fleet look (panelled grey hull, slate stencils, team blocks, lit windows, running
 lights, hazard stripes, engine nozzles, standard turret). A unit's style builds a `Painter`, lays those out over
-its own geometry and returns `painter.finish()` — see `style_carrier.py`. (`style_starbase.py` predates the kit
+its own geometry and returns `painter.finish()` — see `style_carrier.py`. The painter's `light`/`slate`/`edge_gain`
+and the `base=` argument of `hull()` re-tint the kit (the stealth carrier runs it dark). (`style_starbase.py` predates the kit
 and carries its own copy.)
 
 `paint(F)` gets per-texel fields (world position, face normal, piece name, facet-local coords `a`/`b`,
