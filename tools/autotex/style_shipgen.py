@@ -52,6 +52,23 @@ def make(cfg):
             zt0 = np.array([F['bbox'][nm][0][2] for nm in F['names']])[F['piece']]; zt1 = np.array([F['bbox'][nm][1][2] for nm in F['names']])[F['piece']]; zl = (F['lpos'][:, 2] - zt0) / (zt1 - zt0 + 1e-9)
             P.dark(T, MECH * 1.25); P.noedge |= T; P.alb[T & (zl > 0.8)] = np.array([0.62, 0.10, 0.08]); P.alb[T & (np.abs(zl - 0.74) < 0.03)] = HAZ_Y * 0.9
             P.alb[T & (np.abs(zl - 0.3) < 0.02)] = LIGHT * 0.7; P.lamp(T & rear & (zl < 0.03), ENGINE, e=0.7, glow=0.5)
+        if 'auto' in cfg:                                                        # small craft: layout worked out from the shape itself
+            zs = z[S]; z0, z1 = zs.min(), zs.max(); L = z1 - z0; W = xa[S].max(); c.z0, c.z1, c.L, c.W = z0, z1, L, W
+            au = cfg['auto'] if isinstance(cfg['auto'], dict) else {}
+            sp = au.get('spine', 0.11); tp = au.get('tips', 0.7)
+            if sp: P.paint_team(S & top & (xa < sp * W) & (z > z0 + 0.22 * L) & (z < z1 - au.get('spine_front', 0.32) * L))
+            if tp: P.paint_team(S & top & (xa > tp * W))
+            cn = au.get('canopy', (0.36, 0.17, 0.12))
+            if cn:
+                can = S & (nrm[:, 1] > 0.3) & (xa < cn[2] * W) & (z > z1 - cn[0] * L) & (z < z1 - cn[1] * L); P.dark(can, SLATE * 0.5); P.refl[can] = 0.5
+                P.lamp(can & (np.abs(z - (z1 - (cn[0] + cn[1]) / 2 * L)) < 0.012 * L) & (xa < cn[2] * W * 0.6), WINC, e=0.9, glow=0.5)
+            # engines: the big rear-facing faces at the stern, each glowing from its middle
+            fk = F['facet']; u, inv = np.unique(fk, return_inverse=True); inr = np.zeros(len(u)); np.maximum.at(inr, inv, dcv); inr = inr[inv]
+            rs = (S | TH) & (nrm[:, 2] < -0.8) & (z < z0 + au.get('eng_zone', 0.22) * L)
+            if rs.any():
+                e = rs & (inr >= au.get('eng_min', 0.45) * inr[rs].max()); P.dark(e, MECH * 0.9); core = np.clip((dcv / (inr + 1e-9) - 0.22) / 0.78, 0, 1); hot = e & (core > 0)
+                P.alb[hot] = ENGINE[None] * (0.55 + 0.45 * core[hot])[:, None] + np.array([0.0, 0.25, 0.5])[None] * (core[hot] ** 3)[:, None]; P.emit[hot] = 1.0; P.glow[hot] = 1.0
+            P.lamp(S & top & (xa > 0.93 * W) & (dcv > 0.05) & (np.abs(z - (z0 + z1) / 2) < 0.03 * L), RED, glow=0.6)
         if 'extra' in cfg: cfg['extra'](c)
         P.guns(G, cut=-1)
         return P.finish()
