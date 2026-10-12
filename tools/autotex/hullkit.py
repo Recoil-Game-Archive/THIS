@@ -19,7 +19,26 @@ FONT = {'S': '01111 10000 10000 01110 00001 00001 11110', 'B': '11110 10001 1000
         '4': '10001 10001 10001 11111 00001 00001 00001', '5': '11111 10000 11110 00001 00001 10001 01110',
         '6': '01110 10000 11110 10001 10001 10001 01110', '7': '11111 00001 00010 00100 01000 01000 01000',
         '8': '01110 10001 10001 01110 10001 10001 01110', '9': '01110 10001 10001 01111 00001 00001 01110',
-        '-': '00000 00000 00000 01110 00000 00000 00000'}
+        '-': '00000 00000 00000 01110 00000 00000 00000',
+        'A': '01110 10001 10001 11111 10001 10001 10001',
+        'D': '11100 10010 10001 10001 10001 10010 11100',
+        'E': '11111 10000 10000 11110 10000 10000 11111',
+        'G': '01111 10000 10000 10011 10001 10001 01111',
+        'J': '00111 00010 00010 00010 00010 10010 01100',
+        'K': '10001 10010 10100 11000 10100 10010 10001',
+        'L': '10000 10000 10000 10000 10000 10000 11111',
+        'M': '10001 11011 10101 10101 10001 10001 10001',
+        'N': '10001 11001 10101 10011 10001 10001 10001',
+        'O': '01110 10001 10001 10001 10001 10001 01110',
+        'P': '11110 10001 10001 11110 10000 10000 10000',
+        'Q': '01110 10001 10001 10001 10101 10010 01101',
+        'R': '11110 10001 10001 11110 10100 10010 10001',
+        'U': '10001 10001 10001 10001 10001 10001 01110',
+        'W': '10001 10001 10001 10101 10101 11011 10001',
+        'X': '10001 10001 01010 00100 01010 10001 10001',
+        'Y': '10001 10001 01010 00100 00100 00100 00100',
+        'Z': '11111 00001 00010 00100 01000 10000 11111',
+        ' ': '00000 00000 00000 00000 00000 00000 00000'}
 def stencil(text, along, up, x0, y0, h):
     u = h / 7.0; col = np.floor((along - x0) / u).astype(int); row = np.floor((up - y0) / u).astype(int)
     out = np.zeros(len(along), bool); ok = (row >= 0) & (row < 7) & (col >= 0)
@@ -109,6 +128,34 @@ class Painter:
         alb[~lit] *= shade[~lit][:, None]
         self.team[((dcv < 0.07) & ~self.noedge) | lit] = 0     # crisp hull-coloured edge line; never tint lights
         return dict(albedo=alb, team=self.team, emit=np.maximum(self.emit, 0.10), refl=self.refl, glow=self.glow)
+
+    def guns(self, G, body=None, team_top=0.6):
+        """Generic boxy gun mounts: pieces named *turret* / *sleeve* / *barrel* under mask G. Pedestals dark, housings
+        hull-coloured with a team-colour roof, barrels gunmetal with bands, a hazard collar and a black bore."""
+        F = self.F; lp = F['lpos']; nrm = F['nrm']; name = np.array(F['names'])[F['piece']]
+        body = BASE if body is None else body
+        brl = G & (np.char.find(name, 'barrel') >= 0); slv = G & (np.char.find(name, 'sleeve') >= 0); tur = G & ~brl & ~slv
+        self.noedge |= G; self.seam[G] = 1e9; self.team[G] = 0
+        self.alb[tur] = body * 1.05; self.alb[tur & (nrm[:, 1] < -0.2)] = MECH; self.team[tur & (nrm[:, 1] > team_top) & (self.dcv > 0.18)] = 1.0
+        self.alb[slv] = body * 1.15; self.team[slv & (nrm[:, 1] > team_top)] = 1.0; self.alb[slv & (nrm[:, 2] < -0.7)] = MECH
+        self.alb[brl] = MECH * 1.1; self.refl[brl] = 0.3
+        zm = np.array([F['bbox'][nm][1][2] for nm in F['names']])[F['piece']]; z0 = np.array([F['bbox'][nm][0][2] for nm in F['names']])[F['piece']]; L = zm - z0
+        self.alb[brl & (np.abs(((lp[:, 2] - z0) % (L / 4 + 1e-6)) - L / 8) < L * 0.02 + 0.08)] = MECH * 0.55
+        self.alb[brl & (lp[:, 2] > zm - L * 0.12)] = body * 1.25; self.alb[brl & (lp[:, 2] > zm - L * 0.19) & (lp[:, 2] < zm - L * 0.12)] = HAZ_Y * 0.9
+        self.alb[brl & (nrm[:, 2] > 0.9) & (lp[:, 2] > zm - 0.3)] = np.array([0.02, 0.02, 0.03])
+        return tur, slv, brl
+
+    def tube(self, m, c1, c2, bore=1.55, ring=1.95, haz=2.75):
+        """Torpedo tube: black bore, pale ring, hazard collar. c1/c2: in-plane coordinates centred on the tube."""
+        d = np.hypot(c1, c2); t = m & (d < haz); s = (np.degrees(np.arctan2(c1, c2)) % 45) < 22.5
+        self.alb[t] = np.where(s[t, None], HAZ_Y, HAZ_K); self.team[t] = 0; self.lock[t] = True
+        self.alb[t & (d < ring)] = self.light * 0.7; self.alb[t & (d < bore)] = np.array([0.02, 0.02, 0.03]); self.lamp(t & (d < 0.3), RED)
+
+    def ring(self, m, c1, c2, r0, w=0.7, ticks=True):
+        """Turret ring on a deck: dark well of radius r0 with a team-colour collar."""
+        d = np.hypot(c1, c2); t = m & (d < r0 + w); self.dark(t & (d < r0), MECH * 0.85); self.team[t & (d >= r0)] = 1.0; self.lock[t & (d >= r0)] = True
+        if ticks and r0 > 4:
+            tk = t & (d > r0 - 1.2) & (d < r0) & (np.abs(((np.degrees(np.arctan2(c2, c1)) + 7.5) % 15) - 7.5) < 2.5); self.alb[tk] = self.light * 0.8
 
     def turret(self, Tt, Bb):
         """Standard small dome turret + barrel."""

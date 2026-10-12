@@ -189,7 +189,7 @@ def unwrap(m, plan, res=2048, padding=3, pack_tries=None):
                 w = rng.dirichlet([1, 1, 1], len(T)); o = (V[T] * w[:, :, None]).sum(1) + nrm * 0.05
                 d = rng.normal(size=(len(T), 3)); d /= np.linalg.norm(d, axis=1)[:, None]; d += nrm; d /= np.linalg.norm(d, axis=1)[:, None] + 1e-12
                 hits += mesh.ray.intersects_any(o, d)
-            occ[id(p)] = np.clip(0.42 + 0.75 * (1 - hits / N), 0.5, 1.0)
+            o_ = 1 - hits / N; occ[id(p)] = np.where(o_ < 0.015, 0.12, np.clip(0.42 + 0.75 * o_, 0.5, 1.0))    # sealed-in faces get almost nothing
     scale = plan.get('scale', lambda *a: 1.0)
     groups = []; V = []; F = []; owner = []     # packing mesh: uv verts, faces, (group, tri, corner)
     for gi, p in enumerate(srcs):
