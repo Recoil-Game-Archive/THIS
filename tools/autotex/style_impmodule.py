@@ -10,6 +10,8 @@ KINDS = dict(
     turret_cannon=dict(mirror={'foot': 'x', 'turret_1': 'x', 'sleeve_1': 'x', 'barrel_1': 'x'}, planar=['foot', 'turret', 'sleeve', 'barrel'], facet_angle={'barrel_1': 40, 'barrel_2': 40, 'sleeve_1': 40}),
     turret_pd=dict(mirror={'body': 'x'}, planar=['body', 'barrel'], facet_angle={'body': 20, 'barrel_1': 40, 'barrel_2': 40, 'barrel_3': 40}),
     turret_plasma=dict(mirror={'foot': 'x', 'turret_1': 'x', 'barrel_1': 'x'}, planar=['foot', 'turret', 'barrel'], facet_angle={'barrel_1': 30}),
+    hangar=dict(mirror={'body': 'x'}, planar=['body']),
+    hive=dict(sym={'body': 3}, planar=['body'], tol={'body': 0.05}),
     turret_plasma2=dict(mirror={'body': 'x', 'barrel_1': 'x'}, planar=['body', 'barrel'], facet_angle={'barrel_1': 30}),
 )
 
@@ -44,7 +46,7 @@ def make(kind):
             house = S & ((name == 'turret_1') | (name == 'body'))                                    # the rotating housing
             roof = house & up & (yn > 0.7)
             P.paint_team(roof & (dcv > 3.2)); P.paint_slate(roof & (dcv > 5.4) & (dcv < 6.6) & (((z + 0.3) % 2.6) < 1.5))
-            P.paint_team(house & slant & (nrm[:, 1] > 0.3) & (np.abs(nrm[:, 0]) > 0.4) & (dcv > 1.8) & (dcv < 4.6))
+            P.paint_team(house & slant & (nrm[:, 1] > 0.3) & (np.abs(nrm[:, 0]) > 0.4) & (dcv > 1.8) & (dcv < 4.6) & ((kind != 'hive') | (y > 62)))
             wall = house & side & (dcv > 1.4) & (np.abs(nrm[:, 2]) < 0.6)
             P.windows(wall & (yn > 0.3) & (yn < 0.75), t, y, 2.0, 0.6, 5, key=pk)
             P.lamp(house & side & (np.abs(yn - 0.86) < 0.02) & (np.abs((t % 9.0) - 4.5) < 0.45) & (dcv > 0.8))
@@ -66,6 +68,31 @@ def make(kind):
                 nose = S & (z > 25.5) & (nrm[:, 2] > 0.2); P.dark(nose, MECH * 1.15)
             if kind in ('turret_plasma', 'turret_plasma2'):                                         # hot plasma coils in the barrel cluster
                 B = has('barrel'); zb = F['lpos'][:, 2]
+        if kind == 'hangar':                                                                        # open shed: lit bay inside, landing apron in front
+            floor = S & up & (np.abs(y - 2) < 0.6); inw = S & side & (nrm[:, 0] * x < -0.5) & (xa < 35) & (y > 2); back = S & (nrm[:, 2] > 0.7) & (np.abs(z + 17) < 1); ceil = S & down & (y > 20)
+            P.dark(floor, DECK * 0.75); P.hazard(floor & ((dcv < 1.6) & (z > 40)), x, z, 1.0)
+            for cx in (-20.2, 20.2):                                                                  # two bay lanes
+                P.paint_team(floor & (np.abs(np.abs(x - cx) - 9.5) < 0.45) & (z < 62) & (((z + 1.0) % 6.0) < 4.0))
+                P.lamp(floor & (np.abs(x - cx) < 0.35) & (np.abs(((z + 1.5) % 5.0) - 2.5) < 0.5) & (z < 70), WINC, glow=0.6)
+            P.dark(inw, MECH * 1.5); P.lamp(inw & (np.abs(y - 17) < 0.5) & (((z + 1.0) % 4.0) < 2.6), AMBER, e=0.9, glow=0.8); P.hazard(inw & (z > 60), z, y, 0.9)
+            P.dark(back, MECH * 1.3); g = np.minimum(np.abs(((x + 1.6) % 3.2) - 1.6), np.abs(((y + 1.3) % 2.6) - 1.3)); bay = back & (np.abs(xa - 20.2) < 9.5) & (y > 5) & (y < 21)
+            P.alb[bay] = AMBER * (0.35 + 0.3 * (g[bay] > 0.18))[:, None]; P.emit[bay] = 0.6; P.glow[bay] = 0.5; P.team[bay] = 0; P.lock[bay] = True
+            P.dark(ceil, MECH * 1.2); P.lamp(ceil & (np.abs(((x + 2.5) % 5.0) - 2.5) < 0.4) & (np.abs(((z + 3.0) % 6.0) - 3.0) < 1.6), WIN, e=0.9, glow=0.8)
+            P.lamp(S & (nrm[:, 2] > 0.7) & (z > 38) & (y > 27) & (np.abs(((x + 2.0) % 4.0) - 2.0) < 0.5) & (np.abs(y - 30.5) < 0.5), RED)
+        if kind == 'hive':                                                                          # drone cells: dark bores glowing from inside, team collars
+            cells = [(0.0, 12.9, 6.3), (-5.3, 12.9, -3.2), (5.3, 12.9, -3.2), (0.0, 26.7, -6.4), (-5.3, 26.7, 3.1), (5.3, 26.7, 3.1),
+                     (0.0, 40.2, 6.3), (-5.3, 40.2, -3.2), (5.3, 40.2, -3.2), (0.0, 53.9, -6.4), (-5.3, 53.9, 3.1), (5.3, 53.9, 3.1)]
+            mid = S & (y > 4.5) & (y < 62.5)
+            for cx, cy, cz in cells:
+                r0 = np.hypot(cx, cz); dx, dz = cx / r0, cz / r0; al = x * dx + z * dz; pr = np.hypot(x * dz - z * dx, y - cy); fo = nrm[:, 0] * dx + nrm[:, 2] * dz
+                nd = (nrm[:, 0] * (x - al * dx) + nrm[:, 1] * (y - cy) + nrm[:, 2] * (z - al * dz)) / (pr + 1e-6)
+                inner = mid & (pr < 9.0) & (nd < -0.4) & (al > 4)
+                P.dark(inner, MECH * 0.75); P.lamp(inner & (np.abs(((al + 0.8) % 3.2) - 1.6) < 0.22), np.array([0.3, 0.95, 0.5]), e=0.8, glow=0.6)
+                backw = mid & (fo > 0.5) & (pr < 5.0) & (al > 2) & (al < 12); P.dark(backw, MECH * 0.6); P.lamp(backw & (pr < 2.6), np.array([0.35, 1.0, 0.55]), e=0.9, glow=0.9)
+
+            core = mid & (np.hypot(x, z) < 9.5) & side; P.dark(core, MECH * 1.3)
+            P.lamp(core & (np.abs(((y + 1.0) % 6.9) - 3.45) < 0.3), AMBER, e=0.6, glow=0.4)
+            P.dark(S & down & (y > 60), MECH); P.paint_team(S & (y < 4.2) & side & (np.abs(y - 2.1) < 0.9))
         P.guns(G, cut=-1)
         if kind in ('turret_plasma', 'turret_plasma2'):
             B = has('barrel'); zm = np.array([F['bbox'][nm][1][2] for nm in F['names']])[F['piece']]; z0 = np.array([F['bbox'][nm][0][2] for nm in F['names']])[F['piece']]
