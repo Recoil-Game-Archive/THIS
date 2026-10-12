@@ -74,12 +74,12 @@ class Painter:
         c *= ((1 - 0.6 * (1 - smooth(0.035, 0.08, d1))) * (0.93 + 0.07 * smooth(0.06, 0.32, d1)))[:, None]
         self.alb[m] = c; self.seam[m] = d1
 
-    def windows(self, m, ca, cb, row_h=1.5, dens=0.5, seed=0, cell=0.56, run=4.4, key=None):
+    def windows(self, m, ca, cb, row_h=1.5, dens=0.5, seed=0, cell=0.56, run=4.4, key=None, edge=True):
         k = self.fkey if key is None else key
         jr = np.floor(cb / row_h); fb = cb - jr * row_h
         rid = np.floor(ca / run + ihash(jr, k, seed=seed) * 3)
         ci = np.floor(ca / cell); fa = ca - ci * cell
-        w = m & (ihash(jr, k, seed=seed + 1) < dens) & (ihash(rid, jr, k, seed=seed + 2) < 0.55) & (np.abs(fa - cell / 2) < 0.165) & (np.abs(fb - row_h / 2) < 0.105) & (self.dcv > 0.3) & ~self.lock
+        w = m & (ihash(jr, k, seed=seed + 1) < dens) & (ihash(rid, jr, k, seed=seed + 2) < 0.55) & (np.abs(fa - cell / 2) < 0.165) & (np.abs(fb - row_h / 2) < 0.105) & ((self.dcv > 0.3) | (not edge)) & ~self.lock
         on = w & (ihash(ci, jr, k, seed=seed + 3) < 0.86); cool = ihash(rid, jr, k, seed=seed + 4) < 0.18
         self.alb[w] = MECH * 0.6; self.team[w] = 0; self.refl[w] = 0.4; self.lock[w] = True
         self.alb[on] = np.where(cool[on, None], WINC, WIN); self.emit[on] = 1.0; self.glow[on] = 0.55
@@ -120,7 +120,7 @@ class Painter:
     def finish(self):
         F = self.F; dcv, dcc, ao, pos = F['dcv'], F['dcc'], F['ao'], F['pos']; alb = self.alb
         w = ~self.lock
-        hi = (1 - smooth(0.0, 0.2, dcv)) * 0.16 * self.edge_gain * ~self.noedge; lo = (1 - smooth(0.0, 0.55, dcc)) * 0.35
+        hi = (1 - smooth(0.0, 0.2, dcv)) * 0.16 * self.edge_gain * ~self.noedge; lo = (1 - smooth(0.0, 0.55, dcc)) * 0.35 * ~self.noedge
         alb[w] = alb[w] * (1 - lo[w])[:, None] + hi[w][:, None]
         grime = 0.6 * noise3(pos, 0.13, 1) + 0.4 * noise3(pos, 0.5, 2)
         alb[w] *= (0.93 + 0.11 * grime[w])[:, None]
@@ -129,14 +129,14 @@ class Painter:
         self.team[((dcv < 0.07) & ~self.noedge) | lit] = 0     # crisp hull-coloured edge line; never tint lights
         return dict(albedo=alb, team=self.team, emit=np.maximum(self.emit, 0.10), refl=self.refl, glow=self.glow)
 
-    def guns(self, G, body=None, team_top=0.6):
+    def guns(self, G, body=None, team_top=0.6, cut=0.18):
         """Generic boxy gun mounts: pieces named *turret* / *sleeve* / *barrel* under mask G. Pedestals dark, housings
         hull-coloured with a team-colour roof, barrels gunmetal with bands, a hazard collar and a black bore."""
         F = self.F; lp = F['lpos']; nrm = F['nrm']; name = np.array(F['names'])[F['piece']]
         body = BASE if body is None else body
         brl = G & (np.char.find(name, 'barrel') >= 0); slv = G & (np.char.find(name, 'sleeve') >= 0); tur = G & ~brl & ~slv
         self.noedge |= G; self.seam[G] = 1e9; self.team[G] = 0
-        self.alb[tur] = body * 1.05; self.alb[tur & (nrm[:, 1] < -0.2)] = MECH; self.team[tur & (nrm[:, 1] > team_top) & (self.dcv > 0.18)] = 1.0
+        self.alb[tur] = body * 1.05; self.alb[tur & (nrm[:, 1] < -0.2)] = MECH; self.team[tur & (nrm[:, 1] > team_top) & (self.dcv > cut)] = 1.0
         self.alb[slv] = body * 1.15; self.team[slv & (nrm[:, 1] > team_top)] = 1.0; self.alb[slv & (nrm[:, 2] < -0.7)] = MECH
         self.alb[brl] = MECH * 1.1; self.refl[brl] = 0.3
         zm = np.array([F['bbox'][nm][1][2] for nm in F['names']])[F['piece']]; z0 = np.array([F['bbox'][nm][0][2] for nm in F['names']])[F['piece']]; L = zm - z0

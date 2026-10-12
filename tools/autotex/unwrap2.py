@@ -1,6 +1,6 @@
 """Symmetry-aware, density-weighted UV unwrap for S3O models.
 
-usage: unwrap2.py in.s3o out.s3o plan_module [--res 2048] [--tex1 a.dds --tex2 b.dds] [--pack-tries N]
+usage: unwrap2.py in.s3o out.s3o plan_module [--res 2048] [--padding 3] [--tex1 a.dds --tex2 b.dds] [--pack-tries N]
 
 The plan module has a UVPLAN dict:
   sym     {piece: k}     piece is k-fold rotationally symmetric about its Y axis: only one sector gets
@@ -10,6 +10,9 @@ The plan module has a UVPLAN dict:
   mirror_center {piece: (cx, cy, cz)}   where that mirror plane sits, if not at the piece origin
   tol     {piece: t}     how far (model units) the two halves may disagree and still share; default 0.02.
                          Old hand-built hulls are often a few tenths off true symmetry.
+  facet_angle {piece: deg}  rounded pieces: grow each chart over neighbouring faces within this angle of its
+                         seed face instead of strictly coplanar ones (slight foreshortening, far fewer charts)
+  twin_tol t             how closely two pieces must agree (model units) to count as copies; default 0.02
   unbend  {piece: R0}    unroll a ring-shaped piece (x,y,z)->(r,y,R0*theta) so arcs pack as straight strips
   planar  [prefixes]     flat-faceted pieces: every coplanar facet is projected exactly (no distortion);
                          other pieces are charted by xatlas
@@ -48,23 +51,38 @@ def piece_ops(name, plan):
         return ops, lambda C: sum((C[:, a] < cen[a] - 1e-3).astype(int) << b for b, a in enumerate(ax))
     return [(np.eye(3), np.zeros(3))], lambda C: np.zeros(len(C), int)
 
-def facets_of(Q, tris, group):
-    """Connected coplanar triangle groups. Q: (ntri,3,3) corner positions, group: only same-group tris connect."""
-    n = np.cross(Q[:, 1] - Q[:, 0], Q[:, 2] - Q[:, 0]); n /= np.linalg.norm(n, axis=1)[:, None] + 1e-12
-    key = np.round(Q * 50).astype(np.int64); edges = {}
-    parent = list(range(len(Q)))
-    def find(x):
-        while parent[x] != x: parent[x] = parent[parent[x]]; x = parent[x]
-        return x
+def facets_of(Q, tris, group, angle=None):
+    """Connected triangle groups. Q: (ntri,3,3) corner positions; only same-group tris connect. By default groups are
+    strictly coplanar; with angle (degrees) each group grows from its largest face over neighbours whose normal stays
+    within that angle of the seed face."""
+    cr = np.cross(Q[:, 1] - Q[:, 0], Q[:, 2] - Q[:, 0]); ar = np.linalg.norm(cr, axis=1); n = cr / (ar[:, None] + 1e-12)
+    key = np.round(Q * 50).astype(np.int64); edges = {}; nbr = {i: [] for i in tris}
     for i in tris:
         for e in range(3):
-            a, b = tuple(key[i, e]), tuple(key[i, (e + 1) % 3])
-            for j in edges.setdefault((group[i], min(a, b), max(a, b)), []):
+            a, b = tuple(key[i, e]), tuple(key[i, (e + 1) % 3]); k = (group[i], min(a, b), max(a, b))
+            for j in edges.setdefault(k, []): nbr[i].append(j); nbr[j].append(i)
+            edges[k].append(i)
+    if angle is None:
+        parent = {i: i for i in tris}
+        def find(x):
+            while parent[x] != x: parent[x] = parent[parent[x]]; x = parent[x]
+            return x
+        for i in tris:
+            for j in nbr[i]:
                 if n[i] @ n[j] > 0.9995: parent[find(i)] = find(j)
-            edges[(group[i], min(a, b), max(a, b))].append(i)
-    out = {}
-    for i in tris: out.setdefault(find(i), []).append(i)
-    return list(out.values()), n
+        out = {}
+        for i in tris: out.setdefault(find(i), []).append(i)
+        return list(out.values()), n
+    ca = np.cos(np.radians(angle)); done = set(); out = []
+    for s0 in sorted(tris, key=lambda i: -ar[i]):
+        if s0 in done: continue
+        f = [s0]; done.add(s0); q = [s0]
+        while q:
+            i = q.pop()
+            for j in nbr[i]:
+                if j not in done and n[j] @ n[s0] > ca and n[j] @ n[i] > 0.5: done.add(j); f.append(j); q.append(j)
+        out.append(f)
+    return out, n
 
 def in_tris(pt, T2, slack=2e-3):
     a, b, c = T2[:, 0], T2[:, 1], T2[:, 2]
@@ -78,7 +96,7 @@ def plan_group(src, twins, plan, occ):
     Returns per-triangle corner UVs (world units * density), chart ids, owner flags, for the whole group."""
     name = src.name; R0 = plan.get('unbend', {}).get(name); ops, secf = piece_ops(name, plan); k = len(ops)
     scale = plan.get('scale', lambda *a: 1.0); maxlen = plan.get('maxlen', 66.0); uniq_f = plan.get('unique', lambda *a: False)
-    tol = plan.get('tol', {}).get(name, 0.02); exact = tol <= 0.05
+    tol = plan.get('tol', {}).get(name, 0.02); exact = tol <= 0.05; fang = plan.get('facet_angle', {}).get(name)
     owners = [(src, np.eye(3), np.zeros(3))] + list(twins)
     X = []; own = []; tri = []; keep = []; dets = []
     for oi, (pc, A, s) in enumerate(owners):
@@ -97,7 +115,7 @@ def plan_group(src, twins, plan, occ):
     Q = np.stack([to_param(X[i], sec[i]) for i in range(nt)])
     uv = np.zeros((nt, 3, 2)); chart = np.full(nt, -1); canon = np.zeros(nt, bool); charts = []
     def add_facets(tris, group):
-        fs, n = facets_of(Q, tris, group); split = []
+        fs, n = facets_of(Q, tris, group, fang); split = []
         for f in fs:                                   # cut very long strips so they fit the atlas axis-aligned
             pts = Q[f].reshape(-1, 3); c = pts - pts.mean(0); w, v = np.linalg.eigh(c.T @ c); ax = v[:, -1]
             ext = np.ptp(pts @ ax); nb = int(np.ceil(ext / maxlen))
@@ -105,11 +123,12 @@ def plan_group(src, twins, plan, occ):
             cc = Q[f].mean(1) @ ax; b = np.minimum(((cc - (pts @ ax).min()) / ext * nb).astype(int), nb - 1)
             split += [[i for i, bb in zip(f, b) if bb == kk] for kk in range(nb) if (b == kk).any()]
         for f in split:
-            pts = Q[f].reshape(-1, 3); nn = n[f[0]]; o = pts.mean(0)
+            pts = Q[f].reshape(-1, 3); o = pts.mean(0)
+            nn = np.cross(Q[f][:, 1] - Q[f][:, 0], Q[f][:, 2] - Q[f][:, 0]).sum(0); nn /= np.linalg.norm(nn) + 1e-12     # area-weighted mean normal
             c = pts - o; w, v = np.linalg.eigh(c.T @ c); t = v[:, -1]
             t = t - nn * (t @ nn); t /= np.linalg.norm(t); u = np.cross(nn, t)
             s = float(np.mean([scale(owners[own[i]][0].name if own[i] else name, C[i], fn[i]) * occ_all[i] for i in f]))
-            fr = dict(o=o, t=t, u=u, n=nn, s=s, tris=list(f), id=len(charts)); charts.append(fr)
+            fr = dict(o=o, t=t, u=u, n=nn, s=s, tris=list(f), id=len(charts), tree=cKDTree(np.unique(np.round(pts, 4), axis=0)) if fang else None); charts.append(fr)
             for i in f:
                 uv[i] = np.stack([(Q[i] - o) @ t, (Q[i] - o) @ u], 1) * s; chart[i] = fr['id']; canon[i] = True
     add_facets([i for i in range(nt) if gid[i] == 0], np.zeros(nt, int))
@@ -119,6 +138,13 @@ def plan_group(src, twins, plan, occ):
         if gid[i] == 0: continue
         best = None; nq = np.cross(Q[i, 1] - Q[i, 0], Q[i, 2] - Q[i, 0]) * flip[i]; nq /= np.linalg.norm(nq) + 1e-12
         for fr in ([] if keep[i] else base):
+            if fang:                                   # rounded piece: the copy's corners must all be corners of this chart
+                if nq @ fr['n'] < np.cos(np.radians(fang + 30)): continue
+                dist = fr['tree'].query(Q[i])[0].max()
+                if dist > max(tol, 0.03) or (best and dist >= best[0]): continue
+                q2 = np.stack([(Q[i] - fr['o']) @ fr['t'], (Q[i] - fr['o']) @ fr['u']], 1)
+                if in_tris(q2.mean(0), uv[fr['tris']] / fr['s'], 0.02): best = (dist, fr, q2)
+                continue
             if nq @ fr['n'] < ndot: continue
             dist = np.abs((Q[i] - fr['o']) @ fr['n']).max()
             if dist > tol or (best and dist >= best[0]): continue
@@ -168,7 +194,7 @@ def unwrap(m, plan, res=2048, padding=3, pack_tries=None):
     for p in pieces:
         for q in srcs:
             if is_planar(p) and is_planar(q):
-                r = twin_match(p, q)
+                r = twin_match(p, q, plan.get('twin_tol', 0.02))
                 if r: twin_of[id(p)] = (q, r); break
             elif not is_planar(p) and not is_planar(q):
                 r = exact_match(p, q)
@@ -275,9 +301,9 @@ def unwrap(m, plan, res=2048, padding=3, pack_tries=None):
 
 if __name__ == '__main__':
     ap = argparse.ArgumentParser(); ap.add_argument('src'); ap.add_argument('dst'); ap.add_argument('plan'); ap.add_argument('--res', type=int, default=2048)
-    ap.add_argument('--tex1'); ap.add_argument('--tex2'); ap.add_argument('--pack-tries', type=int)
+    ap.add_argument('--tex1'); ap.add_argument('--tex2'); ap.add_argument('--pack-tries', type=int); ap.add_argument('--padding', type=int, default=3)
     a = ap.parse_args(); m = s3o.load(a.src)
-    meta, tpu = unwrap(m, importlib.import_module(a.plan).UVPLAN, a.res, pack_tries=a.pack_tries)
+    meta, tpu = unwrap(m, importlib.import_module(a.plan).UVPLAN, a.res, padding=a.padding, pack_tries=a.pack_tries)
     if a.tex1: m.tex1 = a.tex1
     if a.tex2: m.tex2 = a.tex2
     s3o.save(m, a.dst); json.dump(dict(pieces=meta, texels_per_unit=float(tpu), res=a.res), open(a.dst.rsplit('.', 1)[0] + '.uvmeta.json', 'w'))

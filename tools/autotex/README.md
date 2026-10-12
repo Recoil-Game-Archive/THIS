@@ -5,7 +5,7 @@ a tex1/tex2 pair for it. Each unit has one file, `style_<unit>.py`, holding its 
 
     pip install numpy pillow scipy xatlas trimesh embreex
 
-    # 1. unwrap (always from the original, un-unwrapped model)
+    # 1. unwrap (always from the original, un-unwrapped model). Small ships: --res 1024 --padding 2
     python unwrap2.py original/starbase.s3o out/starbase.s3o style_starbase --res 2048 \
         --tex1 starbase.dds --tex2 starbase2.dds
     # 2. bake (tex1 2048, tex2 1024, 2x supersampled)
@@ -29,6 +29,9 @@ a tex1/tex2 pair for it. Each unit has one file, `style_<unit>.py`, holding its 
 * `unbend {piece: R0}` — a ring is unrolled so its arcs pack as straight strips.
 * `planar [...]` — flat-faceted pieces: each coplanar facet is projected exactly, so there is no distortion.
   Anything else is charted by xatlas.
+* `facet_angle {piece: deg}` — rounded pieces (a cigar fuselage, a dome) are charted in patches that grow over
+  neighbouring faces within that angle, instead of one chart per flat face. `twin_tol` loosens how closely two
+  pieces must agree to count as copies.
 * `scale(name, centroid, normal)` — relative texel density per face (undersides lower, turrets higher).
 * `occlusion True` — faces buried in crevices automatically get less texture space.
 
