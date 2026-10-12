@@ -37,6 +37,7 @@ class Painter:
         self.seam = np.full(n, 1e9); self.lock = np.zeros(n, bool)     # lock: texel is a light/decal, skip weathering
         self.noedge = np.zeros(n, bool)                                # small rounded parts: no per-facet edge lines
         self.fkey = F['facet']; self.dcv = F['dcv']
+        self.light = LIGHT; self.slate = SLATE; self.edge_gain = 1.0      # palette hooks (the stealth ships run dark)
 
     def hull(self, m, ca, cb, tone=1.0, big=(7.0, 4.6), small=(1.75, 1.53), key=None, base=BASE, slate=0.09):
         if not m.any(): return
@@ -45,8 +46,8 @@ class Painter:
         d2, h2 = panels(ca[m], cb[m], small[0], small[1], seed=2, key=k, merge=0.35)
         t1 = (h1 * 7.13) % 1; q2 = (h2 * 13.7) % 1; q3 = (h2 * 29.3) % 1
         c = base[None] * (tone * (1 + 0.22 * (t1 - 0.5) + 0.09 * (h2 - 0.5)))[:, None]
-        sl = h1 < slate; c[sl] = SLATE * (1 + 0.14 * (h2[sl] - 0.5))[:, None]
-        lt = h1 > 0.91; c[lt] = LIGHT * (tone * (1 + 0.08 * (h2[lt] - 0.5)))[:, None]
+        sl = h1 < slate; c[sl] = self.slate * (1 + 0.14 * (h2[sl] - 0.5))[:, None]
+        lt = h1 > 0.91; c[lt] = self.light * (tone * (1 + 0.08 * (h2[lt] - 0.5)))[:, None]
         hatch = (q2 < 0.05) & (d2 > 0.16); c[hatch] = MECH * 1.6
         vent = (q3 < 0.04) & (d2 > 0.14) & ~hatch
         c[vent] = MECH[None] * (0.7 + 1.4 * (np.abs(((cb[m][vent]) % 0.26) - 0.13) > 0.065))[:, None]
@@ -65,7 +66,7 @@ class Painter:
         self.alb[on] = np.where(cool[on, None], WINC, WIN); self.emit[on] = 1.0; self.glow[on] = 0.55
 
     def paint_team(self, m): self.team[m & (self.seam > 0.075) & ~self.lock] = 1.0
-    def paint_slate(self, m): self.alb[m & ~self.lock] = SLATE * 0.9; self.team[m] = 0
+    def paint_slate(self, m): self.alb[m & ~self.lock] = self.slate * 0.9; self.team[m] = 0
     def hazard(self, m, c1, c2, w=0.62):
         s = ((c1 + c2) / w) % 2 < 1; self.alb[m] = np.where(s[m, None], HAZ_Y, HAZ_K); self.team[m] = 0; self.lock[m] = True; self.seam[m] = 1e9
     def lamp(self, m, col=RED, e=1.0, glow=1.0):
@@ -89,10 +90,18 @@ class Painter:
         self.alb[hot] = col[None] * (0.55 + 0.45 * core[hot])[:, None] + np.array([0.0, 0.25, 0.5])[None] * (core[hot] ** 3)[:, None]
         self.emit[hot] = 1.0; self.glow[hot] = 1.0
 
+    def plate_text(self, m, text, along, across, x0, h, pad=1.2):
+        """Stencilled lettering on a pale plate. Only draws where the texels are not reused by a mirrored copy."""
+        w = text_w(text, h); m = m & ~self.F['shared']
+        plate = m & (along > x0 - pad) & (along < x0 + w + pad) & (np.abs(across) < h / 2 + pad * 0.85) & ~self.lock
+        edge = np.minimum(np.minimum(along - (x0 - pad), x0 + w + pad - along), h / 2 + pad * 0.85 - np.abs(across))
+        self.alb[plate] = self.light * (1 - 0.5 * (1 - smooth(0.04, 0.1, edge[plate])))[:, None]; self.seam[plate] = 1e9; self.team[plate] = 0
+        self.paint_slate(m & stencil(text, along, across, x0, -h / 2, h)); return plate
+
     def finish(self):
         F = self.F; dcv, dcc, ao, pos = F['dcv'], F['dcc'], F['ao'], F['pos']; alb = self.alb
         w = ~self.lock
-        hi = (1 - smooth(0.0, 0.2, dcv)) * 0.16 * ~self.noedge; lo = (1 - smooth(0.0, 0.55, dcc)) * 0.35
+        hi = (1 - smooth(0.0, 0.2, dcv)) * 0.16 * self.edge_gain * ~self.noedge; lo = (1 - smooth(0.0, 0.55, dcc)) * 0.35
         alb[w] = alb[w] * (1 - lo[w])[:, None] + hi[w][:, None]
         grime = 0.6 * noise3(pos, 0.13, 1) + 0.4 * noise3(pos, 0.5, 2)
         alb[w] *= (0.93 + 0.11 * grime[w])[:, None]
