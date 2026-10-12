@@ -175,9 +175,18 @@ def exact_match(p, q):
         else: return op, np.array(tm), np.array(cm)
     return None
 
-def twin_match(p, q, tol=0.02):
+def twin_match(p, q, tol=0.02, loose=0.0):
     """Same shape as q up to mirroring/flipping and a small shift, whatever the triangulation? Returns (A, s)."""
     vp = np.unique(np.round(p.verts[:, :3].astype(np.float64), 3), axis=0); vq = np.unique(np.round(q.verts[:, :3].astype(np.float64), 3), axis=0)
+    if loose:                                              # nearly the same shape: a few stray vertices allowed; faces without a partner stay unique
+        if abs(len(vp) - len(vq)) > loose * len(vq): return None
+        tp = cKDTree(vp)
+        for A in DIAGS:
+            w = vp @ A.T; s = vq.mean(0) - w.mean(0)
+            for sh in (np.zeros(3), s):
+                d, _ = cKDTree(vq).query(w + sh); d2, _ = cKDTree(w + sh).query(vq)
+                if (d < tol).mean() > 1 - loose and (d2 < tol).mean() > 1 - loose: return A, sh
+        return None
     if len(vp) != len(vq) or abs(len(p.idx) - len(q.idx)) > 0: return None
     tree = cKDTree(vq)
     for A in DIAGS:
@@ -194,7 +203,7 @@ def unwrap(m, plan, res=2048, padding=3, pack_tries=None):
     for p in pieces:
         for q in srcs:
             if is_planar(p) and is_planar(q):
-                r = twin_match(p, q, plan.get('twin_tol', 0.02))
+                r = twin_match(p, q, plan.get('twin_tol', 0.02), plan.get('twin_loose', 0.0))
                 if r: twin_of[id(p)] = (q, r); break
             elif not is_planar(p) and not is_planar(q):
                 r = exact_match(p, q)
