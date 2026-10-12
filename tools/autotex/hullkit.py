@@ -112,6 +112,14 @@ class Painter:
         self.alb[hot] = col[None] * (0.55 + 0.45 * core[hot])[:, None] + np.array([0.0, 0.25, 0.5])[None] * (core[hot] ** 3)[:, None]
         self.emit[hot] = 1.0; self.glow[hot] = 1.0
 
+    def exhaust(self, m, d, rad, col=ENGINE):
+        """One modelled engine: m is its rear face, d the distance from its centre. Dark housing, pale lip, hot core."""
+        if not m.any(): return
+        self.dark(m, MECH * 0.9); ring = m & (d < rad * 1.12) & (d >= rad); self.alb[ring] = LIGHT * 0.55
+        hot = m & (d < rad); core = np.clip(1 - d / rad, 0, 1)
+        self.alb[hot] = col[None] * (0.55 + 0.45 * core[hot])[:, None] + np.array([0.0, 0.25, 0.5])[None] * (core[hot] ** 3)[:, None]
+        self.emit[hot] = 1.0; self.glow[hot] = 1.0
+
     def plate_text(self, m, text, along, across, x0, h, pad=1.2):
         """Stencilled lettering on a pale plate. Only draws where the texels are not reused by a mirrored copy."""
         w = text_w(text, h); m = m & ~self.F['shared']
