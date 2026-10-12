@@ -205,19 +205,20 @@ def dds_dxt5(img, path):
 def paint_chunked(style, F, chunk=1500000):
     n = len(F['pos']); outs = []
     for s0 in range(0, n, chunk):
-        sub = {k: (v[s0:s0 + chunk] if isinstance(v, np.ndarray) and len(v) == n and k not in ('offs',) else v) for k, v in F.items()}
+        sub = {k: (v[s0:s0 + chunk] if isinstance(v, np.ndarray) and v.ndim >= 1 and len(v) == n and k not in ('offs',) else v) for k, v in F.items()}
         outs.append(style.paint(sub))
     return {k: np.concatenate([o[k] for o in outs]).astype(np.float32) for k in outs[0]}
 
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument('model'); ap.add_argument('style'); ap.add_argument('out')
     ap.add_argument('--res', type=int, default=1024); ap.add_argument('--ss', type=int, default=2); ap.add_argument('--rays', type=int, default=48)
-    ap.add_argument('--tex2-div', type=int, default=1, help='tex2 is written at res/N')
+    ap.add_argument('--tex2-div', type=int, default=1, help='tex2 is written at res/N'); ap.add_argument('--ao-step', type=int, default=0)
     a = ap.parse_args()
     m = s3o.load(a.model); R = a.res * a.ss
-    mp = a.model.rsplit('.', 1)[0] + '.uvmeta.json'; meta = json.load(open(mp))['pieces'] if os.path.exists(mp) else None
+    mp = a.model.rsplit('.', 1)[0] + '.uvmeta.json'; mj = json.load(open(mp)) if os.path.exists(mp) else None; meta = mj['pieces'] if mj else None
     F = build(m, R, meta); print('texels', len(F['pos']), 'facets', F['facet'].max() + 1, 'fill %.0f%%' % (100 * len(F['pos']) / R / R))
-    F['ao'] = bake_ao(F, a.rays, meta=meta, step=2 if a.ss > 1 else 1)
+    F['px'] = 1.0 / (mj['texels_per_unit'] * a.res / mj['res']) if mj else 0.0          # model units per final texel
+    F['ao'] = bake_ao(F, a.rays, meta=meta, step=a.ao_step or (2 if a.ss > 1 else 1))
     style = importlib.import_module(a.style); out = paint_chunked(style, F)
     alb, mask = to_image(F, np.clip(out['albedo'], 0, 1), R); team, _ = to_image(F, np.clip(out['team'], 0, 1), R)
     emit, _ = to_image(F, np.clip(out['emit'], 0, 1), R); refl, _ = to_image(F, np.clip(out['refl'], 0, 1), R)

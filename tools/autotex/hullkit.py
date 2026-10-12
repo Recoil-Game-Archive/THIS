@@ -50,8 +50,10 @@ def stencil(text, along, up, x0, y0, h):
 def text_w(text, h): return (len(text) * 6 - 1) * h / 7.0
 
 class Painter:
-    def __init__(self, F):
-        self.F = F; n = self.n = len(F['pos'])
+    def __init__(self, F, k=1.0):
+        """k scales every drawn feature (seam widths, windows, edge lines). 1 is the normal fleet scale; a giant hull
+        whose texture is much coarser per metre uses 3 or so, so that seams stay about a texel wide."""
+        self.F = F; n = self.n = len(F['pos']); self.k = k; self.px = F.get('px', 0.0)
         self.alb = np.tile(BASE, (n, 1)); self.team = np.zeros(n); self.emit = np.zeros(n); self.refl = np.full(n, 0.12); self.glow = np.zeros(n)
         self.seam = np.full(n, 1e9); self.lock = np.zeros(n, bool)     # lock: texel is a light/decal, skip weathering
         self.noedge = np.zeros(n, bool)                                # small rounded parts: no per-facet edge lines
@@ -67,24 +69,25 @@ class Painter:
         c = base[None] * (tone * (1 + 0.22 * (t1 - 0.5) + 0.09 * (h2 - 0.5)))[:, None]
         sl = h1 < slate; c[sl] = self.slate * (1 + 0.14 * (h2[sl] - 0.5))[:, None]
         lt = h1 > 0.91; c[lt] = self.light * (tone * (1 + 0.08 * (h2[lt] - 0.5)))[:, None]
-        hatch = (q2 < 0.05) & (d2 > 0.16); c[hatch] = MECH * 1.6
-        vent = (q3 < 0.04) & (d2 > 0.14) & ~hatch
-        c[vent] = MECH[None] * (0.7 + 1.4 * (np.abs(((cb[m][vent]) % 0.26) - 0.13) > 0.065))[:, None]
-        c *= (1 - 0.34 * (1 - smooth(0.018, 0.05, d2)))[:, None]
-        c *= ((1 - 0.6 * (1 - smooth(0.035, 0.08, d1))) * (0.93 + 0.07 * smooth(0.06, 0.32, d1)))[:, None]
+        kk = self.k; px = self.px; w = lambda lo, hi: (max(lo * kk, 0.2 * px), max(hi * kk, 0.8 * px))    # never thinner than ~a texel
+        hatch = (q2 < 0.05) & (d2 > 0.16 * kk); c[hatch] = MECH * 1.6
+        vent = (q3 < 0.04) & (d2 > 0.14 * kk) & ~hatch
+        c[vent] = MECH[None] * (0.7 + 1.4 * (np.abs(((cb[m][vent]) % (0.26 * kk)) - 0.13 * kk) > 0.065 * kk))[:, None]
+        c *= (1 - 0.34 * (1 - smooth(*w(0.018, 0.05), d2)))[:, None]
+        c *= ((1 - 0.6 * (1 - smooth(*w(0.035, 0.08), d1))) * (0.93 + 0.07 * smooth(0.06 * kk, 0.32 * kk, d1)))[:, None]
         self.alb[m] = c; self.seam[m] = d1
 
     def windows(self, m, ca, cb, row_h=1.5, dens=0.5, seed=0, cell=0.56, run=4.4, key=None, edge=True):
-        k = self.fkey if key is None else key
+        k = self.fkey if key is None else key; kk = self.k; cell = cell * kk; run = run * kk
         jr = np.floor(cb / row_h); fb = cb - jr * row_h
         rid = np.floor(ca / run + ihash(jr, k, seed=seed) * 3)
         ci = np.floor(ca / cell); fa = ca - ci * cell
-        w = m & (ihash(jr, k, seed=seed + 1) < dens) & (ihash(rid, jr, k, seed=seed + 2) < 0.55) & (np.abs(fa - cell / 2) < 0.165) & (np.abs(fb - row_h / 2) < 0.105) & ((self.dcv > 0.3) | (not edge)) & ~self.lock
+        w = m & (ihash(jr, k, seed=seed + 1) < dens) & (ihash(rid, jr, k, seed=seed + 2) < 0.55) & (np.abs(fa - cell / 2) < 0.165 * kk) & (np.abs(fb - row_h / 2) < 0.105 * kk) & ((self.dcv > 0.3 * kk) | (not edge)) & ~self.lock
         on = w & (ihash(ci, jr, k, seed=seed + 3) < 0.86); cool = ihash(rid, jr, k, seed=seed + 4) < 0.18
         self.alb[w] = MECH * 0.6; self.team[w] = 0; self.refl[w] = 0.4; self.lock[w] = True
         self.alb[on] = np.where(cool[on, None], WINC, WIN); self.emit[on] = 1.0; self.glow[on] = 0.55
 
-    def paint_team(self, m): self.team[m & (self.seam > 0.075) & ~self.lock] = 1.0
+    def paint_team(self, m): self.team[m & (self.seam > max(0.075 * self.k, 0.6 * self.px)) & ~self.lock] = 1.0
     def paint_slate(self, m): self.alb[m & ~self.lock] = self.slate * 0.9; self.team[m] = 0
     def hazard(self, m, c1, c2, w=0.62):
         s = ((c1 + c2) / w) % 2 < 1; self.alb[m] = np.where(s[m, None], HAZ_Y, HAZ_K); self.team[m] = 0; self.lock[m] = True; self.seam[m] = 1e9
@@ -119,14 +122,14 @@ class Painter:
 
     def finish(self):
         F = self.F; dcv, dcc, ao, pos = F['dcv'], F['dcc'], F['ao'], F['pos']; alb = self.alb
-        w = ~self.lock
-        hi = (1 - smooth(0.0, 0.2, dcv)) * 0.16 * self.edge_gain * ~self.noedge; lo = (1 - smooth(0.0, 0.55, dcc)) * 0.35 * ~self.noedge
+        w = ~self.lock; kk = self.k
+        hi = (1 - smooth(0.0, max(0.2 * kk, 1.2 * self.px), dcv)) * 0.16 * self.edge_gain * ~self.noedge; lo = (1 - smooth(0.0, 0.55 * kk, dcc)) * 0.35 * ~self.noedge
         alb[w] = alb[w] * (1 - lo[w])[:, None] + hi[w][:, None]
-        grime = 0.6 * noise3(pos, 0.13, 1) + 0.4 * noise3(pos, 0.5, 2)
+        grime = 0.6 * noise3(pos, 0.13 / kk, 1) + 0.4 * noise3(pos, 0.5 / kk, 2)
         alb[w] *= (0.93 + 0.11 * grime[w])[:, None]
         shade = 0.42 + 0.58 * ao ** 0.85; lit = self.emit > 0.5
         alb[~lit] *= shade[~lit][:, None]
-        self.team[((dcv < 0.07) & ~self.noedge) | lit] = 0     # crisp hull-coloured edge line; never tint lights
+        self.team[((dcv < max(0.07 * kk, 0.5 * self.px)) & ~self.noedge) | lit] = 0     # crisp hull-coloured edge line; never tint lights
         return dict(albedo=alb, team=self.team, emit=np.maximum(self.emit, 0.10), refl=self.refl, glow=self.glow)
 
     def guns(self, G, body=None, team_top=0.6, cut=0.18):
