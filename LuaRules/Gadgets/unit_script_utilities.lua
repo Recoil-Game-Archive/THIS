@@ -35,10 +35,10 @@ local CallAsUnit 			= Spring.UnitScript.CallAsUnit
 
 -- Useful functions for GG
 
-function EmitSfxName(unitID, pieceName, effectName)
+function EmitSfxName(unitID, pieceName, effectName, dmgScale)
 	if not pieceName then Spring.Echo("Bug report unit_script_utilities L63", UnitDefs[Spring.GetUnitDefID(unitID)].name) return end
 	local x,y,z,dx,dy,dz = GetUnitPiecePosDir(unitID, pieceName)
-	SpawnCEG(effectName, x,y,z, dx, dy, dz)
+	SpawnCEG(effectName, x,y,z, dx, dy, dz, nil, dmgScale)
 end
 GG.EmitSfxName = EmitSfxName
 

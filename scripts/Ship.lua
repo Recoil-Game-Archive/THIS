@@ -12,10 +12,10 @@ function DamageLoop()
 	SetSignalMask(SIG_Damage)
 	local health, maxHealth = Spring.GetUnitHealth(unitID)
 	while health/maxHealth < 0.5 do
-		SetUnitValue(COB.CEG_DAMAGE, 25 - math.floor(health/maxHealth * 50))
-		GG.EmitSfxName(unitID, info.damages[1], "damage_fire")
+		local dmgScale = 25 - math.floor(health/maxHealth * 50)
+		GG.EmitSfxName(unitID, info.damages[1], "damage_fire", dmgScale)
 		if health/maxHealth < 0.3 then
-			GG.EmitSfxName(unitID, info.damages[2], "damage_fire")
+			GG.EmitSfxName(unitID, info.damages[2], "damage_fire", dmgScale)
 		end
 		Sleep(50)
 		local health, maxHealth = Spring.GetUnitHealth(unitID)
