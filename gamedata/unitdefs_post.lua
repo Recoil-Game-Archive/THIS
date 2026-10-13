@@ -147,4 +147,5 @@ end
 if tobool(modOptions.enablebigships)then
     UnitDefs.quasar.customparams["nobuild"] = nil
 	UnitDefs.eclipse.customparams["nobuild"] = nil
+	UnitDefs.imperator.customparams["cost"] = UnitDefs.imperator.customparams["cost"] * 2
 end
