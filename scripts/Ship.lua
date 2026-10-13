@@ -10,13 +10,15 @@ function DamageLoop()
 	if not info.damages[1] then return end -- carrier.bos seems to have no smoke/damage loop?
 	Signal(SIG_Damage)
 	SetSignalMask(SIG_Damage)
-	while GetUnitValue(COB.HEALTH) < 50 do
-		SetUnitValue(COB.CEG_DAMAGE, 25 - math.floor(GetUnitValue(COB.HEALTH) / 2))
-		EmitSfx(info.damages[1], 1024)
-		if GetUnitValue(COB.HEALTH) < 30 then
-			EmitSfx(info.damages[2], 1024)
+	local health, maxHealth = Spring.GetUnitHealth(unitID)
+	while health/maxHealth < 0.5 do
+		SetUnitValue(COB.CEG_DAMAGE, 25 - math.floor(health/maxHealth * 50))
+		GG.EmitSfxName(unitID, info.damages[1], "damage_fire")
+		if health/maxHealth < 0.3 then
+			GG.EmitSfxName(unitID, info.damages[2], "damage_fire")
 		end
 		Sleep(50)
+		local health, maxHealth = Spring.GetUnitHealth(unitID)
 	end
 end
 
