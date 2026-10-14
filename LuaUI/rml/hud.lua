@@ -36,15 +36,115 @@ function hud.LoadFonts()
 	return allLoaded
 end
 
+--------------------------------------------------------------------------------
+-- Interface sounds. To change a sound, change the file name here; the file
+-- can be any format the engine plays (wav, ogg). Volume is 0..1, on top of
+-- the Interface volume slider in Settings.
+hud.SOUNDS = {
+	hover = "sounds/ui/hover.wav",       -- the mouse moves onto something clickable
+	click = "sounds/ui/click.wav",       -- left click on it
+	altclick = "sounds/ui/altclick.wav", -- right click on it (cancel, remove from queue)
+	volume = 0.6,
+}
+
+-- What counts as clickable: an element with one of these classes or
+-- attributes, or inside one. Everything else is silent. An element with the
+-- attribute data-sfx="none" is silent too, and so is a disabled or locked one.
+local SOUND_CLASSES = {"button", "card", "bcard", "cmd", "qpic", "tab", "perk", "toggle", "step", "track", "select", "choice", "pill"}
+local SOUND_ATTRIBUTES = {"data-def", "data-cmd", "data-act", "data-tab", "data-perk", "data-choice", "data-sfx"}
+local SOUND_IDS = {["menu-button"] = true, specs = true, expand = true}
+local SILENT_CLASSES = {"disabled", "locked", "full", "owned"}
+
+local lastHovered = false
+
+local function SoundTarget(element)
+	for _ = 1, 8 do
+		if not element then
+			return nil
+		end
+		local clickable = SOUND_IDS[element:GetAttribute("id") or ""]
+		if not clickable then
+			for _, class in ipairs(SOUND_CLASSES) do
+				if element:IsClassSet(class) then
+					clickable = true
+					break
+				end
+			end
+		end
+		if not clickable then
+			for _, attribute in ipairs(SOUND_ATTRIBUTES) do
+				if element:HasAttribute(attribute) then
+					clickable = true
+					break
+				end
+			end
+		end
+		if clickable then
+			if element:HasAttribute("data-sfx") and element:GetAttribute("data-sfx") == "none" then
+				return nil
+			end
+			for _, class in ipairs(SILENT_CLASSES) do
+				if element:IsClassSet(class) then
+					return nil
+				end
+			end
+			return element
+		end
+		element = element.parent_node
+	end
+	return nil
+end
+
+function hud.PlaySound(name)
+	if WG.thisUiSoundsOff then
+		return
+	end
+	local file = hud.SOUNDS[name]
+	if file and file ~= "" then
+		Spring.PlaySoundFile(file, hud.SOUNDS.volume or 1, "ui")
+	end
+end
+
+-- Gives a document the interface sounds: hover, click and right click on
+-- anything clickable in it.
+function hud.AttachSounds(document)
+	local ok = pcall(function()
+		document:AddEventListener("mouseover", function(event)
+			local target = SoundTarget(event.target_element)
+			if target ~= lastHovered then
+				lastHovered = target
+				if target then
+					hud.PlaySound("hover")
+				end
+			end
+		end)
+		document:AddEventListener("mousedown", function(event)
+			if not SoundTarget(event.target_element) then
+				return
+			end
+			local button = event.parameters and event.parameters.button
+			if button == 0 then
+				hud.PlaySound("click")
+			elseif button == 1 then
+				hud.PlaySound("altclick")
+			end
+		end)
+	end)
+	if not ok then
+		Spring.Echo("[THIS HUD] could not attach the interface sounds to a document")
+	end
+end
+
 -- Call after loading a HUD document: makes sure its font exists, and switches
 -- the document to the engine's own font if Exo 2 could not be loaded, so the
--- text is never simply missing.
+-- text is never simply missing. Also gives the document the interface sounds.
 function hud.PrepareDocument(document)
 	if not hud.LoadFonts() then
 		pcall(function()
 			document.style["font-family"] = FALLBACK_FAMILY
 		end)
 	end
+	hud.AttachSounds(document)
 end
 
 -- The context every HUD document lives in (created in LuaUI/rml_setup.lua).
