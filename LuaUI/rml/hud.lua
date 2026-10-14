@@ -41,9 +41,9 @@ end
 -- can be any format the engine plays (wav, ogg). Volume is 0..1, on top of
 -- the Interface volume slider in Settings.
 hud.SOUNDS = {
-	hover = "sounds/ui/hover.wav",       -- the mouse moves onto something clickable
-	click = "sounds/ui/click.wav",       -- left click on it
-	altclick = "sounds/ui/altclick.wav", -- right click on it (cancel, remove from queue)
+	hover = "sounds/ui/Mechanical_button_light_switch_02.wav",       -- the mouse moves onto something clickable
+	click = "sounds/ui/Interface_thin_open_tone_10.wav",       -- left click on it
+	altclick = "sounds/ui/Interface_thin_close_tone_10.wav", -- right click on it (cancel, remove from queue)
 	volume = 0.6,
 }
 
