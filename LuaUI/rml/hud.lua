@@ -109,6 +109,8 @@ end
 -- anything clickable in it.
 function hud.AttachSounds(document)
 	local ok = pcall(function()
+		-- Capture phase: the sound is decided before the panel's own handler
+		-- runs, which may disable the button that was just pressed.
 		document:AddEventListener("mouseover", function(event)
 			local target = SoundTarget(event.target_element)
 			if target ~= lastHovered then
@@ -117,7 +119,7 @@ function hud.AttachSounds(document)
 					hud.PlaySound("hover")
 				end
 			end
-		end)
+		end, true)
 		document:AddEventListener("mousedown", function(event)
 			if not SoundTarget(event.target_element) then
 				return
@@ -128,7 +130,7 @@ function hud.AttachSounds(document)
 			elseif button == 1 then
 				hud.PlaySound("altclick")
 			end
-		end)
+		end, true)
 	end)
 	if not ok then
 		Spring.Echo("[THIS HUD] could not attach the interface sounds to a document")
