@@ -712,15 +712,8 @@ function gadget:DrawWorld()
 			glBillboard()
 			glText("+"..p.lastStrength,0,0,24,"oc")
 			PopMatrix()
-			if spValidUnitID(p.lastOccupier) then
-				local x,y,z=spGetUnitPosition(p.lastOccupier)
-				glDepthTest(GL_LEQUAL)
-				-- dashed link in the ring's plane, from under the occupying ship to the planet
-				glLineStipple("bla")
-				glBeginEnd(GL_LINES,Line,x,PLANET_Y,z,p.x,PLANET_Y,p.z)
-				glLineStipple(false)
-				glDepthTest(false)
-			end
+			-- the tether from the occupying ship to the planet is drawn by
+			-- LuaUI/widgets/gfx_command_lines.lua
 		end
 	end
 	Color(1,1,1,1)

@@ -603,89 +603,10 @@ end
 else
 
 --UNSYNCED
-local glColor               = gl.Color
-local glRect                = gl.Rect
-local glTexRect             = gl.TexRect
-local glTexture             = gl.Texture
-local GL_TRIANGLE_STRIP      = GL.TRIANGLE_STRIP
-local GL_LINES             = GL.LINES
-local GL_LEQUAL				 = GL.LEQUAL
-local glLineStipple        = gl.LineStipple
-local glBeginEnd             = gl.BeginEnd
-local glBlending             = gl.Blending
-local glCallList             = gl.CallList
-local glCreateList           = gl.CreateList
-local glDeleteList           = gl.DeleteList
-local glLineWidth            = gl.LineWidth
-local glPopMatrix            = gl.PopMatrix
-local glPushMatrix           = gl.PushMatrix
-local glTexCoord             = gl.TexCoord
-local glTranslate            = gl.Translate
-local glVertex               = gl.Vertex
-local glDepthTest=gl.DepthTest
+-- Nothing is drawn here any more: screen-space drawing lives in LuaUI (the
+-- gui_* widgets), and rally lines are drawn by gfx_command_lines.lua from the
+-- unit rules param "rally" that hud_state.lua publishes.
 
--- Screen-space drawing lives in LuaUI (the gui_* widgets and LuaUI/rml); this gadget
--- only draws rally points in the world.
-
-local size=40
-
-local squareList
-
-local function Square()
-	glTexCoord(0,0)
-	glVertex(-size,0,-size)
-	glTexCoord(1,0)
-	glVertex(size,0,-size)
-	glTexCoord(0,1)
-	glVertex(-size,0,size)
-	glTexCoord(1,1)
-	glVertex(size,0,size)
-end
-
-local function Line(sx,sy,sz,tx,ty,tz)
-	glVertex(sx,sy,sz)
-	glVertex(tx,ty,tz)
-end
-
-
-function gadget:DrawWorld()
-	glTexture("bitmaps/rally.tga")
-	glDepthTest(GL_LEQUAL)
-	glLineStipple("foobar")
-	glColor(1,1,.5,1)
-	for _,u in ipairs(spGetSelectedUnits()) do
-		local b = SYNCED.buildstate[u]
-		if b and b.rally then
-			local x,y,z = spGetUnitPosition(u)
-			for i in ipairs(b.rally) do
-				if b.rally and b.rally[i-1] then
-					x,z = b.rally[i-1][1], b.rally[i-1][2]
-				end
-				--Spring.Echo(i, x, y, z)
-				glPushMatrix()
-				glTranslate(b.rally[i][1],y,b.rally[i][2])
-				glCallList(squareList)
-				glPopMatrix()
-				glTexture(false)
-				glBeginEnd(GL_LINES,Line,x,y,z,b.rally[i][1],y,b.rally[i][2])
-				gl.Texture(true)
-			end
-		end
-	end
-	glTexture(false)
-	glDepthTest(false)
-	glLineStipple(false)
-	glColor(1,1,.5,1)
-end
-
-function gadget:Initialize()
-	squareList=glCreateList(glBeginEnd,GL_TRIANGLE_STRIP,Square)
-end
-
-function gadget:Shutdown()
-	glDeleteList(squareList)
-end
-
-
+return false
 
 end
