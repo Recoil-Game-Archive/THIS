@@ -6,7 +6,8 @@
 --  and the player's own ones on separate tabs. Switching a widget on loads
 --  it at once; the choice is saved by the widget handler as usual.
 --
---  Takes the place of the engine's /luaui selector window.
+--  Takes the place of the engine's /luaui selector window, and of its F11
+--  key: F11 opens and closes this list instead.
 --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -27,6 +28,7 @@ end
 local DOCUMENT_PATH = "LuaUI/rml/widgetlist.rml"
 local UPDATE_INTERVAL = 0.5
 local KEY_ESCAPE = 27
+local keyF11
 -- the engine's own selector window; this one replaces it
 local HIDDEN_BASENAMES = {["selector.lua"] = true}
 
@@ -227,6 +229,7 @@ function widget:Initialize()
 		Close = function() SetOpen(false) end,
 		IsOpen = function() return open end,
 	}
+	keyF11 = Spring.GetKeyCode and Spring.GetKeyCode("f11") or nil
 	Refresh()
 	hud.ShowPassive(document)
 	lastUpdate = Spring.GetTimer()
@@ -247,7 +250,14 @@ function widget:ViewResize()
 end
 
 function widget:KeyPress(key, mods, isRepeat)
-	if document and open and key == KEY_ESCAPE and not isRepeat then
+	if not document or isRepeat then
+		return false
+	end
+	if key == keyF11 and not (mods.alt or mods.ctrl or mods.meta or mods.shift) then
+		SetOpen(not open)
+		return true -- consumed: the engine's own selector is not opened
+	end
+	if open and key == KEY_ESCAPE then
 		SetOpen(false)
 		return true
 	end
