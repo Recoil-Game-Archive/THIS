@@ -42,7 +42,11 @@ return {
 		  desc = "Turn individual widgets on and off.",
 		  set = function()
 			OPT.close()
-			Spring.SendCommands("luaui selector")
+			if WG.thisWidgetList then
+				WG.thisWidgetList.Open()
+			else
+				Spring.SendCommands("luaui selector") -- the list widget is off
+			end
 		  end },
 	},
 }

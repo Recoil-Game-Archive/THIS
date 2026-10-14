@@ -1,0 +1,168 @@
+<rml>
+<head>
+	<title>THIS widget list</title>
+	<link type="text/rcss" href="theme.rcss"/>
+	<style>
+		/* The widget list: every widget the game knows, with an on/off switch.
+		   Rows are built by LuaUI/widgets/gui_widgetlist.lua. */
+		#backdrop {
+			position: absolute;
+			left: 0dp;
+			top: 0dp;
+			width: 100%;
+			height: 100%;
+			background-color: rgba(0, 0, 0, 120);
+			pointer-events: auto;
+		}
+		#widgets {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			width: 640dp;
+			height: 620dp;
+			margin-left: -320dp;
+			margin-top: -310dp;
+			pointer-events: auto;
+		}
+		#head {
+			display: flex;
+			flex-direction: row;
+			align-items: flex-end;
+			padding: 12dp 16dp 8dp 16dp;
+		}
+		#count {
+			flex: 1;
+			margin: 0dp 0dp 2dp 12dp;
+			font-size: 12dp;
+			color: #8c9bb3;
+		}
+		#tabs {
+			display: flex;
+			flex-direction: row;
+			padding: 0dp 12dp;
+			border-bottom: 1dp #33415a;
+		}
+		.tab {
+			padding: 6dp 14dp 7dp 14dp;
+			margin: 0dp 2dp;
+			font-size: 13dp;
+			font-weight: bold;
+			letter-spacing: 1dp;
+			color: #8c9bb3;
+			border-bottom: 2dp rgba(0, 0, 0, 0);
+		}
+		.tab:hover {
+			color: #e6edf7;
+		}
+		.tab.active {
+			color: #e6edf7;
+		}
+		#list {
+			height: 500dp;
+			overflow-y: auto;
+			padding: 4dp 12dp 8dp 16dp;
+		}
+		.sep {
+			margin: 14dp 0dp 4dp 0dp;
+			padding-bottom: 4dp;
+			border-bottom: 1dp rgba(255, 255, 255, 26);
+		}
+		.row {
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+			min-height: 36dp;
+			padding: 3dp 8dp;
+			border-radius: 3dp;
+		}
+		.row:hover {
+			background-color: rgba(255, 255, 255, 12);
+		}
+		.row-text {
+			flex: 1;
+			padding-right: 12dp;
+		}
+		.row-name {
+			font-size: 14dp;
+			color: #e6edf7;
+		}
+		.row-desc {
+			font-size: 12dp;
+			color: #8c9bb3;
+		}
+		.row-author {
+			font-size: 11dp;
+			color: #6c7a91;
+		}
+		.row.off .row-name {
+			color: #a8b3c4;
+		}
+		.toggle {
+			position: relative;
+			width: 40dp;
+			height: 20dp;
+			border-radius: 10dp;
+			background-color: rgba(255, 255, 255, 40);
+		}
+		.knob {
+			position: absolute;
+			top: 3dp;
+			left: 3dp;
+			width: 14dp;
+			height: 14dp;
+			border-radius: 7dp;
+			background-color: #c9d4e5;
+		}
+		.toggle.on .knob {
+			left: 23dp;
+			background-color: #0a0f18;
+		}
+		/* switched on, but not running (it failed to load, or needs a reload) */
+		.toggle.half {
+			background-color: #f2b84b;
+		}
+		#empty {
+			padding: 30dp 0dp;
+			text-align: center;
+			color: #8c9bb3;
+		}
+		#foot {
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+			padding: 10dp 16dp;
+			border-top: 1dp #33415a;
+		}
+		#note {
+			flex: 1;
+			font-size: 12dp;
+			color: #8c9bb3;
+		}
+		#reload {
+			width: 130dp;
+			margin-right: 8dp;
+		}
+		#close {
+			width: 130dp;
+		}
+	</style>
+</head>
+<body>
+	<div id="backdrop" class="hidden"/>
+	<div id="widgets" class="panel hidden">
+		<div id="widgets-accent" class="accent-line"/>
+		<div id="head"><div class="title">WIDGETS</div><div id="count"/></div>
+		<div id="tabs">
+			<div id="tab-1" class="tab active" data-tab="1">ALL</div>
+			<div id="tab-2" class="tab" data-tab="2">GAME</div>
+			<div id="tab-3" class="tab" data-tab="3">YOURS</div>
+		</div>
+		<div id="list"/>
+		<div id="foot">
+			<div id="note">Your own widgets: LuaUI/Widgets in the Recoil data folder.</div>
+			<div id="reload" class="button quiet">Reload all</div>
+			<div id="close" class="button">Close</div>
+		</div>
+	</div>
+</body>
+</rml>
