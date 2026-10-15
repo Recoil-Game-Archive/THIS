@@ -185,7 +185,7 @@ local unitDef = {
 
 	-- Misc
 	SmoothAnim = false,
-	script = "stealthcarrier.lua",
+	script = "ship.lua",
 
 	sfxTypes = {
 		explosionGenerators = {
@@ -203,6 +203,9 @@ local unitDef = {
 		buildtime = 35,
 		needPerk = 7,
 		occupationStrength = 2,
+		firestealthtime = 3000,
+		headingaim1 = 360,
+		pitchaim1 = 180,
 	},
 }
 
