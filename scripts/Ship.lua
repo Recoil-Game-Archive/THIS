@@ -11,11 +11,13 @@ function DamageLoop()
 	Signal(SIG_Damage)
 	SetSignalMask(SIG_Damage)
 	local health, maxHealth = Spring.GetUnitHealth(unitID)
-	while health/maxHealth < 0.5 do
-		local dmgScale = 25 - math.floor(health/maxHealth * 50)
-		GG.EmitSfxName(unitID, info.damages[1], "damage_fire", dmgScale)
-		if health/maxHealth < 0.3 then
-			GG.EmitSfxName(unitID, info.damages[2], "damage_fire", dmgScale)
+	while health/maxHealth < 0.75 do
+		local dmgScale = 25 - math.floor(health/maxHealth * 75)
+		local increment = 0.75 / (#(info.damages) + 1)
+		for i, dPiece in pairs(info.damages) do
+			if health/maxHealth < (0.75 - increment * i) then
+				GG.EmitSfxName(unitID, dPiece, "damage_fire", dmgScale)
+			end
 		end
 		Sleep(50)
 		local health, maxHealth = Spring.GetUnitHealth(unitID)
