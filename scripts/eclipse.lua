@@ -245,9 +245,11 @@ function script.AimWeapon(num, heading, pitch)
 	end
 	if num >= 4 and num <= 9 then
 		return AimTurret(num, heading, pitch)
-	else
-		return true
+	elseif num == 3 then -- graser
+		Turn(graserFlare, y_axis, heading)
+		Turn(graserFlare, x_axis, pitch)
 	end
+	return true
 end
 
 local function FireGraser()
