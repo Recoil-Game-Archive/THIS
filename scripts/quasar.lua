@@ -703,6 +703,11 @@ function script.AimWeapon(weaponNum, heading, pitch)
 		turnSpeed = mRad(90)
 		pitchSpeed = mRad(60)
 		return AimTurret(heading, pitch, turretAM, turretAM, turnSpeed , pitchSpeed, 1)
+	--aim megalaser
+	elseif weaponNum == 3 then
+		Turn(megaLaser, y_axis, heading)
+		Turn(megaLaser, x_axis, -pitch)
+		return true
 	--aim gravitrics
 	elseif weaponNum == 4 then
 		if (not haveMoreGuns) then return false end
@@ -728,7 +733,7 @@ function script.AimWeapon(weaponNum, heading, pitch)
 		if (not haveMoreGuns) then return false end
 		return AimTurret(heading, pitch, turretMRight, sleeveMRight, turretSpeedM, sleeveSpeedM, 20)
 	end
-	return false
+	return true--false
 end
 
 local function FireAMBeam()
