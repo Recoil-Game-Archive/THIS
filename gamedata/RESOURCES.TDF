@@ -83,6 +83,8 @@
 			lightening = projectiletextures/lightening.tga;
 			electnovaexplo = projectiletextures/electnovaexplo.png;
 			lightningball = projectiletextures/lightningball.tga;
+			shotgunflare = projectiletextures/shotgunflare.tga;
+			shotgunside = projectiletextures/shotgunside.tga;
 			
 			null = null.tga;
 		}

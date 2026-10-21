@@ -184,9 +184,12 @@ function script.Shot(weapNum)
 			currGPs[weapNum] = 1
 		end
 	end
+	local emitPiece = currGPs[weapNum] and info.gpIDs[weapNum][currGPs[weapNum]] or info.flareIDs[weapNum]
+	local dScale = info.defaultDamages[weapNum]
 	if info.plasmas[weapNum] or info.gravitics[weapNum] then
 		SetUnitValue(COB.STEALTH, 0)
 		StartThread(RestoreStealth)
+		GG.EmitSfxName(unitID, emitPiece, "muzzleplasma", dScale)
 		-- currently only plasma seem to have barrel recoil so put it here to avoid recoiling kinetics
 		local recoilDist = info.barrelRecoilDist[weapNum]
 		if recoilDist then
@@ -197,8 +200,7 @@ function script.Shot(weapNum)
 		end
 	end
 	if info.kinetics[weapNum] then
-		local emitPiece = currGPs[weapNum] and info.gpIDs[weapNum][currGPs[weapNum]] or info.flareIDs[weapNum]
-		GG.EmitSfxName(unitID, emitPiece, teamPerks.have[perkMassDriver] and "muzzlemassdriver" or "muzzlekinetic")
+		GG.EmitSfxName(unitID, emitPiece, teamPerks.have[perkMassDriver] and "muzzlemassdriver" or "muzzlekinetic", dScale)
 	end
 end
 

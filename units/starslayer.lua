@@ -128,7 +128,7 @@ local unitDef = {
 		},
 
 		PFlak = {
-			name = "Plasme Flak", -- TODO: stupid hack to avoid detection as plasma causing stealth loss
+			name = "Plasma Flak",
 			RGBcolor = ".2 .2 1",
 			weaponType = "Cannon",
 			noselfdamage = true,
