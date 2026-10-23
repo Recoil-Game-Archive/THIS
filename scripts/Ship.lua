@@ -40,7 +40,7 @@ function MoveRate(rate)
 	elseif rate > 0 then
 		if permaStealth == 0 then
 			isMoving = 1
-			SetUnitValue(COB.STEALTH, 0)
+			spSetUnitStealth(unitID, false)
 		end
 		if EngineEnabled == 0 then
 			if GG.AddTrail and ex then 
@@ -187,7 +187,7 @@ function script.Shot(weapNum)
 	local emitPiece = currGPs[weapNum] and info.gpIDs[weapNum][currGPs[weapNum]] or info.flareIDs[weapNum]
 	local dScale = info.defaultDamages[weapNum]
 	if info.plasmas[weapNum] or info.gravitics[weapNum] then
-		SetUnitValue(COB.STEALTH, 0)
+		spSetUnitStealth(unitID, false)
 		StartThread(RestoreStealth)
 		GG.EmitSfxName(unitID, emitPiece, "muzzleplasma", dScale)
 		-- currently only plasma seem to have barrel recoil so put it here to avoid recoiling kinetics
