@@ -709,7 +709,7 @@ local unitDef = {
 		nobuild = "true",
 		luascript = "true",
 		occupationStrength = 2,
-		minelayer = 1.0,
+		--minelayer = 1.0,
 		limit = 3,
 	},
 }
