@@ -192,7 +192,7 @@ local unitDef = {
 		buildtime = 1,
 		occupationStrength = 0,
 		luascript = "true",
-		nobuild = "true",
+		--nobuild = "true",
 	},
 }
 
