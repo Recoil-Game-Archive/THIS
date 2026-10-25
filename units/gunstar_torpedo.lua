@@ -35,8 +35,8 @@ local unitDef = {
 	TurnRadius = 600,
 	maxAcc = .08,
 	CanMove = true,
-	MaxVelocity = 0.5,
-	TurnRate = 800,
+	MaxVelocity = 0.4,
+	TurnRate = 400,
 	collide = false,
 
 	-- Airplane Moventment
@@ -168,7 +168,7 @@ local unitDef = {
 
 	customParams = {
 		type = "gunstar",
-		cost = 400,
+		cost = 750,
 		buildtime = 9,
 		--nobuild=true;
 		moreguns = 2,
