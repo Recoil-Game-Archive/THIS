@@ -256,8 +256,8 @@ local function FireGraser()
 	Signal(SIG_GRASER)
 	SetSignalMask(SIG_GRASER)
 	for i=0,graserChargeTime do
-		SetUnitValue(COB.CEG_DAMAGE,i*0.6)
-		EmitSfx(graserFlare, chargeFX)
+		--SetUnitValue(COB.CEG_DAMAGE,i*0.6)
+		GG.EmitSfxName(unitID, graserFlare, "charge_graser_blue", i*0.6)
 		Sleep(30)
 	end
 	for i=0,graserFireTime do
@@ -282,10 +282,13 @@ function script.FireWeapon(num)
 	end
 end
 
+local teamPerks = GG.perks[teamID]
+
 function script.Shot(num)
 	local x = flareIndex[num]
 	if num >= 4 and num <= 7 then
-		EmitSfx(weaponPieces[num].flares[x], muzzleFX)
+		local dScale = GG.lusHelper[unitDefID].defaultDamages[num]
+		GG.EmitSfxName(unitID, weaponPieces[num].flares[x], perks[unitTeam].have[perkMassDriver] and "muzzlemassdriver" or "muzzlekinetic", dScale)
 	elseif num == 1 then
 		EmitSfx(weaponPieces[num].flares[x], muzzleFXLarge)
 	end
