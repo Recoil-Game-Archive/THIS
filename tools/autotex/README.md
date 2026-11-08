@@ -65,3 +65,43 @@ wrapped gutter), and `dice.py` cuts every face along a 40-unit world lattice so 
 The style module supplies `TILES` and `tile_for(piece, centre, normal, axis, iu, iv, ao)`, which chooses the
 tile and its rotation for each cell (lanes, pads, window walls, engines ...). The shape is unchanged; the
 triangle count grows (Imperator: 640 -> 24k). There is no baked ambient occlusion in this mode.
+
+## One command per unit (make.py)
+
+    python make.py sword                 # unwrap + bake + check, into ./out
+    python sheet.py out preview.png sword
+
+`originals/` holds every model as it was before it was unwrapped; `make.py` always starts from those, picks
+`style_<model>.py` and the `RES` it declares, and runs `check.py` at the end (geometry, normals and triangle
+order identical to the original; UVs inside 0..1; mip levels sane; how much of the texture is team colour).
+4096 textures are baked without supersampling (`--ss 1 --ao-step 2`) because the supersampled bake does not
+fit in memory. A unit is not rebuilt bit-for-bit: the packer tries random layouts, so the atlas moves.
+
+## Styles
+
+* Hand-written, one per ship: `style_starbase`, `style_carrier`, `style_supportcarrier`, `style_stealthcarrier`,
+  `style_comet`, `style_starslayer`, `style_meteor`, `style_minelayer`, `style_drone`.
+* `style_shipgen.py` -- the same look driven by face direction and piece names, plus a small config per ship.
+  Eclipse, Quasar and the Gunstars give it explicit team areas and engines; Dagger, Sword, Mace, Claymore,
+  Wraith, Longbow, Warhammer, Iris (`probe`) and Crossbow (`dronelauncherk`) use its `auto` layout, which
+  places the spine stripe, canopy and engines from the hull's shape. The automatic engine guess is the weak
+  point: when it lights the wrong faces, set `eng_zone`, or name the faces with `eng=lambda c: ...`.
+* `style_impmodule.py` -- the Imperator's pedestal, turrets, hangar and hive (`style_imp_*.py` are one-liners).
+* `style_ordnance.py` -- torpedo and missile.
+* `style_imperator.py` + `tiles.py` + `dice.py` -- the tileset hull described above.
+
+More plan options: `twin_tol` (how far two pieces may differ and still share texels), `twin_loose` (fraction of
+stray vertices allowed between near-identical mirrored pieces, e.g. the Quasar's fore hulls; faces without a
+partner stay unique), `occlusion` (buried faces get less space), `scale(name, centroid, normal)` (density per face).
+Painter helpers added since the first ships: `Painter(F, k=...)` scales every feature for small or giant hulls,
+`exhaust(mask, distance, radius)` paints one modelled engine.
+
+## Other tools
+
+* `analyze.py model.s3o [piece ...]` -- symmetry report per piece, twin pieces, main faces by direction.
+* `geomview.py model.s3o out.png` -- untextured views, one colour per piece. `s3otree.py model.s3o` -- piece tree.
+* `sheet.py dir out.png model ...` -- preview sheet; `preview.py` -- single model straight from the DDS files.
+* `check.py original.s3o dir model` -- the checks make.py runs.
+
+The previews come from `render.py`, a plain software renderer. They show layout and colour, not what the
+engine's shaders, mipmapping and lighting will do.

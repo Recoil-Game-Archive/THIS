@@ -2,6 +2,12 @@
 Used by the Eclipse, the Quasar and the two Gunstars (style_eclipse.py etc. call make(cfg)).
 World axes: +z bow, +y up.
 
+auto (small craft): a dict, possibly empty, that switches on the layout worked out from the hull's own shape --
+spine (half-width of the team stripe as a fraction of the half-beam, 0 = none), tips (team colour outboard of this
+fraction, 0 = none), canopy (start, end, half-width as fractions; None = none), eng_zone (rear-facing faces within
+this fraction of the length from the stern are engine candidates), eng_min (keep candidates at least this fraction
+of the largest), eng (lambda c: mask -- name the engine faces yourself when the guess is wrong).
+
 cfg keys: k (feature scale, 1 = capital ship), plan (UV plan), eng_z (rear faces behind this z are engines),
 nozzle=(cell, radius), team(c) -> mask of extra team-colour texels, team_pieces (name prefixes painted as team
 panels), slate(c) -> mask, extra(c) -> None for anything else. c is a namespace of per-texel arrays."""
@@ -65,8 +71,9 @@ def make(cfg):
             # engines: the big rear-facing faces at the stern, each glowing from its middle
             fk = F['facet']; u, inv = np.unique(fk, return_inverse=True); inr = np.zeros(len(u)); np.maximum.at(inr, inv, dcv); inr = inr[inv]
             rs = (S | TH) & (nrm[:, 2] < -0.8) & (z < z0 + au.get('eng_zone', 0.22) * L)
+            if 'eng' in au: rs = (S | TH) & au['eng'](c)                             # explicit engine faces: a mask from the namespace c
             if rs.any():
-                e = rs & (inr >= au.get('eng_min', 0.45) * inr[rs].max()); P.dark(e, MECH * 0.9); core = np.clip((dcv / (inr + 1e-9) - 0.22) / 0.78, 0, 1); hot = e & (core > 0)
+                e = rs if 'eng' in au else rs & (inr >= au.get('eng_min', 0.45) * inr[rs].max()); P.dark(e, MECH * 0.9); core = np.clip((dcv / (inr + 1e-9) - 0.22) / 0.78, 0, 1); hot = e & (core > 0)
                 P.alb[hot] = ENGINE[None] * (0.55 + 0.45 * core[hot])[:, None] + np.array([0.0, 0.25, 0.5])[None] * (core[hot] ** 3)[:, None]; P.emit[hot] = 1.0; P.glow[hot] = 1.0
             P.lamp(S & top & (xa > 0.93 * W) & (dcv > 0.05) & (np.abs(z - (z0 + z1) / 2) < 0.03 * L), RED, glow=0.6)
         if 'extra' in cfg: cfg['extra'](c)
