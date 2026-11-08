@@ -45,7 +45,7 @@ UNITS = [
     "carrier", "supportcarrier", "stealthcarrier", "starbase", "minelayer", "meteor",
     "comet", "starslayer", "eclipse", "quasar", "imperator",
     "dagger", "sword", "mace", "claymore", "wraith", "longbow", "warhammer",
-    "dronelauncherm", "gunstar_cannon", "gunstar_torpedo", "probe",
+    "dronelauncherm", "gunstar_cannon", "gunstar_torpedo", "probe", "lasermine",
     "imperator_hangar", "imperator_hive", "imperator_turret_am",
     "imperator_turret_cannon", "imperator_turret_pd", "imperator_turret_plasma",
 ]
