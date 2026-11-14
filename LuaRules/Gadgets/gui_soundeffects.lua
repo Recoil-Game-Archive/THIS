@@ -72,31 +72,58 @@ do
 	end
 	scan("sounds/")
 
-	local missing = {}
-	local function exists(name)
-		if available[string.lower(name)] then
-			return true
+	-- Numbered files are variations of the name without the number:
+	-- sel_medium2.wav, sel_medium3.wav ... are picked at random together with
+	-- sel_medium.wav wherever the config says 'sel_medium'. No config change.
+	local variants = {}
+	for name in pairs(available) do
+		local stem = name:match("^(.-)%d+$")
+		if stem and stem ~= "" then
+			variants[stem] = variants[stem] or {}
+			variants[stem][#variants[stem] + 1] = name
 		end
-		missing[name] = true
-		return false
+	end
+
+	local missing = {}
+	-- every file that can play for one configured name: the name itself and
+	-- its numbered variations
+	local function expand(name, kept, seen)
+		local lower = string.lower(name)
+		local found = false
+		if available[lower] and not seen[lower] then
+			seen[lower] = true
+			kept[#kept + 1] = lower
+			found = true
+		end
+		local list = variants[lower]
+		if list then
+			table.sort(list)
+			for i = 1, #list do
+				if not seen[list[i]] then
+					seen[list[i]] = true
+					kept[#kept + 1] = list[i]
+				end
+				found = true
+			end
+		end
+		if not found and not available[lower] then
+			missing[name] = true
+		end
 	end
 
 	-- a sound is either one name or a list of names to pick from at random
 	local function prune(sound)
-		if type(sound) == "table" then
-			local kept = {}
-			for i = 1, #sound do
-				if exists(sound[i]) then
-					kept[#kept + 1] = sound[i]
-				end
+		local names = type(sound) == "table" and sound or { sound }
+		local kept, seen = {}, {}
+		for i = 1, #names do
+			if type(names[i]) == "string" then
+				expand(names[i], kept, seen)
 			end
-			if #kept > 1 then
-				return kept
-			end
-			return kept[1]
-		elseif type(sound) == "string" and exists(sound) then
-			return sound
 		end
+		if #kept > 1 then
+			return kept
+		end
+		return kept[1]
 	end
 
 	for cmdID, effect in pairs(CommandSoundEffects) do

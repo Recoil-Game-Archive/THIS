@@ -6,6 +6,13 @@ lowercase, no folder, no extension. `sounds/weapons/klightfire.wav` is
 
 - A file name may only be used **once** in the whole tree. Duplicates are
   reported in `infolog.txt` and the first one wins.
+- Where this list names a file (`cmd_move`, `sel_medium`, `mlighthit` ...),
+  the file must be called exactly that, plus `.wav` or `.ogg`. Any other name
+  is not picked up.
+- Variations of an order or unit voice sound (sections 1 and 2) just get a
+  number: `sel_medium2.wav`, `sel_medium3.wav` next to `sel_medium.wav`. They
+  are found by themselves and one is picked at random each time; no config
+  change.
 - The folder decides the mix (gain, how many copies may overlap, distance
   falloff). Those settings are in `gamedata/sounds.lua`.
 - A sound that is configured but has no file is skipped, not an error. Each
@@ -26,6 +33,17 @@ lowercase, no folder, no extension. `sounds/weapons/klightfire.wav` is
 ---
 
 # Sounds to make
+
+Roughly 90 to 115 files in all:
+
+| Section | Files |
+| --- | --- |
+| 1. Orders | 12 |
+| 2. Unit voices | 29 |
+| 3. Deaths | 16 to 24 (4 classes, 4 to 6 each) |
+| 4. Hull hits | 24 to 40 (8 classes, 3 to 5 each) |
+| 5. Weapons | 2 missing, about 3 silent ones |
+| 6. Interface | 3 |
 
 ## 1. Orders: `commands/` (12)
 
@@ -108,8 +126,8 @@ and a quiet tail on everything else.
 | `wpn_sensor` | Iris |
 | `wpn_support` | Ring, Fleet Carrier, Stealth Carrier, Imperator, Hangar |
 
-Any of these can become a list of variations later
-(`{ 'sel_medium', 'sel_medium2' }`) without touching the gadget.
+Any of these can get variations later by adding numbered files
+(`sel_medium2.wav`, `sel_medium3.wav`), without touching the config.
 
 ## 3. Deaths: `deathsounds/<class>/`
 
@@ -117,14 +135,16 @@ Drop any number of files into a class folder; the file names do not matter.
 The gadget cycles through all of them before repeating and never plays the
 same one twice in a row, so 4 to 6 variations per class is a good target.
 
-The files in there now are the old THIS explosions, as placeholders.
+The files in there now are the old THIS explosions, as placeholders. Leave
+`medium/deathmed.wav` where it is when you replace them: it is also a weapon
+sound (section 5).
 
-| Class | Units | Has now |
-| --- | --- | --- |
-| `small` | all small ships, Iris, Shuriken, gunstars, Flash Mine | 2 |
-| `medium` | Imperator turrets, Hangar, Drone Hive | 1 |
-| `large` | frigates, cruisers, carriers, Starbase | 3 |
-| `huge` | Quasar, Imperator | 1 |
+| Class | Units |
+| --- | --- |
+| `small` | all small ships, Iris, Shuriken, gunstars, Flash Mine |
+| `medium` | Imperator turrets, Hangar, Drone Hive |
+| `large` | frigates, cruisers, carriers, Starbase |
+| `huge` | Quasar, Imperator |
 
 A unit picks its class with `customParams.death_sounds`; without it the class
 comes from the unit's type (`gamedata/unitdefs_post.lua`). `none` is silent
@@ -192,6 +212,11 @@ Shared, and worth splitting when you get to them:
 
 `klightfire2` and `klighthit2` exist but nothing uses them.
 
+`deathmed` lives in `deathsounds/medium/` but is also played by name from
+`units/empbomb.lua`, `weapons/special.lua` and `scripts/THIS.lua`. Deleting or
+renaming it silences those. Giving them a sound of their own in `weapons/`
+would free it up.
+
 ## 6. Interface: `ui/`
 
 The engine plays these three by itself as soon as the file exists:
@@ -202,6 +227,15 @@ The engine plays these three by itself as soon as the file exists:
 | `multiselect` | several units are selected at once |
 | `mappoint` | somebody places a map marker |
 
+The interface buttons (`LuaUI/rml/hud.lua`) play these by their full path,
+so they keep their current names:
+
+| File | When |
+| --- | --- |
+| `Mechanical_button_light_switch_02` | the mouse moves onto something clickable |
+| `Interface_thin_open_tone_10` | left click |
+| `Interface_thin_close_tone_10` | right click (cancel, remove from queue) |
+
 `beep4`, `beep6` and `button9` are the old THIS interface sounds; nothing
 plays them at the moment.
 
@@ -210,4 +244,4 @@ plays them at the moment.
 These orders never reach the sound gadget, because the gadgets that own them
 swallow the command: build and cancel in the fleet yard, placing a large ship,
 rally point, repeat queue, the toggles (Longbow volley fire) and the Iris grav
-decoy. Button clicks in the interface are silent too.
+decoy.

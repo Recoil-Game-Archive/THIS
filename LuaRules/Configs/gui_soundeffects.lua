@@ -2,8 +2,11 @@
 -- Config for LuaRules/Gadgets/gui_soundeffects.lua
 --
 -- Every sound here is the name of a file below sounds/, without folder or
--- extension (gamedata/sounds.lua explains the naming). A sound can also be a
--- list of names, { "sel_light", "sel_light2" }, to pick one at random.
+-- extension (gamedata/sounds.lua explains the naming). Numbered files are
+-- variations and are found by themselves: with sel_light.wav, sel_light2.wav
+-- and sel_light3.wav in sounds/, 'sel_light' picks one of the three at random.
+-- A sound can also be a list of names, { "sel_light", "sel_heavy" }, to mix
+-- different sounds.
 --
 -- A name without a file is skipped and listed in infolog.txt when the game
 -- loads, so this file doubles as the list of sounds that still have to be
