@@ -10,13 +10,17 @@ function DamageLoop()
 	if not info.damages[1] then return end -- carrier.bos seems to have no smoke/damage loop?
 	Signal(SIG_Damage)
 	SetSignalMask(SIG_Damage)
-	while GetUnitValue(COB.HEALTH) < 50 do
-		SetUnitValue(COB.CEG_DAMAGE, 25 - math.floor(GetUnitValue(COB.HEALTH) / 2))
-		EmitSfx(info.damages[1], 1024)
-		if GetUnitValue(COB.HEALTH) < 30 then
-			EmitSfx(info.damages[2], 1024)
+	local health, maxHealth = Spring.GetUnitHealth(unitID)
+	while health/maxHealth < 0.75 do
+		local dmgScale = 25 - math.floor(health/maxHealth * 75)
+		local increment = 0.75 / (#(info.damages) + 1)
+		for i, dPiece in pairs(info.damages) do
+			if health/maxHealth < (0.75 - increment * i) then
+				GG.EmitSfxName(unitID, dPiece, "damage_fire", dmgScale)
+			end
 		end
 		Sleep(50)
+		local health, maxHealth = Spring.GetUnitHealth(unitID)
 	end
 end
 
@@ -36,7 +40,7 @@ function MoveRate(rate)
 	elseif rate > 0 then
 		if permaStealth == 0 then
 			isMoving = 1
-			SetUnitValue(COB.STEALTH, 0)
+			spSetUnitStealth(unitID, false)
 		end
 		if EngineEnabled == 0 then
 			if GG.AddTrail and ex then 
@@ -180,9 +184,12 @@ function script.Shot(weapNum)
 			currGPs[weapNum] = 1
 		end
 	end
+	local emitPiece = currGPs[weapNum] and info.gpIDs[weapNum][currGPs[weapNum]] or info.flareIDs[weapNum]
+	local dScale = info.defaultDamages[weapNum]
 	if info.plasmas[weapNum] or info.gravitics[weapNum] then
-		SetUnitValue(COB.STEALTH, 0)
+		spSetUnitStealth(unitID, false)
 		StartThread(RestoreStealth)
+		GG.EmitSfxName(unitID, emitPiece, "muzzleplasma", dScale)
 		-- currently only plasma seem to have barrel recoil so put it here to avoid recoiling kinetics
 		local recoilDist = info.barrelRecoilDist[weapNum]
 		if recoilDist then
@@ -193,8 +200,7 @@ function script.Shot(weapNum)
 		end
 	end
 	if info.kinetics[weapNum] then
-		local emitPiece = currGPs[weapNum] and info.gpIDs[weapNum][currGPs[weapNum]] or info.flareIDs[weapNum]
-		GG.EmitSfxName(unitID, emitPiece, teamPerks.have[perkMassDriver] and "muzzlemassdriver" or "muzzlekinetic")
+		GG.EmitSfxName(unitID, emitPiece, teamPerks.have[perkMassDriver] and "muzzlemassdriver" or "muzzlekinetic", dScale)
 	end
 end
 

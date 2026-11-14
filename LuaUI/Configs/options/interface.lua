@@ -10,6 +10,9 @@ return {
 		  format = "%.2f", applyOnRelease = true,
 		  desc = "Scales every panel of the HUD.",
 		  onSet = function() OPT.hud.UpdateScale() end },
+		{ id = "uisounds", name = "Interface sounds", type = "bool", store = true, default = true, applyOnLoad = true,
+		  desc = "Hover and click sounds on buttons and cards. Their volume is the Interface volume under Sound.",
+		  onSet = function(v) WG.thisUiSoundsOff = not v end },
 		{ id = "enginetooltip", name = "Engine tooltip", type = "bool", store = true, default = false, applyOnLoad = true,
 		  desc = "The engine's own text box in the bottom-left corner.",
 		  onSet = function(v)
@@ -39,7 +42,11 @@ return {
 		  desc = "Turn individual widgets on and off.",
 		  set = function()
 			OPT.close()
-			Spring.SendCommands("luaui selector")
+			if WG.thisWidgetList then
+				WG.thisWidgetList.Open()
+			else
+				Spring.SendCommands("luaui selector") -- the list widget is off
+			end
 		  end },
 	},
 }

@@ -11,7 +11,8 @@ return {
 		{ id = "volgeneral", name = "General", type = "slider", min = 0, max = 100, step = 2, config = "snd_volgeneral", format = "%d%%" },
 		{ id = "volui", name = "Interface", type = "slider", min = 0, max = 100, step = 2, config = "snd_volui", format = "%d%%" },
 		{ id = "volunitreply", name = "Unit replies", type = "slider", min = 0, max = 100, step = 2, config = "snd_volunitreply", format = "%d%%" },
-		{ id = "volmusic", name = "Music", type = "slider", min = 0, max = 100, step = 2, config = "snd_volmusic", format = "%d%%" },
+		{ id = "volmusic", name = "Music", type = "slider", min = 0, max = 100, step = 2, config = "snd_volmusic", default = 50, format = "%d%%",
+		  onSet = function(v) if WG.thisMusic then WG.thisMusic.SetVolume(v / 100) end end },
 
 		{ type = "separator", name = "Music" },
 		{ id = "musicplayer", name = "Music player", type = "bool", widget = "THIS Music", requires = "THIS Music",

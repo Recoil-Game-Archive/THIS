@@ -1,6 +1,6 @@
 --this is used by synced code too, it's just placed here so LuaUI can access it as well
 
-local orderSmall = {"dagger", "sword", "mace", "claymore", "wraith", "longbow", "warhammer", "dronelauncherm", "gunstar_cannon", "gunstar_torpedo", "probe"}
+local orderSmall = {"dagger", "sword", "mace", "claymore", "wraith", "longbow", "warhammer", "dronelauncherm", "gunstar_cannon", "gunstar_torpedo", "lasermine", "probe"}
 local orderLarge = {"carrier", "supportcarrier", "stealthcarrier", "starbase", "minelayer", "meteor", "comet", "starslayer", "eclipse", "quasar", "imperator",}
 
 local order_small = {}

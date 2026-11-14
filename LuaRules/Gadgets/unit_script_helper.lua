@@ -148,10 +148,12 @@ function gadget:GamePreload()
 		info.plasmas = {}
 		info.kinetics = {}
 		info.gravitics = {}
+		info.defaultDamages = {}
 		for i = 1, #weapons do
 			local weaponInfo = weapons[i]
 			local weaponDef = WeaponDefs[weaponInfo.weaponDef]
 			local weapCP = weaponDef.customParams
+			info.defaultDamages[i] = math.log10(weaponDef.damages[0])
 			info.reloadTimes[i] = weaponDef.reload
 			info.burstLengths[i] = weaponDef.salvoSize
 			info.torpedos[i] = tonumber(weapCP.torpedotype)

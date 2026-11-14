@@ -1,0 +1,39 @@
+Interface_thin_close_tone_10.wav
+Interface_thin_open_tone_10.wav
+Mechanical_button_light_switch_02.wav
+
+Licensed to Scary le Poo
+
+https://soundexmachina.itch.io/ui-sounds-futuristic
+License Agreement:
+
+License Agreement Terms
+
+The following applies to single user license agreement. For multiuser license agreement, please contact: kostas@soundexmachina.com
+
+This license agreement (this "agreement") is made between Sound Ex Machina (as "licensor" or "Sound Ex Machina") and You (as "licensee" or "You"). By purchasing and downloading any of the Sound Ex Machina sound libraries offered on the site Soundexmachina.com, you acknowledge and agree to be bound by the terms and conditions of this license agreement.
+
+**1. Grant of License**
+
+The licensor grants you a non-exclusive royalty free license to use the Sounds anywhere in the world for the remaining of the life of copyright on the terms set out in this license agreement.
+
+**2. Rights Granted**
+
+The license granted in this Agreement allows Licensee to:
+
+1. Use the Sounds (as part of Licensee's product/production) for Licensee's lifetime, within different or various Licensee works or projects ("Projects") as Licensee sees fit;
+2. Synchronize the Sounds with any type of audio and visual productions such as short film, feature length film, TV, commercials, animation, music, computer/video games, audiobooks, and multimedia applications.
+3. Use Subject Material as part of a public viewing or broadcast of your production or product such as web sites, podcasting, radio, film, TV, DVD, and Blu-ray.
+
+**3. Limitations**
+
+You are not authorized to:
+
+1. Claim authorship or ownership of any of the Subject Material covered by this license.
+2. Sell, give away, share, lend, sublease or provide access to the unsynchronized Subject Material to any other party through any type of delivery method, not limited to private or public networks on the World Wide Web.
+
+**4. Liability**
+
+Licensor accepts no responsibility for any loss of business or business profits resulting directly or indirectly from the performance of any of Library or Sound. Licensor's liability is limited and restricted solely to replacement of the Subject Material at no charge to Licensee.
+
+All terms apply to a individual user. For Multi-User organizations with 3+ users per workstation, a multi-user license is required. Please contact us at kostas@soundexmachina.com for more details.

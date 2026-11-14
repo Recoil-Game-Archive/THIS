@@ -54,18 +54,20 @@ def seg_dist(p, a, b):
 
 def build(m, R, meta=None):
     pieces = [(p, off) for p, off in m.root.walk() if len(p.verts)]
-    seen = {}; P = []; T = []; TP = []; UVs = []; first = []; base = 0; names = []; offs = []; canon = []; bbox = {}
+    seen = {}; P = []; T = []; TP = []; UVs = []; first = []; base = 0; names = []; offs = []; canon = []; bbox = {}; shared = []
     for k, (p, off) in enumerate(pieces):
         key = (p.verts[:, 6:8].tobytes(), p.idx.tobytes())
         first.append(key not in seen); seen.setdefault(key, k)
         names.append(p.name); offs.append(off); bbox[p.name] = (p.verts[:, :3].min(0), p.verts[:, :3].max(0))
         P.append(p.verts[:, :3] + np.array(off, np.float32)); UVs.append(p.verts[:, 6:8])
         t = s3o.triangles(p).astype(np.int64) + base; T.append(t); TP.append(np.full(len(t), k)); base += len(p.verts)
-        c = np.full(len(t), first[-1])
+        c = np.full(len(t), first[-1]); sh = np.zeros(len(t), bool)
+        if meta is not None: sh[meta[p.name].get('shared', [])] = True; sh |= any(q.get('alias_of') == p.name for q in meta.values())
+        shared.append(sh)
         if meta is not None:                       # symmetric copies / aliases share texels: only owners get painted
             c = np.zeros(len(t), bool); c[meta[p.name]['canonical']] = True
         canon.append(c)
-    canon = np.concatenate(canon)
+    canon = np.concatenate(canon); shared = np.concatenate(shared)
     P = np.concatenate(P).astype(np.float64); UV = np.concatenate(UVs).astype(np.float64); T = np.concatenate(T); TP = np.concatenate(TP)
     fn = np.cross(P[T[:, 1]] - P[T[:, 0]], P[T[:, 2]] - P[T[:, 0]]); area = np.linalg.norm(fn, axis=1); fn /= area[:, None] + 1e-12
     # --- facets: connected coplanar triangles within a piece
@@ -116,7 +118,7 @@ def build(m, R, meta=None):
     ys, xs = np.nonzero(tri >= 0); ti = tri[ys, xs]; b = bary[ys, xs].astype(np.float64)
     pos = P[T[ti, 0]] * b[:, :1] + P[T[ti, 1]] * b[:, 1:2] + P[T[ti, 2]] * (1 - b.sum(1, keepdims=True))
     F = dict(pos=pos, nrm=fn[ti], piece=TP[ti], facet=facet[ti], names=names, xs=xs, ys=ys, R=R, offs=np.array(offs, np.float64), bbox=bbox)
-    F['lpos'] = pos - np.array(offs)[TP[ti]]
+    F['lpos'] = pos - np.array(offs)[TP[ti]]; F['shared'] = shared[ti]
     F['y'] = pos[:, 1]; F['r'] = np.hypot(pos[:, 0], pos[:, 2]); F['theta'] = np.arctan2(pos[:, 2], pos[:, 0])
     # --- facet frames + edge distances
     a = np.zeros(len(pos)); bb = np.zeros(len(pos)); dcv = np.full(len(pos), 1e9); dcc = np.full(len(pos), 1e9)
@@ -146,11 +148,18 @@ def bake_ao(F, rays=48, seed=1, meta=None, step=2):
     P, T = F['mesh']; mesh = trimesh.Trimesh(P, T, process=False); R = F['R']; names = F['names']; offs = F['offs']
     sel = np.nonzero((F['xs'] % step == 0) & (F['ys'] % step == 0))[0]
     n = F['nrm'][sel]; o = F['pos'][sel] + n * 0.03; pc = F['piece'][sel]
-    copies = {}
+    copies = {}                                   # piece -> [(R, t, instance offset)]: every place its texels appear
     for k, nm in enumerate(names):
-        sym = meta[nm].get('sym', 1) if meta else 1
-        inst = [k] + ([j for j, q in enumerate(names) if meta[q].get('alias_of') == nm] if meta else [])
-        copies[k] = [(roty(2 * np.pi * r / sym), offs[j] - offs[k]) for r in range(sym) for j in inst]
+        mt = meta[nm] if meta else {}
+        if 'ops' in mt: ops = [(np.array(o), np.array(t)) for o, t in zip(mt['ops'], mt.get('ops_t', [[0, 0, 0]] * len(mt['ops'])))]
+        else: ops = [(roty(2 * np.pi * r / mt.get('sym', 1)), np.zeros(3)) for r in range(mt.get('sym', 1))]
+        inst = [(np.eye(3), np.zeros(3), offs[k])]
+        if meta:
+            for j, q in enumerate(names):
+                if meta[q].get('alias_of') == nm:
+                    A = np.array(meta[q].get('alias_op', np.eye(3))); s = np.array(meta[q].get('alias_shift', [0, 0, 0]))
+                    inst.append((A, -A @ s, offs[j]))                 # src_local = A x + s  =>  x = A (src_local - s) for these flips
+        copies[k] = [(A @ g, A @ gt + t, off) for g, gt in ops for A, t, off in inst]
     t = np.cross(n, np.where(np.abs(n[:, :1]) < 0.9, [[1.0, 0, 0]], [[0, 1.0, 0]])); t /= np.linalg.norm(t, axis=1)[:, None]; b = np.cross(n, t)
     rng = np.random.default_rng(seed); hit = np.zeros(len(o))
     for k in range(rays):
@@ -158,10 +167,10 @@ def bake_ao(F, rays=48, seed=1, meta=None, step=2):
         d = t * (rr * np.cos(ph))[:, None] + b * (rr * np.sin(ph))[:, None] + n * np.sqrt(1 - u1)[:, None]
         oo = o.copy(); dd = d.copy()
         for p, cl in copies.items():
-            Rm, dt = cl[k % len(cl)]
+            Rm, tl, off = cl[k % len(cl)]
             if len(cl) == 1: continue
             m = pc == p
-            if m.any(): oo[m] = (o[m] - offs[p]) @ Rm.T + offs[p] + dt; dd[m] = d[m] @ Rm.T
+            if m.any(): oo[m] = (o[m] - offs[p]) @ Rm.T + tl + off; dd[m] = d[m] @ Rm.T
         hit += mesh.ray.intersects_any(oo, dd)
     img = np.zeros((R // step, R // step), np.float32); mask = np.zeros_like(img, bool)
     img[F['ys'][sel] // step, F['xs'][sel] // step] = 1 - hit / rays; mask[F['ys'][sel] // step, F['xs'][sel] // step] = True
@@ -196,19 +205,20 @@ def dds_dxt5(img, path):
 def paint_chunked(style, F, chunk=1500000):
     n = len(F['pos']); outs = []
     for s0 in range(0, n, chunk):
-        sub = {k: (v[s0:s0 + chunk] if isinstance(v, np.ndarray) and len(v) == n and k not in ('offs',) else v) for k, v in F.items()}
+        sub = {k: (v[s0:s0 + chunk] if isinstance(v, np.ndarray) and v.ndim >= 1 and len(v) == n and k not in ('offs',) else v) for k, v in F.items()}
         outs.append(style.paint(sub))
     return {k: np.concatenate([o[k] for o in outs]).astype(np.float32) for k in outs[0]}
 
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument('model'); ap.add_argument('style'); ap.add_argument('out')
     ap.add_argument('--res', type=int, default=1024); ap.add_argument('--ss', type=int, default=2); ap.add_argument('--rays', type=int, default=48)
-    ap.add_argument('--tex2-div', type=int, default=1, help='tex2 is written at res/N')
+    ap.add_argument('--tex2-div', type=int, default=1, help='tex2 is written at res/N'); ap.add_argument('--ao-step', type=int, default=0)
     a = ap.parse_args()
     m = s3o.load(a.model); R = a.res * a.ss
-    mp = a.model.rsplit('.', 1)[0] + '.uvmeta.json'; meta = json.load(open(mp))['pieces'] if os.path.exists(mp) else None
+    mp = a.model.rsplit('.', 1)[0] + '.uvmeta.json'; mj = json.load(open(mp)) if os.path.exists(mp) else None; meta = mj['pieces'] if mj else None
     F = build(m, R, meta); print('texels', len(F['pos']), 'facets', F['facet'].max() + 1, 'fill %.0f%%' % (100 * len(F['pos']) / R / R))
-    F['ao'] = bake_ao(F, a.rays, meta=meta, step=2 if a.ss > 1 else 1)
+    F['px'] = 1.0 / (mj['texels_per_unit'] * a.res / mj['res']) if mj else 0.0          # model units per final texel
+    F['ao'] = bake_ao(F, a.rays, meta=meta, step=a.ao_step or (2 if a.ss > 1 else 1))
     style = importlib.import_module(a.style); out = paint_chunked(style, F)
     alb, mask = to_image(F, np.clip(out['albedo'], 0, 1), R); team, _ = to_image(F, np.clip(out['team'], 0, 1), R)
     emit, _ = to_image(F, np.clip(out['emit'], 0, 1), R); refl, _ = to_image(F, np.clip(out['refl'], 0, 1), R)

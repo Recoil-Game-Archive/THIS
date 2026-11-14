@@ -703,6 +703,11 @@ function script.AimWeapon(weaponNum, heading, pitch)
 		turnSpeed = mRad(90)
 		pitchSpeed = mRad(60)
 		return AimTurret(heading, pitch, turretAM, turretAM, turnSpeed , pitchSpeed, 1)
+	--aim megalaser
+	elseif weaponNum == 3 then
+		Turn(megaLaser, y_axis, heading)
+		Turn(megaLaser, x_axis, -pitch)
+		return true
 	--aim gravitrics
 	elseif weaponNum == 4 then
 		if (not haveMoreGuns) then return false end
@@ -728,7 +733,7 @@ function script.AimWeapon(weaponNum, heading, pitch)
 		if (not haveMoreGuns) then return false end
 		return AimTurret(heading, pitch, turretMRight, sleeveMRight, turretSpeedM, sleeveSpeedM, 20)
 	end
-	return false
+	return true--false
 end
 
 local function FireAMBeam()
@@ -805,51 +810,58 @@ function script.FireWeapon(weaponNum)
 	end
 end
 
+local teamPerks = GG.perks[teamID]
+
 function script.Shot(weaponNum)
+	local dScale = GG.lusHelper[unitDefID].defaultDamages[weaponNum]
+	local emitPiece
 	if weaponNum == 5 then
 		if(gun1) then
-			EmitSfx(flare1KForeLeft, muzzleFX)
+			emitPiece = flare1KForeLeft
 		else
-			EmitSfx(flare2KForeLeft, muzzleFX)
+			emitPiece = flare2KForeLeft
 		end
 		gun1 = not gun1
 	elseif weaponNum == 6 then
 		if(gun2) then
-			EmitSfx(flare1KForeRight, muzzleFX)
+			emitPiece = flare1KForeRight
 		else
-			EmitSfx(flare2KForeRight, muzzleFX)
+			emitPiece = flare2KForeRight
 		end
 		gun2 = not gun2
 	elseif weaponNum == 7 then
 		if(gun3) then
-			EmitSfx(flare1KMidLeft, muzzleFX)
+			emitPiece = flare1KMidLeft
 		else
-			EmitSfx(flare2KMidLeft, muzzleFX)
+			emitPiece = flare2KMidLeft
 		end
 		gun3 = not gun3
 	elseif weaponNum == 8 then
 		if(gun3) then
-			EmitSfx(flare1KMidRight, muzzleFX)
+			emitPiece = flare1KMidRight
 		else
-			EmitSfx(flare2KMidRight, muzzleFX)
+			emitPiece = flare2KMidRight
 		end
 		gun4 = not gun4
 	elseif weaponNum == 9 then
 		if(gun5) then
-			EmitSfx(flare1KAftLeft, muzzleFX)
+			emitPiece = flare1KAftLeft
 		else
-			EmitSfx(flare2KAftLeft, muzzleFX)
+			emitPiece = flare2KAftLeft
 		end
 		gun5 = not gun5
 	elseif weaponNum == 10 then
 		if(gun6) then
-			EmitSfx(flare1KAftRight, muzzleFX)
+			emitPiece = flare1KAftRight
 		else
-			EmitSfx(flare2KAftRight, muzzleFX)
+			emitPiece = flare2KAftRight
 		end
 		gun6 = not gun6
 	elseif weaponNum == 19 then miss1 = not miss1
 	elseif weaponNum == 20 then miss2 = not miss2
+	end
+	if emitPiece then
+		GG.EmitSfxName(unitID, emitPiece, teamPerks.have[perkMassDriver] and "muzzlemassdriver" or "muzzlekinetic", dScale)
 	end
 end
 

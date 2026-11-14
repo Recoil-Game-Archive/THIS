@@ -8,7 +8,10 @@
 --  It has no window of its own: the game menu shows the track name with
 --  previous, pause and next, through WG.thisMusic.
 --
---  The volume is the engine's music volume (snd_volmusic), set in Settings.
+--  The volume is the engine's music volume (snd_volmusic), set in Settings;
+--  50% when it has never been set. It is applied to every stream as it
+--  starts (the engine would otherwise play it at full volume until the
+--  slider is moved).
 --  If you pause the music, it stays paused the next time you play.
 --
 --------------------------------------------------------------------------------
@@ -86,13 +89,27 @@ local function FindTracks()
 	return found
 end
 
+local DEFAULT_VOLUME = 50 -- percent
+
+local function Volume()
+	local percent = Spring.GetConfigInt("snd_volmusic", DEFAULT_VOLUME)
+	return math.max(0, math.min(100, percent)) / 100
+end
+
+local function SetVolume(fraction)
+	if streaming then
+		Spring.SetSoundStreamVolume(fraction)
+	end
+end
+
 local function Play(index)
 	if #tracks == 0 then
 		return
 	end
 	current = ((index - 1) % #tracks) + 1
 	Spring.StopSoundStream()
-	Spring.PlaySoundStream(tracks[current].path, 1.0)
+	Spring.PlaySoundStream(tracks[current].path, Volume())
+	Spring.SetSoundStreamVolume(Volume())
 	streaming = true
 	started = false
 	paused = false
@@ -132,12 +149,17 @@ end
 --------------------------------------------------------------------------------
 
 function widget:Initialize()
+	-- the slider in Settings reads this value; make sure it exists at 50%
+	if Spring.GetConfigInt("snd_volmusic", -1) < 0 then
+		Spring.SetConfigInt("snd_volmusic", DEFAULT_VOLUME)
+	end
 	tracks = FindTracks()
 	WG.thisMusic = {
 		GetState = GetState,
 		Next = Next,
 		Previous = Previous,
 		TogglePause = TogglePause,
+		SetVolume = SetVolume,
 	}
 	lastUpdate = Spring.GetTimer()
 	if #tracks == 0 then

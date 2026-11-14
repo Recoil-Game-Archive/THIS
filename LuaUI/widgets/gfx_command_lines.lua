@@ -12,6 +12,14 @@
 --  Lines are drawn at the height the ship flies at, so a waypoint is shown
 --  where the ship will be seen once it gets there.
 --
+--  Two more kinds of line use the same drawing:
+--    - rally lines of selected carriers (gold), from the carrier through its
+--      rally points, read from the unit rules param "rally";
+--    - the tether of a captured planet (the owner's team colour), in the
+--      plane of the capture rings, from under the holding ship to the planet,
+--      with the lights flowing into the planet. Shown for your own and your
+--      allies' planets, or all of them when spectating.
+--
 --  Everything goes out in two instanced calls (one for the line pieces, one
 --  for the markers). If the engine cannot do that, this widget switches
 --  itself off and the engine's own lines come back.
@@ -22,7 +30,7 @@
 function widget:GetInfo()
 	return {
 		name = "THIS Command Lines",
-		desc = "Animated lines and waypoint markers for the orders of selected ships",
+		desc = "Animated lines for orders, rally points and planet tethers",
 		author = "THIS contributors",
 		date = "2026-10-11",
 		license = "GNU GPL, v2 or later",
@@ -57,6 +65,9 @@ local STYLES = {
 	[CMD.RESURRECT] = {0.30, 0.65, 1.00, 0.9},
 }
 local OTHER_STYLE = {0.85, 0.88, 0.95, 1.0}   -- any other order that names a place
+local RALLY_STYLE = {1.00, 0.84, 0.30, 0.6}
+local DEFAULT_PLANE_Y = -300
+local TETHER_SIZE = 9        -- marker under the holding ship
 
 -- The engine's own lines and waypoint icons are made invisible while this
 -- widget runs (this is not saved anywhere), and given back on shutdown.
@@ -78,6 +89,9 @@ local ready = false
 local engineHidden = false
 
 local queues = {}        -- unitID -> list of {x, z, target unitID, style}
+local rallies = {}       -- unitID -> list of {x, z}
+local tethers = {}       -- list of {unitID, planet x, planet z, r, g, b}
+local planeY = DEFAULT_PLANE_Y
 local sinceRefresh = QUEUE_REFRESH
 local lastUpdate
 local startTimer
@@ -310,17 +324,55 @@ local function ReadQueue(unitID)
 	return list
 end
 
+local function ReadRally(unitID)
+	local text = Spring.GetUnitRulesParam(unitID, "rally")
+	if type(text) ~= "string" or text == "" then
+		return nil
+	end
+	local points = {}
+	for x, z in text:gmatch("(%-?%d+),(%-?%d+)") do
+		points[#points + 1] = {tonumber(x), tonumber(z)}
+	end
+	return (#points > 0) and points or nil
+end
+
+local function RefreshTethers()
+	tethers = {}
+	planeY = Spring.GetGameRulesParam("planet_plane_y") or planeY
+	local myAlly = Spring.GetMyAllyTeamID()
+	local spectating = Spring.GetSpectatingState()
+	local count = Spring.GetGameRulesParam("planet_count") or 0
+	for i = 1, count do
+		local owner = Spring.GetGameRulesParam("planet_" .. i .. "_owner") or -1
+		local occupier = Spring.GetGameRulesParam("planet_" .. i .. "_occupier") or 0
+		if owner >= 0 and occupier > 0 and Spring.ValidUnitID(occupier) then
+			local _, _, _, _, _, allyTeam = Spring.GetTeamInfo(owner, false)
+			if spectating or allyTeam == myAlly then
+				local r, g, b = Spring.GetTeamColor(owner)
+				tethers[#tethers + 1] = {occupier, Spring.GetGameRulesParam("planet_" .. i .. "_x") or 0,
+					Spring.GetGameRulesParam("planet_" .. i .. "_z") or 0, r or 1, g or 1, b or 1}
+			end
+		end
+	end
+end
+
 local function RefreshQueues()
 	local selected = Spring.GetSelectedUnits() or {}
-	local fresh = {}
+	local fresh, freshRallies = {}, {}
 	for i = 1, math.min(#selected, MAX_UNITS) do
 		local unitID = selected[i]
 		local list = ReadQueue(unitID)
 		if list and #list > 0 then
 			fresh[unitID] = list
 		end
+		local rally = ReadRally(unitID)
+		if rally then
+			freshRallies[unitID] = rally
+		end
 	end
 	queues = fresh
+	rallies = freshRallies
+	RefreshTethers()
 end
 
 -- Builds the instance data for this frame.
@@ -357,6 +409,46 @@ local function Collect()
 					px, pz = tx, tz
 				end
 			end
+		end
+	end
+	-- rally lines, with a marker on every rally point
+	for unitID, points in pairs(rallies) do
+		local x, y, z = Spring.GetUnitPosition(unitID)
+		if x then
+			local px, pz, travelled = x, z, 0
+			for i = 1, #points do
+				local tx, tz = points[i][1], points[i][2]
+				if segments < MAX_SEGMENTS and count < MAX_MARKERS then
+					lines[nl + 1], lines[nl + 2], lines[nl + 3], lines[nl + 4] = px, y, pz, travelled
+					lines[nl + 5], lines[nl + 6], lines[nl + 7], lines[nl + 8] = tx, y, tz, RALLY_STYLE[4]
+					lines[nl + 9], lines[nl + 10], lines[nl + 11], lines[nl + 12] = RALLY_STYLE[1], RALLY_STYLE[2], RALLY_STYLE[3], 0.9
+					nl = nl + 12
+					segments = segments + 1
+					markers[nm + 1], markers[nm + 2], markers[nm + 3], markers[nm + 4] = tx, y, tz, (i == #points) and LAST_MARKER_SIZE or MARKER_SIZE
+					markers[nm + 5], markers[nm + 6], markers[nm + 7], markers[nm + 8] = RALLY_STYLE[1], RALLY_STYLE[2], RALLY_STYLE[3], 0.9
+					nm = nm + 8
+					count = count + 1
+					local dx, dz = tx - px, tz - pz
+					travelled = travelled + math.sqrt(dx * dx + dz * dz)
+					px, pz = tx, tz
+				end
+			end
+		end
+	end
+	-- tethers: in the ring plane, from under the holding ship into the planet
+	for _, tether in ipairs(tethers) do
+		local x, _, z = Spring.GetUnitPosition(tether[1])
+		if x and segments < MAX_SEGMENTS and count < MAX_MARKERS then
+			-- start a little way out from the ship's circle, with the fade-in skipped
+			lines[nl + 1], lines[nl + 2], lines[nl + 3], lines[nl + 4] = x, planeY, z, 100
+			lines[nl + 5], lines[nl + 6], lines[nl + 7], lines[nl + 8] = tether[2], planeY, tether[3], 0.5
+			lines[nl + 9], lines[nl + 10], lines[nl + 11], lines[nl + 12] = tether[4], tether[5], tether[6], 0.75
+			nl = nl + 12
+			segments = segments + 1
+			markers[nm + 1], markers[nm + 2], markers[nm + 3], markers[nm + 4] = x, planeY, z, TETHER_SIZE
+			markers[nm + 5], markers[nm + 6], markers[nm + 7], markers[nm + 8] = tether[4], tether[5], tether[6], 0.75
+			nm = nm + 8
+			count = count + 1
 		end
 	end
 	return lines, segments, markers, count

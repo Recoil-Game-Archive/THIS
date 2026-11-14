@@ -53,6 +53,19 @@ if (gadgetHandler:IsSyncedCode()) then
 
 --SYNCED
 
+local TIMEOUT = 128
+local lastDeCloak = {}
+
+function gadget:AllowUnitCloak(unitID, enemyID)
+	local f = Spring.GetGameFrame()
+	return (lastDeCloak[unitID] or 0) + TIMEOUT < f
+end
+
+function gadget:AllowUnitDecloak(unitID, objectID, weaponID)
+	lastDeCloak[unitID] = Spring.GetGameFrame()
+	return true
+end
+
 local shielded = {}
 local hasPerk = {}
 

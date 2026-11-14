@@ -1,2 +1,4 @@
 minelayer.s3o: Artistic License 2.0
 Source files available at http://planet-wars.eu/ModelBase/ModelDetail.aspx?ModelID=124
+Modified 2026-10: UVs re-unwrapped and textures replaced (unittextures/minelayer.dds, minelayer2.dds) with tools/autotex;
+geometry unchanged. The original textures remain in unittextures/minelayer_512_1.dds and minelayer_512_2.dds.

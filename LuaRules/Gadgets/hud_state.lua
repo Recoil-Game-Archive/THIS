@@ -30,6 +30,9 @@
 --    planet_count
 --    planet_<i>_x, planet_<i>_z
 --    planet_<i>_owner   teamID holding the planet, -1 = none or contested
+--    planet_<i>_occupier  unitID of the ship holding it, 0 = none (allies of the owner only
+--                         can make use of it; the id is public but means nothing without sight)
+--  Unit rules param on carriers: rally ("x,z;x,z;...", allied), the rally points.
 --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -69,6 +72,7 @@ local teams = {}
 local teamCache = {}
 local unitCache = {}
 local planetOwner = {}
+local planetOccupier = {}
 local planetsPublished = false
 
 local function SetTeam(team, key, value, access)
@@ -162,6 +166,15 @@ local function PublishBuilders()
 		SetUnit(unitID, cache, "build_progress", b.current and Progress(b.progress) or 0)
 		SetUnit(unitID, cache, "build_queue", EncodeQueue(b.first))
 		SetUnit(unitID, cache, "build_repeat", b.Repeat and 1 or 0)
+		local rally = ""
+		if b.rally then
+			local parts = {}
+			for i = 1, #b.rally do
+				parts[i] = floor(b.rally[i][1]) .. "," .. floor(b.rally[i][2])
+			end
+			rally = concat(parts, ";")
+		end
+		SetUnit(unitID, cache, "rally", rally)
 	end
 	for unitID in pairs(unitCache) do
 		if not buildstate[unitID] then
@@ -190,6 +203,11 @@ local function PublishPlanets()
 		if planetOwner[i] ~= owner then
 			planetOwner[i] = owner
 			spSetGameRulesParam("planet_" .. i .. "_owner", owner)
+		end
+		local occupier = p.lastOccupier or 0
+		if planetOccupier[i] ~= occupier then
+			planetOccupier[i] = occupier
+			spSetGameRulesParam("planet_" .. i .. "_occupier", occupier)
 		end
 	end
 end
