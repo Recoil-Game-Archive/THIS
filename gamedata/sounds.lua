@@ -59,7 +59,7 @@ local categories = {
 
 	-- the layered unit sounds played by gui_soundeffects (sel_* / mov_* / wpn_*)
 	["unitselections"] = {
-		gain = 0.1,
+		gain = 0.3,
 		gainmod = 0.06,
 		dopplerscale = 0,
 		maxconcurrent = 2,

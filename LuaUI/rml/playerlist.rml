@@ -11,6 +11,30 @@
 			bottom: 8dp;
 			width: 236dp;
 		}
+		/* FPS, game speed and game time, above the players */
+		#perf {
+			display: flex;
+			flex-direction: row;
+			padding: 6dp 10dp 5dp 10dp;
+			border-bottom: 1dp #33415a;
+		}
+		#perf .cell {
+			flex: 1;
+		}
+		#perf .cell.right {
+			text-align: right;
+		}
+		#perf .num {
+			font-size: 14dp;
+			font-weight: bold;
+			color: #e6edf7;
+		}
+		#perf .num.warn {
+			color: #f2b84b;
+		}
+		#perf .num.bad {
+			color: #ff6b5e;
+		}
 		#head {
 			display: flex;
 			flex-direction: row;
@@ -107,6 +131,11 @@
 <body>
 	<div id="players" class="panel hidden">
 		<div id="players-accent" class="accent-line"/>
+		<div id="perf">
+			<div class="cell"><div class="label">FPS</div><div id="fps" class="num">0</div></div>
+			<div class="cell"><div class="label">SPEED</div><div id="speed" class="num">1.0x</div></div>
+			<div class="cell right"><div class="label">TIME</div><div id="time" class="num">0:00</div></div>
+		</div>
 		<div id="head">
 			<div class="label c-name">PLAYERS</div>
 			<div class="label c-planets">PLANETS</div>

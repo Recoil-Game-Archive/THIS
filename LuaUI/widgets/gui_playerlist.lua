@@ -8,6 +8,10 @@
 --  who left are greyed out. Spectators are counted on one line; click it to
 --  see their names.
 --
+--  Above the players: frames per second, game speed and game time. The
+--  engine's own FPS, clock and speed displays are switched off while this
+--  widget runs.
+--
 --  Planets held comes from the game rules params planet_count and
 --  planet_<i>_owner (LuaRules/Gadgets/hud_state.lua).
 --
@@ -31,6 +35,18 @@ local UPDATE_INTERVAL = 1
 -- ping in milliseconds from which it is shown as a warning / as bad
 local PING_WARN = 300
 local PING_BAD = 800
+-- how often FPS, speed and time are refreshed, in seconds
+local PERF_INTERVAL = 0.25
+-- frames per second below which the FPS is shown as a warning / as bad
+local FPS_WARN = 30
+local FPS_BAD = 15
+
+-- the engine displays this widget replaces: { setting, command }
+local ENGINE_DISPLAYS = {
+	{"ShowFPS", "fps"},
+	{"ShowClock", "clock"},
+	{"ShowSpeed", "speed"},
+}
 
 local hud
 local document
@@ -40,6 +56,8 @@ local shownRows
 local showSpectators = false
 local accentTeam, accentColour
 local engineRoster -- the engine roster setting found at start
+local engineDisplays = {} -- setting -> value found at start
+local lastPerf
 
 --------------------------------------------------------------------------------
 
@@ -137,6 +155,33 @@ local function Collect()
 	return order, spectators
 end
 
+local function FormatClock(seconds)
+	seconds = math.floor(seconds or 0)
+	local hours = math.floor(seconds / 3600)
+	local minutes = math.floor(seconds / 60) % 60
+	if hours > 0 then
+		return string.format("%d:%02d:%02d", hours, minutes, seconds % 60)
+	end
+	return string.format("%d:%02d", minutes, seconds % 60)
+end
+
+local function RefreshPerf()
+	local fps = Spring.GetFPS() or 0
+	view.SetText("fps", tostring(fps))
+	view.SetClass("fps", "bad", fps < FPS_BAD)
+	view.SetClass("fps", "warn", fps >= FPS_BAD and fps < FPS_WARN)
+
+	-- the speed the game actually runs at; it falls behind the set speed when
+	-- the slowest computer in the game cannot keep up
+	local wanted, actual, paused = Spring.GetGameSpeed()
+	wanted, actual = wanted or 1, actual or 1
+	local lagging = not paused and Spring.GetGameFrame() > 0 and actual < wanted * 0.95
+	view.SetText("speed", paused and "paused" or string.format("%.1fx", actual))
+	view.SetClass("speed", "warn", paused or lagging)
+
+	view.SetText("time", FormatClock(Spring.GetGameSeconds()))
+end
+
 local function RowsRML(groups)
 	local rml = {}
 	for index, group in ipairs(groups) do
@@ -228,9 +273,18 @@ function widget:Initialize()
 		Spring.SendCommands("info") -- a plain "info" switches it off when it is on
 	end
 
+	-- Same for the engine's FPS, clock and speed displays.
+	for _, display in ipairs(ENGINE_DISPLAYS) do
+		local setting, command = display[1], display[2]
+		engineDisplays[setting] = Spring.GetConfigInt(setting, 0)
+		Spring.SendCommands(command .. " 0")
+	end
+
 	Refresh()
+	RefreshPerf()
 	hud.ShowPassive(document)
 	lastUpdate = Spring.GetTimer()
+	lastPerf = lastUpdate
 end
 
 function widget:Shutdown()
@@ -241,6 +295,13 @@ function widget:Shutdown()
 		Spring.SetConfigInt("ShowPlayerInfo", engineRoster)
 		engineRoster = nil
 	end
+	for _, display in ipairs(ENGINE_DISPLAYS) do
+		local setting, command = display[1], display[2]
+		if engineDisplays[setting] and engineDisplays[setting] ~= 0 then
+			Spring.SendCommands(command .. " 1")
+		end
+	end
+	engineDisplays = {}
 	if document then
 		document:Close()
 		document = nil
@@ -261,6 +322,10 @@ function widget:Update()
 		return -- hidden with the rest of the GUI (F5)
 	end
 	local now = Spring.GetTimer()
+	if Spring.DiffTimers(now, lastPerf) >= PERF_INTERVAL then
+		lastPerf = now
+		RefreshPerf()
+	end
 	if Spring.DiffTimers(now, lastUpdate) >= UPDATE_INTERVAL then
 		lastUpdate = now
 		Refresh()
