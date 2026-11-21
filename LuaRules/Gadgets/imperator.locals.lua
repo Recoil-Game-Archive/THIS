@@ -8,7 +8,6 @@ local spCreateUnit           = Spring.CreateUnit
 local spTransferUnit         = Spring.TransferUnit
 local spDestroyUnit          = Spring.DestroyUnit
 local spGetGameFrame         = Spring.GetGameFrame
-local spGetHeadingFromVector = Spring.GetHeadingFromVector
 local spGetLocalAllyTeamID   = Spring.GetLocalAllyTeamID
 local spGetLocalTeamID       = Spring.GetLocalTeamID
 local spGetPositionLosState  = Spring.GetPositionLosState
@@ -17,7 +16,6 @@ local spGetSpectatingState   = Spring.GetSpectatingState
 local spGetUnitDefID         = Spring.GetUnitDefID
 local spGetUnitLosState      = Spring.GetUnitLosState
 local spGetUnitPieceMap      = Spring.GetUnitPieceMap
-local spGetUnitPiecePosDir   = Spring.GetUnitPiecePosDir
 local spGetUnitPosition      = Spring.GetUnitPosition
 local spGetUnitTeam          = Spring.GetUnitTeam
 local spGiveOrderToUnit		 = Spring.GiveOrderToUnit 
@@ -25,6 +23,7 @@ local spInsertUnitCmdDesc    = Spring.InsertUnitCmdDesc
 local spSetUnitNeutral       = Spring.SetUnitNeutral
 local spSetUnitNoSelect      = Spring.SetUnitNoSelect
 local spGetTeamUnitDefCount  = Spring.GetTeamUnitDefCount
+local spUnitAttach           = Spring.UnitAttach
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -43,10 +42,23 @@ starboard first, then port
 11, 15: tower rear
 12, 16: side edge
 
+-------ATTACHING-------
+Hardpoints and turrets are attached to the Imperator's hp pieces with
+Spring.UnitAttach, once, when they are created. From then on the engine keeps
+them on the piece. This needs:
+- holdSteady = true on the Imperator (units/imperator.lua), so they take the
+  orientation of the piece and not of the hull; the hp pieces are turned in
+  scripts/Anims/Imperator.lua
+- transportability.targetableTransportedUnits = true (gamedata/modrules.lua),
+  or nothing could target the turrets
+The Imperator is not a transport: the engine forces the attach and does not
+stun what is attached, so the turrets keep firing. When the Imperator dies the
+engine kills everything attached to it.
+
 -------HARDPOINT SUBTABLES (per hardpoint)-------
 index = hardpoint ID
 [1] = parent imperator (unitID)
-[2] = imperator piece attached to (piece name string)
+[2] = imperator piece attached to (piece number)
 [3] = attached turret (unitID)
 [4] = turret under construction (unitDefID)
 [5] = gameframe for turret completion
@@ -91,16 +103,6 @@ local newImpList={}
 
 GG.imperators = imperators
 GG.hardpoints = hardpoints
-
-local function GetHeading(dx,dz)
-	return spGetHeadingFromVector(dx,dz)/32756*3.1415
-end
-
-local udCannon
-local udPlasma
-local udAMBeam
-local udPointDef
-local udHive
 
 function gadget:UnitCreated(u, ud, team)
 	if ud == imperator then
@@ -217,23 +219,6 @@ function gadget:Initialize()
 			}
 		end
 	end
-		for ud,d in pairs(turrets) do
-			if d.name == "Battle Cannon" then
-				udCannon = ud
-			end
-			if d.name == "Plasma Cannon" then
-				udPlasma = ud
-			end
-			if d.name == "Antimatter Beam" then
-				udAMBeam = ud
-			end
-			if d.name == "Drone Hive" then
-				udHive = ud
-			end
-			if d.name == "Point Defense" then
-				udPointDef = ud
-			end
-		end
 	_G.hardpoints=hardpoints
 	_G.turrets=turrets
 end
@@ -241,6 +226,7 @@ end
 function gadget:GameFrame(f)
 	for u,newteam in pairs(transferList) do
 		spTransferUnit(u,newteam,false)
+		transferList[u]=nil
 	end
 	for u,_ in pairs(newImpList) do
 		local x,y,z=spGetUnitPosition(u)
@@ -250,9 +236,9 @@ function gadget:GameFrame(f)
 		for i = 1,pointCount do
 			local nu=spCreateUnit("imperator_hardpoint",x,y,z,0,team)
 			if nu then
-				Spring.MoveCtrl.Enable(nu)
 				--spSetUnitNeutral(nu, true)
 				local part = pm["hp"..(i-1)]
+				spUnitAttach(u,nu,part)
 				hardpoints[nu]={u,part}
 				hp[i]=nu
 				SendToUnsynced("newHP",nu)
@@ -268,27 +254,20 @@ function gadget:GameFrame(f)
 		spDestroyUnit(u)
 		destroyList[u]=nil
 	end
+	-- turrets that have finished building
 	for u,d in pairs(hardpoints) do
-		local team = spGetUnitTeam(u)
-		local px,py,pz,pdx,pdy,pdz=spGetUnitPiecePosDir(d[1],d[2])
-		local impHead = spGetHeadingFromVector(pdx,pdz) --Spring.GetUnitHeading(d[1])
-		Spring.MoveCtrl.SetPosition(u,px,py,pz)
-		Spring.MoveCtrl.SetHeading(u,impHead)
-		if d[3] then
-			Spring.MoveCtrl.SetPosition(d[3],px,py,pz)
-			Spring.MoveCtrl.SetHeading(d[3],impHead)
-		end
 		if d[5] and d[5] < f then
+			local px,py,pz=spGetUnitPosition(u)
 			local nu = spCreateUnit(d[4],px,py,pz,0,spGetUnitTeam(u))
 			if nu then
 				d[4]=nil
 				d[5]=nil
 				d[3]=nu
 				attachments[nu]=u
-				Spring.MoveCtrl.Enable(nu)
+				spUnitAttach(d[1],nu,d[2])
 				spSetUnitNoSelect(u,true)
 			end
-        end
+		end
 	end
 end
 

@@ -34,6 +34,10 @@ local unitDef = {
 	MaxVelocity = 0.5,
 	TurnRate = 20,
 	bankingAllowed = false,
+	-- hardpoints and turrets are attached to the hp pieces (Spring.UnitAttach
+	-- in LuaRules/Gadgets/imperator.locals.lua); this makes them take the
+	-- orientation of the piece instead of the hull
+	holdSteady = true,
 
 	MaxBank = 0,
 	-- Airplane Moventment

@@ -44,6 +44,9 @@ local modrules  = {
     transportHover  = 0,   -- defaults to 0
     transportShip   = 0,  -- defaults to 0
     transportAir    = 1,  -- defaults to 0
+    -- the Imperator's turrets are attached to it (Spring.UnitAttach), which
+    -- makes them transported units as far as the engine is concerned
+    targetableTransportedUnits = true,  -- defaults to false
   },
 
   fireAtDead = {
