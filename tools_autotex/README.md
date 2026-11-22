@@ -105,3 +105,13 @@ Painter helpers added since the first ships: `Painter(F, k=...)` scales every fe
 
 The previews come from `render.py`, a plain software renderer. They show layout and colour, not what the
 engine's shaders, mipmapping and lighting will do.
+
+## After baking: normal maps and lights
+
+The unit shaders (Custom Unit Shaders GL4) and the dynamic lights read two things that are derived from the
+finished textures. Re-run both after a model or its textures change:
+
+    python3 tools/textures/normalmaps.py     # unittextures/<tex1>_normals.dds, from tex1 (skips up-to-date ones)
+    python3 tools/textures/unitlights.py     # LuaUI/Configs/DeferredLightsGL4unitLights.lua, from tex2's glow
+
+See `modelmaterials_gl4/README-THIS.txt`.

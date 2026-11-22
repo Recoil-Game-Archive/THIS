@@ -92,6 +92,27 @@ return {
 		{ id = "vsync", name = "V-sync", type = "bool", config = "VSync", cmd = "vsync %d" },
 		{ id = "msaa", name = "Anti-aliasing (MSAA)", type = "slider", steps = {0, 2, 4, 8, 16}, config = "MSAALevel", restart = true, format = "%dx" },
 
+		{ type = "separator", name = "Ships" },
+		{ id = "shipshaders", name = "Detailed ship shading", type = "bool", default = true,
+		  desc = "Hull plating with relief, shine and glowing lights (Custom Unit Shaders GL4). Off: the engine's plain shading.",
+		  get = function() return Spring.GetConfigInt("cus2", 1) == 1 end,
+		  set = function(v)
+			Spring.SetConfigInt("cus2", v and 1 or 0)
+			Spring.SendCommands(v and "luarules reloadcusgl4" or "luarules disablecusgl4")
+		  end },
+		{ id = "shipbrightness", name = "Ship brightness", type = "slider", min = 50, max = 150, step = 5, format = "%d%%",
+		  desc = "How bright hulls are before lighting. Needs detailed ship shading.",
+		  get = function()
+			local saved = Spring.GetConfigFloat("THISUnitBrightness", 0)
+			return math.floor((saved > 0 and saved or 0.75) * 100 + 0.5) -- 0.75: albedoFactor in LuaRules/Configs/cus_defs.lua
+		  end,
+		  set = function(v)
+			Spring.SetConfigFloat("THISUnitBrightness", v / 100)
+			Spring.SendCommands("luarules unitbrightness " .. (v / 100))
+		  end },
+		{ id = "dynamiclights", name = "Dynamic lights", type = "bool", widget = "Deferred rendering GL4", requires = "Deferred rendering GL4",
+		  desc = "Engines, windows, weapons fire and explosions light up the ships around them." },
+
 		{ type = "separator", name = "Effects" },
 		{ id = "particles", name = "Particle limit", type = "slider", min = 2000, max = 30000, step = 1000, config = "MaxParticles", cmd = "maxparticles %d",
 		  desc = "Lower this if big battles slow the game down." },
