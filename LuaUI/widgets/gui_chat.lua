@@ -9,7 +9,9 @@
 --    ALL      both
 --  Recent lines of the selected toggle appear above the row of toggles and
 --  drop off after a while. HISTORY opens the scrollback for the selected
---  toggle; the recent history also shows while you are typing.
+--  toggle; the recent history also shows while you are typing, and stays up
+--  for a few seconds after you send (or cancel) before it fades out, so your
+--  own message is seen in its conversation.
 --
 --  Lines are colour coded: player names in their team colour, and the message
 --  by channel (everyone, allies, spectators, whispers, events, console).
@@ -39,6 +41,8 @@ local UPDATE_INTERVAL = 0.25
 local LINE_SECONDS = 15        -- how long a line stays up outside the history
 local VISIBLE_LINES = 8        -- lines shown normally
 local TYPING_LINES = 14        -- lines shown while typing
+local LINGER_SECONDS = 6       -- the history shown while typing stays this long afterwards...
+local LINGER_FADE = 1.5        -- ...and fades out over the last part of it
 local HISTORY_LINES = 150      -- lines kept in the opened history
 local MAX_STORED = 600
 local MAX_LENGTH = 500         -- characters kept of one message
@@ -70,6 +74,8 @@ local tab = TAB_CHAT
 local expanded = false
 local shownRml
 local scrollPending = 0
+local wasTyping = false
+local lingerUntil = -1 -- on the widget's clock: until then the typing history stays up
 local players = {}     -- lowercase name -> {name=, colour=}
 local playersAge = math.huge
 
@@ -213,8 +219,18 @@ local function Refresh()
 	-- settings widget has hidden that box
 	view.SetStyle("chat", "bottom", WG.thisEngineTooltipHidden and "12dp" or "250dp")
 	local typing = Spring.IsUserWriting and Spring.IsUserWriting() or false
-	local limit = expanded and HISTORY_LINES or (typing and TYPING_LINES or VISIBLE_LINES)
-	local keepOld = expanded or typing
+	if wasTyping and not typing then
+		lingerUntil = clock + LINGER_SECONDS -- sent or cancelled: the history stays for a moment
+	end
+	wasTyping = typing
+	local lingering = not typing and clock < lingerUntil
+	local limit = expanded and HISTORY_LINES or ((typing or lingering) and TYPING_LINES or VISIBLE_LINES)
+	local keepOld = expanded or typing or lingering
+	-- old lines fade out at the end of the linger; lines that are still fresh stay as they are
+	local oldOpacity
+	if lingering and not expanded and (lingerUntil - clock) < LINGER_FADE then
+		oldOpacity = math.max(0, (lingerUntil - clock) / LINGER_FADE)
+	end
 
 	local shown = {}
 	for i = #entries, 1, -1 do
@@ -222,11 +238,16 @@ local function Refresh()
 			break
 		end
 		local entry = entries[i]
-		if not keepOld and (clock - entry.time) >= LINE_SECONDS then
+		local old = (clock - entry.time) >= LINE_SECONDS
+		if not keepOld and old then
 			break -- everything older has expired as well
 		end
 		if InTab(entry) then
-			table.insert(shown, 1, EntryRML(entry))
+			local rml = EntryRML(entry)
+			if old and oldOpacity then
+				rml = ('<div style="opacity: %.2f;">'):format(oldOpacity) .. rml .. '</div>'
+			end
+			table.insert(shown, 1, rml)
 		end
 	end
 
@@ -399,7 +420,7 @@ function widget:Update()
 		clock = clock + elapsed
 		playersAge = playersAge + elapsed
 		lastUpdate = now
-		dirty = false
+		dirty = clock < lingerUntil and (lingerUntil - clock) < LINGER_FADE -- every frame while fading
 		if playersAge >= PLAYER_REFRESH_SECONDS then
 			RefreshPlayers()
 		end

@@ -16,6 +16,7 @@ return {
 
 		{ type = "separator", name = "Music" },
 		{ id = "musicplayer", name = "Music player", type = "bool", widget = "THIS Music", requires = "THIS Music",
-		  desc = "Plays the .ogg files in the music folder. Its controls are in the game menu." },
+		  desc = "Plays the .ogg files in the music folder. Its controls are in the game menu.",
+		  onSet = function(v) Spring.SetConfigInt("THISMusicOff", v and 0 or 1) end }, -- the loading screen's music follows
 	},
 }

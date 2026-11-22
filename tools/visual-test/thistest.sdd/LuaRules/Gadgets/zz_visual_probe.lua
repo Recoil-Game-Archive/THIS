@@ -51,6 +51,12 @@ function gadget:GameFrame(n)
       if UnitDefs[Spring.GetUnitDefID(u.id)].name == opt.visualnodraw:lower() then Spring.SetUnitNoDraw(u.id, true) end
     end
   end
+  if on(opt.visualmove) and n == 60 then  -- VISUALMOVE=1: a two-leg move order for every unit (order lines)
+    for _, u in ipairs(units) do
+      Spring.GiveOrderToUnit(u.id, CMD.MOVE, { u.x + 500, 0, u.z - 400 }, {})
+      Spring.GiveOrderToUnit(u.id, CMD.MOVE, { u.x - 200, 0, u.z - 800 }, { "shift" })
+    end
+  end
   if on(opt.visualhurt) and n == 60 then
     for _, u in ipairs(units) do
       local h, mh = Spring.GetUnitHealth(u.id)
@@ -79,13 +85,24 @@ local cx, cz = Game.mapSizeX / 2, Game.mapSizeZ / 2
 local far = tonumber(opt.visualzoom) or 700
 local alt = tonumber(opt.visualalt) or 130
 local rx = tonumber(opt.visualrx) or 2.35
+local shotAt
+if on(opt.visualshotat) then
+  shotAt, NSHOTS = {}, 0
+  for frame in opt.visualshotat:gmatch("%d+") do shotAt[tonumber(frame)] = true; NSHOTS = NSHOTS + 1 end
+end
 local wanted = {}
 for _, ud in ipairs(lineup()) do wanted[ud.id] = true end
 
 function gadget:DrawScreenPost()
   draws = draws + 1
   local n = Spring.GetGameFrame()
-  if n >= SHOTFRAME and taken < NSHOTS and n - lastShot >= STEP then
+  if shotAt then  -- VISUALSHOTAT="560,700": screenshots at exactly these frames instead
+    if shotAt[n] and lastShot ~= n then
+      Spring.SendCommands("screenshot png")
+      taken = taken + 1
+      lastShot = n
+    end
+  elseif n >= SHOTFRAME and taken < NSHOTS and n - lastShot >= STEP then
     Spring.SendCommands("screenshot png")
     taken = taken + 1
     lastShot = n
@@ -97,6 +114,18 @@ function gadget:GameFrame(n)
     Spring.SendCommands("console 0")
     if not on(opt.visualshowui) then Spring.SendCommands("hideinterface 1") end   -- VISUALSHOWUI=1: screenshots with the HUD
     if not on(opt.visualui) then Spring.SendCommands("luaui disable") end   -- VISUALUI=1 keeps LuaUI (lights) running
+  end
+  if on(opt.visualat) then  -- VISUALAT="300:say hello|520:chatall": console commands at given frames
+    for frame, c in opt.visualat:gmatch("(%d+):([^|]+)") do
+      if tonumber(frame) == n then Spring.SendCommands(c) end
+    end
+  end
+  if on(opt.visualmove) and n == 70 then  -- and they are selected, so their order lines show
+    local mine = {}
+    for _, id in ipairs(Spring.GetTeamUnits(0)) do
+      if wanted[Spring.GetUnitDefID(id)] then mine[#mine + 1] = id end
+    end
+    Spring.SelectUnitArray(mine)
   end
   if n == 40 and on(opt.visualcmd) then
     for c in opt.visualcmd:gmatch("[^|]+") do Spring.SendCommands(c) end

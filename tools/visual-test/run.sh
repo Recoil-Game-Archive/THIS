@@ -5,9 +5,11 @@
 #     VISUALZOOM=700 camera distance   VISUALALT=130 height looked at   VISUALRX=2.35 camera pitch
 #     VISUALSPACING=150 between units  VISUALUI=1 keep LuaUI running (VISUALSHOWUI=1: and show the HUD)    VISUALENEMY=<unit> an enemy facing each unit
 #     VISUALHURT=1 units at 40 % health   VISUALKILL=1 destroy them during the shots
+#     VISUALMOVE=1 a two-leg move order for every unit, and they are selected (order lines)
 #     VISUALNODRAW=<unit> hide that unit of the line-up with Spring.SetUnitNoDraw (it must vanish)
 #     VISUALSHOTFRAME=190 first screenshot, VISUALSHOTS=6, VISUALSTEP=10 frames apart, VISUALFRAMES=n run until frame n
-#     VISUALCMD="luarules x|luaui y" console commands at frame 40   VISUALCFG=$'Key = value\n' extra engine config
+#     VISUALCMD="luarules x|luaui y" console commands at frame 40; VISUALAT="300:say hi|520:chatall" at given frames
+#     VISUALSHOTAT="560,700" screenshots at exactly these frames   VISUALCFG=$'Key = value\n' extra engine config
 #     LIGHTSPROBE=1 (with VISUALUI=1) log the light buffers every 60 frames: grep LIGHTSPROBE in the infolog
 #     VISUALRSYNC="--exclude=x.lua" leave game files out of the run (before/after comparisons)
 #     VISUALOUT=dir where the screenshots go (default <run>/shots)
@@ -30,7 +32,7 @@ OPTS=""
 for kv in "visualunits=$VISUAL" "visualzoom=$VISUALZOOM" "visualalt=$VISUALALT" "visualrx=$VISUALRX" \
   "visualspacing=$VISUALSPACING" "visualui=$VISUALUI" "visualenemy=$VISUALENEMY" "visualhurt=$VISUALHURT" \
   "visualkill=$VISUALKILL" "visualshotframe=$VISUALSHOTFRAME" "visualshots=$VISUALSHOTS" "visualstep=$VISUALSTEP" \
-  "visualframes=$VISUALFRAMES" "visualcmd=$VISUALCMD" "lightsprobe=$LIGHTSPROBE" "visualnodraw=$VISUALNODRAW" "visualshowui=$VISUALSHOWUI" $VISUALOPTS; do
+  "visualframes=$VISUALFRAMES" "visualcmd=$VISUALCMD" "lightsprobe=$LIGHTSPROBE" "visualnodraw=$VISUALNODRAW" "visualshowui=$VISUALSHOWUI" "visualmove=$VISUALMOVE" "visualat=$VISUALAT" "visualshotat=$VISUALSHOTAT" $VISUALOPTS; do
   [ -n "${kv#*=}" ] && OPTS="$OPTS\n\t\t$kv;"
 done
 sed -i "s#visualprobe=1;#visualprobe=1;$OPTS#" "$RUN/script.txt"

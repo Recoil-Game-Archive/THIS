@@ -9,6 +9,16 @@
 --  team's colour, straight down to that plane, ending in a small circle: the
 --  circle is where the ship "is" for capturing a planet.
 --
+--  Orders get the same line. An order is given on the ground under the mouse,
+--  but the ship ends up high above that spot and is judged by the plane far
+--  below it, so neither the click nor the waypoint shows where the ship will
+--  be for a capture ring. So:
+--    - every waypoint of the selected ships (and every rally point of a
+--      selected carrier) has a line down to the plane, in the colour of the
+--      order, from the height the ship flies at;
+--    - while ships are selected and the mouse would give them an order that
+--      names a place, the spot under the mouse has one too, before you click.
+--
 --  All lines are drawn in one instanced call (one buffer holds the shape of a
 --  line with its circle, a second one a position and colour per ship). If
 --  the engine cannot do that, they are drawn one by one instead.
@@ -41,6 +51,31 @@ local CIRCLE_ALPHA = 0.9
 local CIRCLE_SCALE = 0.3
 local CIRCLE_MIN, CIRCLE_MAX = 7, 42
 
+-- order lines
+local MAX_ORDER_UNITS = 300     -- with more ships selected, only this many get order lines
+local MAX_ORDERS = 12           -- orders shown per ship
+local QUEUE_REFRESH = 0.12      -- seconds between reading the ships' order queues
+local ORDER_ALPHA = 0.8         -- against a ship's own line (1)
+local QUEUED_ALPHA = 0.5        -- orders after the first
+local PREVIEW_ALPHA = 1.0       -- the spot under the mouse
+-- colours as in gfx_command_lines.lua
+local ORDER_COLOUR = {
+	[CMD.MOVE]   = {0.35, 1.00, 0.45},
+	[CMD.FIGHT]  = {0.62, 0.45, 1.00},
+	[CMD.PATROL] = {0.30, 0.62, 1.00},
+	[CMD.ATTACK] = {1.00, 0.26, 0.20},
+	[CMD.AREA_ATTACK] = {1.00, 0.26, 0.20},
+}
+local OTHER_ORDER_COLOUR = {0.85, 0.88, 0.95}
+local RALLY_COLOUR = {1.00, 0.84, 0.30}
+-- the mouse gets a preview line for these orders (and for the default order, when that is one of them)
+local PREVIEW_ORDERS = {
+	[CMD.MOVE] = true, [CMD.FIGHT] = true, [CMD.PATROL] = true,
+	[31416] = true,  -- CMD_TURN, LuaRules/Gadgets/unit_turn.lua
+	[32667] = true,  -- CMD_RALLY, LuaRules/Gadgets/build.locals.lua
+	[32333] = true,  -- CMD_PLACE (bringing in a large ship), LuaRules/Gadgets/build.locals.lua
+}
+
 local planeY = DEFAULT_PLANE_Y
 local marked = {}        -- unitDefID -> circle radius, or false for things that get no line
 local teamColour = {}    -- teamID -> {r, g, b}
@@ -48,6 +83,11 @@ local teamColour = {}    -- teamID -> {r, g, b}
 local shader, vao, shapeVBO, instanceVBO
 local shapeVertices = 0
 local useInstancing = true
+local planeUniform
+
+local orderPoints = {}   -- list of {x, y, z, radius, r, g, b, alpha}, from the selected ships' queues
+local sinceRefresh = QUEUE_REFRESH
+local lastUpdate
 
 local VERTEX_SHADER = [[
 #version 330 compatibility
@@ -55,11 +95,12 @@ local VERTEX_SHADER = [[
 // shape.w: alpha of this vertex
 layout (location = 0) in vec4 shape;
 layout (location = 1) in vec4 ship;      // ship position, and the circle's radius
-layout (location = 2) in vec4 colour;    // team colour; a: height of the plane
+layout (location = 2) in vec4 colour;    // rgb; a: how visible this line is (1 for ships, less for orders)
+uniform float planeHeight;
 out vec4 vColour;
 void main() {
-	vec4 world = vec4(ship.x + shape.x * ship.w, mix(colour.a, ship.y, shape.z), ship.z + shape.y * ship.w, 1.0);
-	vColour = vec4(colour.rgb, shape.w);
+	vec4 world = vec4(ship.x + shape.x * ship.w, mix(planeHeight, ship.y, shape.z), ship.z + shape.y * ship.w, 1.0);
+	vColour = vec4(colour.rgb, shape.w * colour.a);
 	gl_Position = gl_ModelViewProjectionMatrix * world;
 }
 ]]
@@ -124,6 +165,7 @@ local function CreateBuffers()
 	if not shader then
 		return false, "the shader did not compile. Log:\n" .. tostring(gl.GetShaderLog())
 	end
+	planeUniform = gl.GetUniformLocation(shader, "planeHeight")
 	shapeVBO = gl.GetVBO(GL.ARRAY_BUFFER, false)
 	instanceVBO = gl.GetVBO(GL.ARRAY_BUFFER, true)
 	vao = gl.GetVAO()
@@ -153,7 +195,86 @@ local function DeleteBuffers()
 	shader, vao, shapeVBO, instanceVBO = nil, nil, nil, nil
 end
 
--- {x, y, z, circle radius, r, g, b, plane height} for every ship in view
+--------------------------------------------------------------------------------
+-- orders
+
+-- Where the selected ships are going: one point per order that names a place
+-- and per rally point. Orders on a unit (attack, guard) are left out: that
+-- unit has its own line.
+local function RefreshOrders()
+	orderPoints = {}
+	local selected = Spring.GetSelectedUnits() or {}
+	for i = 1, math.min(#selected, MAX_ORDER_UNITS) do
+		local unitID = selected[i]
+		local radius = CircleRadius(Spring.GetUnitDefID(unitID))
+		local _, y = Spring.GetUnitPosition(unitID)
+		if radius and y then
+			local commands = Spring.GetUnitCommands(unitID, MAX_ORDERS) or {}
+			local first = true
+			for c = 1, #commands do
+				local command = commands[c]
+				local params = command.params or {}
+				if #params >= 3 and (ORDER_COLOUR[command.id] or command.id >= 0) then
+					local colour = ORDER_COLOUR[command.id] or OTHER_ORDER_COLOUR
+					orderPoints[#orderPoints + 1] = {params[1], y, params[3], radius, colour[1], colour[2], colour[3],
+						first and ORDER_ALPHA or QUEUED_ALPHA}
+					first = false
+				end
+			end
+			local rally = Spring.GetUnitRulesParam(unitID, "rally")
+			if type(rally) == "string" then
+				for x, z in rally:gmatch("(%-?%d+),(%-?%d+)") do
+					orderPoints[#orderPoints + 1] = {tonumber(x), y, tonumber(z), CIRCLE_MIN * 1.5,
+						RALLY_COLOUR[1], RALLY_COLOUR[2], RALLY_COLOUR[3], ORDER_ALPHA}
+				end
+			end
+		end
+	end
+end
+
+-- The spot under the mouse, while it would give the selected ships an order
+-- that names a place: {x, y, z, radius, r, g, b, alpha}, or nil.
+local function PreviewPoint()
+	local selected = Spring.GetSelectedUnits() or {}
+	if #selected == 0 then
+		return nil
+	end
+	local _, activeID = Spring.GetActiveCommand()
+	local commandID = activeID
+	if not commandID then
+		local _, defaultID = Spring.GetDefaultCommand()
+		commandID = defaultID
+	end
+	if not (commandID and PREVIEW_ORDERS[commandID]) then
+		return nil
+	end
+	local mx, my, _, _, _, offscreen = Spring.GetMouseState()
+	if offscreen or Spring.IsAboveMiniMap(mx, my) then
+		return nil
+	end
+	local kind, position = Spring.TraceScreenRay(mx, my, true)
+	if kind ~= "ground" or not position then
+		return nil
+	end
+	-- the height and size of the selected ships (the first few are enough)
+	local height, radius, count = 0, 0, 0
+	for i = 1, math.min(#selected, 20) do
+		local shipRadius = CircleRadius(Spring.GetUnitDefID(selected[i]))
+		local _, y = Spring.GetUnitPosition(selected[i])
+		if shipRadius and y then
+			height, radius, count = height + y, math.max(radius, shipRadius), count + 1
+		end
+	end
+	if count == 0 then
+		return nil
+	end
+	local colour = ORDER_COLOUR[commandID] or (commandID == 32667 and RALLY_COLOUR) or OTHER_ORDER_COLOUR
+	return {position[1], height / count, position[3], radius, colour[1], colour[2], colour[3], PREVIEW_ALPHA}
+end
+
+--------------------------------------------------------------------------------
+
+-- {x, y, z, circle radius, r, g, b, visibility} for every ship in view, then the order points
 local function CollectShips()
 	local data, n, count = {}, 0, 0
 	local units = Spring.GetVisibleUnits(-1, nil, false) or {}
@@ -166,12 +287,25 @@ local function CollectShips()
 			if x and y - planeY > 4 then
 				local colour = TeamColour(Spring.GetUnitTeam(unitID))
 				data[n + 1], data[n + 2], data[n + 3], data[n + 4] = x, y, z, radius
-				data[n + 5], data[n + 6], data[n + 7], data[n + 8] = colour[1], colour[2], colour[3], planeY
+				data[n + 5], data[n + 6], data[n + 7], data[n + 8] = colour[1], colour[2], colour[3], 1
 				n = n + 8
 				count = count + 1
 			end
 		end
 	end
+	local function Add(point)
+		if point and count < MAX_SHIPS and point[2] - planeY > 4 then
+			for k = 1, 8 do
+				data[n + k] = point[k]
+			end
+			n = n + 8
+			count = count + 1
+		end
+	end
+	for i = 1, #orderPoints do
+		Add(orderPoints[i])
+	end
+	Add(PreviewPoint())
 	return data, count
 end
 
@@ -181,12 +315,12 @@ local function DrawPlain(data, count)
 		for i = 0, count - 1 do
 			local n = i * 8
 			local x, y, z, radius = data[n + 1], data[n + 2], data[n + 3], data[n + 4]
-			local r, g, b = data[n + 5], data[n + 6], data[n + 7]
-			gl.Color(r, g, b, LINE_ALPHA_TOP)
+			local r, g, b, a = data[n + 5], data[n + 6], data[n + 7], data[n + 8]
+			gl.Color(r, g, b, LINE_ALPHA_TOP * a)
 			gl.Vertex(x, y, z)
-			gl.Color(r, g, b, LINE_ALPHA_BOTTOM)
+			gl.Color(r, g, b, LINE_ALPHA_BOTTOM * a)
 			gl.Vertex(x, planeY, z)
-			gl.Color(r, g, b, CIRCLE_ALPHA)
+			gl.Color(r, g, b, CIRCLE_ALPHA * a)
 			for s = 0, CIRCLE_SEGMENTS - 1 do
 				local a1 = s / CIRCLE_SEGMENTS * 2 * math.pi
 				local a2 = (s + 1) / CIRCLE_SEGMENTS * 2 * math.pi
@@ -202,6 +336,26 @@ end
 
 function widget:Initialize()
 	planeY = Spring.GetGameRulesParam("planet_plane_y") or DEFAULT_PLANE_Y
+	lastUpdate = Spring.GetTimer()
+end
+
+function widget:Update()
+	local now = Spring.GetTimer()
+	sinceRefresh = sinceRefresh + Spring.DiffTimers(now, lastUpdate)
+	lastUpdate = now
+	if sinceRefresh >= QUEUE_REFRESH then
+		sinceRefresh = 0
+		RefreshOrders()
+	end
+end
+
+-- a new selection or a new order shows at once
+function widget:SelectionChanged()
+	sinceRefresh = QUEUE_REFRESH
+end
+
+function widget:UnitCommand()
+	sinceRefresh = QUEUE_REFRESH
 end
 
 function widget:Shutdown()
@@ -240,6 +394,7 @@ function widget:DrawWorldPreUnit()
 	if useInstancing then
 		instanceVBO:Upload(data, nil, 0, 1, count * 8)
 		gl.UseShader(shader)
+		gl.Uniform(planeUniform, planeY)
 		vao:DrawArrays(GL.LINES, shapeVertices, 0, count, 0)
 		gl.UseShader(0)
 	else

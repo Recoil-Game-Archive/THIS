@@ -14,6 +14,13 @@
 --  slider is moved).
 --  If you pause the music, it stays paused the next time you play.
 --
+--  The loading screen (LuaIntro/Addons/music.lua) already starts a track and
+--  leaves its path in the engine config value THISIntroTrack. When that track
+--  is still playing as this widget starts, it is not restarted: it plays on as
+--  the first track of the playlist. The loading screen stays silent when the
+--  music was left paused (THISMusicPaused) or the player is switched off in
+--  Settings (THISMusicOff); this widget and the Sound settings write those.
+--
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
@@ -134,6 +141,7 @@ local function TogglePause()
 	end
 	Spring.PauseSoundStream() -- the engine call toggles
 	paused = not paused
+	Spring.SetConfigInt("THISMusicPaused", paused and 1 or 0) -- for the loading screen
 end
 
 local function GetState()
@@ -144,6 +152,37 @@ local function GetState()
 		name = track and track.name or nil,
 		paused = paused or not streaming,
 	}
+end
+
+-- The track the loading screen started, if it is still playing: it becomes
+-- track 1 and plays on from where it is. Returns true when that happened.
+local function AdoptIntroTrack()
+	local introTrack = Spring.GetConfigString("THISIntroTrack", "")
+	Spring.SetConfigString("THISIntroTrack", "") -- once: after "/luaui reload" nothing is playing
+	local _, total = Spring.GetSoundStreamTime()
+	if introTrack == "" or not total or total <= 0 then
+		return false
+	end
+	local wanted = introTrack:lower():gsub("\\", "/")
+	local index
+	for i, track in ipairs(tracks) do
+		if track.path:lower():gsub("\\", "/") == wanted then
+			index = i
+			break
+		end
+	end
+	if index then
+		tracks[1], tracks[index] = tracks[index], tracks[1]
+	else
+		table.insert(tracks, 1, {path = introTrack, name = TrackName(introTrack)})
+	end
+	current = 1
+	Spring.SetSoundStreamVolume(Volume())
+	streaming = true
+	started = true
+	paused = false
+	sinceStart = 0
+	return true
 end
 
 --------------------------------------------------------------------------------
@@ -167,7 +206,11 @@ function widget:Initialize()
 		return
 	end
 	current = 1
-	if not startPaused then
+	Spring.SetConfigInt("THISMusicOff", 0)
+	Spring.SetConfigInt("THISMusicPaused", startPaused and 1 or 0)
+	if startPaused then
+		Spring.StopSoundStream() -- in case the loading screen started one
+	elseif not AdoptIntroTrack() then
 		Play(1)
 	end
 end
