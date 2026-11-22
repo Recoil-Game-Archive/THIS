@@ -200,6 +200,7 @@ function gadget:UnitCreated(u, ud, team)
 			name="Rally Point",
 			tooltip="Set a rally point for units from this carrier to move to",
 			action="rally",
+			cursor="Rally", -- assigned in LuaUI/widgets/gui_cursor_size.lua
 			type=CMDTYPE_ICON_MAP,
 			id=CMD_RALLY,
 		})

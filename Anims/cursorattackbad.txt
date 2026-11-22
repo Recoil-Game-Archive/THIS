@@ -1,0 +1,25 @@
+hotspot center
+frame anims/hd/48/cursorattackbad_0.png 0.040
+frame anims/hd/48/cursorattackbad_1.png 0.040
+frame anims/hd/48/cursorattackbad_2.png 0.040
+frame anims/hd/48/cursorattackbad_3.png 0.040
+frame anims/hd/48/cursorattackbad_4.png 0.040
+frame anims/hd/48/cursorattackbad_5.png 0.040
+frame anims/hd/48/cursorattackbad_6.png 0.040
+frame anims/hd/48/cursorattackbad_7.png 0.040
+frame anims/hd/48/cursorattackbad_8.png 0.040
+frame anims/hd/48/cursorattackbad_9.png 0.040
+frame anims/hd/48/cursorattackbad_10.png 0.040
+frame anims/hd/48/cursorattackbad_11.png 0.040
+frame anims/hd/48/cursorattackbad_12.png 0.040
+frame anims/hd/48/cursorattackbad_13.png 0.040
+frame anims/hd/48/cursorattackbad_14.png 0.040
+frame anims/hd/48/cursorattackbad_15.png 0.040
+frame anims/hd/48/cursorattackbad_16.png 0.040
+frame anims/hd/48/cursorattackbad_17.png 0.040
+frame anims/hd/48/cursorattackbad_18.png 0.040
+frame anims/hd/48/cursorattackbad_19.png 0.040
+frame anims/hd/48/cursorattackbad_20.png 0.040
+frame anims/hd/48/cursorattackbad_21.png 0.040
+frame anims/hd/48/cursorattackbad_22.png 0.040
+frame anims/hd/48/cursorattackbad_23.png 0.040

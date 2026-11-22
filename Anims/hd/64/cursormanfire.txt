@@ -1,0 +1,25 @@
+hotspot center
+frame anims/hd/64/cursormanfire_0.png 0.040
+frame anims/hd/64/cursormanfire_1.png 0.040
+frame anims/hd/64/cursormanfire_2.png 0.040
+frame anims/hd/64/cursormanfire_3.png 0.040
+frame anims/hd/64/cursormanfire_4.png 0.040
+frame anims/hd/64/cursormanfire_5.png 0.040
+frame anims/hd/64/cursormanfire_6.png 0.040
+frame anims/hd/64/cursormanfire_7.png 0.040
+frame anims/hd/64/cursormanfire_8.png 0.040
+frame anims/hd/64/cursormanfire_9.png 0.040
+frame anims/hd/64/cursormanfire_10.png 0.040
+frame anims/hd/64/cursormanfire_11.png 0.040
+frame anims/hd/64/cursormanfire_12.png 0.040
+frame anims/hd/64/cursormanfire_13.png 0.040
+frame anims/hd/64/cursormanfire_14.png 0.040
+frame anims/hd/64/cursormanfire_15.png 0.040
+frame anims/hd/64/cursormanfire_16.png 0.040
+frame anims/hd/64/cursormanfire_17.png 0.040
+frame anims/hd/64/cursormanfire_18.png 0.040
+frame anims/hd/64/cursormanfire_19.png 0.040
+frame anims/hd/64/cursormanfire_20.png 0.040
+frame anims/hd/64/cursormanfire_21.png 0.040
+frame anims/hd/64/cursormanfire_22.png 0.040
+frame anims/hd/64/cursormanfire_23.png 0.040

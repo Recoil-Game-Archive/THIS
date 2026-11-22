@@ -29,7 +29,7 @@ local turnCmdDesc = {
 	name = "Turn",
 	action = "turn",
 	tooltip = "Turn to face a given point",
-	cursor = "Patrol",
+	cursor = "Turn", -- assigned in LuaUI/widgets/gui_cursor_size.lua
 }
 
 -- Variables
