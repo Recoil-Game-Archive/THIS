@@ -30,8 +30,8 @@ return {
 
 		{ type = "separator", name = "In the world" },
 		{ id = "healthbars", name = "Health bars", type = "bool", widget = "HealthBars THIS", requires = "HealthBars THIS" },
-		{ id = "selectionrings", name = "Selection frames", type = "bool", widget = "THIS Selection Rings", requires = "THIS Selection Rings",
-		  desc = "Animated frames the size of each selected ship's hitbox. Off: the engine's green squares." },
+		{ id = "selectionrings", name = "Selection rings", type = "bool", widget = "THIS Selection Rings", requires = "THIS Selection Rings",
+		  desc = "Animated rings the size of each selected ship's hit sphere. Off: the engine's green squares." },
 		{ id = "altitudelines", name = "Altitude lines", type = "bool", widget = "THIS Altitude Lines", requires = "THIS Altitude Lines",
 		  desc = "A line from every ship down to the plane of the capture rings, with a small circle where it lands." },
 		{ id = "commandlines", name = "Animated order lines", type = "bool", widget = "THIS Command Lines", requires = "THIS Command Lines",

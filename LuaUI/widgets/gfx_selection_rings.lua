@@ -1,24 +1,22 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 --
---  Selection frames.
+--  Selection rings.
 --
 --  Replaces the engine's green selection squares. Every selected ship gets a
---  frame the size of its hitbox (its collision volume: length and beam), lying
---  in the ship's own plane and turning with it, in its team's colour:
---    - a thin outline of the hitbox,
---    - bright brackets on its four corners, breathing slightly,
---    - a glint running round the outline,
---    - a small tick on the bow, so the heading reads at a glance.
---  A newly selected ship's frame closes in from a little further out.
---  Round hitboxes (upright cylinders, spheres) get a round frame.
+--  ring a little larger than its hit sphere, in its team's colour, always facing the
+--  camera:
+--    - a thin circle on the sphere's edge,
+--    - three brighter arcs turning slowly around it, with a glint running
+--      along them,
+--    - four short brackets just outside, turning the other way.
+--  A newly selected ship's ring closes in from a little further out.
 --
---  Far away, a frame never gets smaller than MIN_PIXELS, so small ships stay
---  easy to find in a large selection. Line widths are in screen pixels at any
---  distance and tilt.
+--  Far away, a ring never gets smaller than MIN_PIXELS, so small ships stay
+--  easy to find in a large selection.
 --
---  All frames go out in one instanced call. If the engine cannot do that,
---  this widget switches itself off and the engine's squares stay.
+--  All rings go out in one instanced call. If the engine cannot do that, this
+--  widget switches itself off and the engine's squares stay.
 --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -26,7 +24,7 @@
 function widget:GetInfo()
 	return {
 		name = "THIS Selection Rings",
-		desc = "Animated frames the size of the hitbox around selected ships, instead of the engine's squares",
+		desc = "Animated rings the size of the hit sphere around selected ships, instead of the engine's squares",
 		author = "THIS contributors",
 		date = "2026-11-22",
 		license = "GNU GPL, v2 or later",
@@ -36,11 +34,11 @@ function widget:GetInfo()
 end
 
 local MAX_RINGS = 2048
-local MIN_PIXELS = 10          -- smallest half-size of a frame on screen
-local MARGIN_PIXELS = 14       -- the quad reaches this far beyond the hitbox (bow tick, glow)
-local POP_SECONDS = 0.35       -- how long a new frame takes to close in
+local MIN_PIXELS = 11          -- smallest ring radius on screen
+local EXTENT = 1.32            -- the quad reaches this many radii out (room for the brackets and the glow)
+local POP_SECONDS = 0.35       -- how long a new ring takes to close in
 local WHITEN = 0.25            -- team colour mixed towards white, so dark team colours still read
-local CORNER_ROUNDING = 0.12   -- corner radius of a box frame, as a share of its shorter half-side
+local SIZE_FACTOR = 1.15       -- ring radius in hit sphere radii: a little outside the sphere, clear of the hull
 
 local shader, vao, quadVBO, instances
 local uniforms = {}
@@ -54,90 +52,80 @@ local teamColour = {}    -- teamID -> {r, g, b}
 local VERTEX = [[
 #version 330 compatibility
 layout (location = 0) in vec2 corner;     // x: 0..1, y: -1..1
-layout (location = 1) in vec4 place;      // centre of the hitbox, and the time the ship was selected
-layout (location = 2) in vec4 right;      // the ship's right vector, and half the hitbox's width
-layout (location = 3) in vec4 front;      // the ship's front vector, and half the hitbox's length
-layout (location = 4) in vec4 colour;     // rgb, and the corner radius as a share of the shorter half-side
+layout (location = 1) in vec4 place;      // centre of the hit sphere, and its radius
+layout (location = 2) in vec4 colour;     // rgb, and the time the ship was selected
 uniform vec2 viewport;
 uniform float time;
 uniform float minPixels;
-uniform float marginPixels;
+uniform float extent;
 uniform float popSeconds;
-out vec2 p;              // position in the ship's plane, in world units from the centre
-flat out vec2 vHalf;     // half width, half length of the frame
-flat out float vRadius;  // corner radius
+out vec2 uv;             // in radii: the hit sphere's edge is at length 1
 flat out vec3 vColour;
+flat out float vPixels;  // the radius in pixels
 flat out float vAge;     // 0 just selected .. 1 settled
 void main() {
 	vec2 q = vec2(corner.x * 2.0 - 1.0, corner.y);
 	vec4 centre = gl_ModelViewProjectionMatrix * vec4(place.xyz, 1.0);
-	// pixels per world unit at the ship: a point one unit to the camera's right of the centre
-	vec3 camRight = vec3(gl_ModelViewMatrix[0][0], gl_ModelViewMatrix[1][0], gl_ModelViewMatrix[2][0]);
-	vec4 edge = gl_ModelViewProjectionMatrix * vec4(place.xyz + camRight, 1.0);
-	float pixelsPerUnit = max(length((edge.xy / edge.w - centre.xy / centre.w) * viewport * 0.5), 1.0e-5);
+	// the radius on screen: a point one radius to the camera's right of the centre
+	vec3 right = vec3(gl_ModelViewMatrix[0][0], gl_ModelViewMatrix[1][0], gl_ModelViewMatrix[2][0]);
+	vec4 edge = gl_ModelViewProjectionMatrix * vec4(place.xyz + right * place.w, 1.0);
+	float pixels = length((edge.xy / edge.w - centre.xy / centre.w) * viewport * 0.5);
+	pixels = max(pixels, minPixels);
 
-	float age = clamp((time - place.w) / popSeconds, 0.0, 1.0);
-	float pop = 1.0 + 0.40 * pow(1.0 - age, 3.0);   // closes in from further out
-	vec2 halfSize = vec2(right.w, front.w);
-	// never smaller than minPixels on screen
-	halfSize *= max(1.0, minPixels / (max(halfSize.x, halfSize.y) * pixelsPerUnit));
-	halfSize *= pop;
+	float age = clamp((time - colour.a) / popSeconds, 0.0, 1.0);
+	float pop = 1.0 + 0.45 * pow(1.0 - age, 3.0);   // closes in from further out
 
-	vec2 reach = halfSize + vec2(marginPixels / pixelsPerUnit);
-	p = q * reach;
-	gl_Position = gl_ModelViewProjectionMatrix * vec4(place.xyz + right.xyz * p.x + front.xyz * p.y, 1.0);
-	vHalf = halfSize;
-	vRadius = colour.a * min(halfSize.x, halfSize.y);
+	uv = q * extent;
+	centre.xy += q * extent * pop * pixels * 2.0 / viewport * centre.w;
+	gl_Position = centre;
 	vColour = colour.rgb;
+	vPixels = pixels * pop;
 	vAge = age;
 }
 ]]
 
 local FRAGMENT = [[
 #version 330 compatibility
-in vec2 p;
-flat in vec2 vHalf;
-flat in float vRadius;
+in vec2 uv;
 flat in vec3 vColour;
+flat in float vPixels;
 flat in float vAge;
 uniform float time;
 out vec4 fragColor;
 
-// distance to the outline of a rounded rectangle: negative inside
-float roundRect(vec2 pos, vec2 halfSize, float radius) {
-	vec2 d = abs(pos) - halfSize + vec2(radius);
-	return length(max(d, 0.0)) + min(max(d.x, d.y), 0.0) - radius;
+// 1 inside a band of the given half width (in pixels) around radius r0, soft at the edges
+float band(float r, float r0, float halfWidth, float px) {
+	return 1.0 - smoothstep(halfWidth * px, (halfWidth + 1.0) * px, abs(r - r0));
 }
 
 void main() {
-	float d = roundRect(p, vHalf, vRadius);
-	float px = max(fwidth(d), 1.0e-5);        // one screen pixel, in world units, at this tilt and distance
-	float shorter = min(vHalf.x, vHalf.y);
+	float r = length(uv);
+	float px = 1.0 / max(vPixels, 1.0);         // one pixel, in radii
+	float angle = atan(uv.y, uv.x);
 
-	// the hitbox outline: thin and quiet
-	float outline = (1.0 - smoothstep(0.5 * px, 1.5 * px, abs(d))) * 0.40;
+	// the sphere's edge: a thin, quiet circle
+	float circle = band(r, 1.0, 0.5, px) * 0.42;
 
-	// brackets on the corners: the outline, brighter and thicker, where both sides are near a corner
-	float reach = clamp(shorter * (0.50 + 0.05 * sin(time * 2.2)), 4.0 * px, 60.0 * px);
-	vec2 fromCorner = vHalf - abs(p);
-	float nearCorner = (1.0 - smoothstep(reach - px, reach + px, fromCorner.x))
-	                 * (1.0 - smoothstep(reach - px, reach + px, fromCorner.y));
-	float brackets = (1.0 - smoothstep(1.1 * px, 2.1 * px, abs(d))) * nearCorner;
+	// three arcs on it, turning slowly; each fades towards its ends
+	float turn = angle - time * 0.55;
+	float arcMask = smoothstep(0.10, 0.75, cos(turn * 3.0));
+	float arcs = band(r, 1.0, 1.1, px) * arcMask;
 
-	// a glint running round the outline
-	float angle = atan(p.y / vHalf.y, p.x / vHalf.x);
-	float behind = mod(angle - time * 1.5, 6.2831853);
-	float glint = exp(-behind * 2.0) * (1.0 - smoothstep(1.2 * px, 2.4 * px, abs(d)));
+	// a glint running along the arcs, a little faster
+	float glintAngle = mod(angle - time * 1.7, 6.2831853);
+	float glint = exp(-glintAngle * 2.2) * band(r, 1.0, 1.4, px) * arcMask;
 
-	// a tick on the bow, pointing ahead
-	float tick = (1.0 - smoothstep(0.6 * px, 1.6 * px, abs(p.x)))
-	           * step(0.0, p.y) * smoothstep(-0.5 * px, 0.5 * px, d) * (1.0 - smoothstep(6.0 * px, 7.0 * px, d));
+	// four short brackets just outside, turning the other way
+	float back = angle + time * 0.30;
+	float bracketMask = smoothstep(0.90, 0.96, cos(back * 4.0));
+	float bracketRadius = 1.0 + max(7.0 * px, 0.11);
+	float brackets = band(r, bracketRadius, 0.9, px) * bracketMask * 0.85;
 
-	// a soft glow hugging the outline on the inside
-	float glow = (d < 0.0) ? exp(d / (5.0 * px)) * 0.14 : exp(-d / (2.5 * px)) * 0.08;
+	// a soft glow hugging the circle, mostly on the inside
+	float glow = exp(-abs(r - 1.0) / max(5.0 * px, 0.04)) * 0.16 * (r < 1.0 ? 1.0 : 0.6);
 
-	float light = outline + brackets + tick * 0.9 + glow;
-	float white = glint * 0.85 + brackets * 0.15;
+	float light = circle + arcs + brackets + glow;
+	float white = glint * 0.9 + arcs * 0.12;
 	float fade = vAge * (0.75 + 0.25 * vAge);   // fades in while it closes in
 	vec3 rgb = (vColour * light + vec3(white)) * fade;
 	// premultiplied: light adds, with a little cover so it stays visible over bright hulls
@@ -162,7 +150,7 @@ local function CreateBuffers()
 	if not shader then
 		return false, "the shader did not compile. Log:\n" .. tostring(gl.GetShaderLog())
 	end
-	for _, name in ipairs({"viewport", "time", "minPixels", "marginPixels", "popSeconds"}) do
+	for _, name in ipairs({"viewport", "time", "minPixels", "extent", "popSeconds"}) do
 		uniforms[name] = gl.GetUniformLocation(shader, name)
 	end
 	quadVBO = gl.GetVBO(GL.ARRAY_BUFFER, false)
@@ -175,9 +163,7 @@ local function CreateBuffers()
 	quadVBO:Upload({0, -1, 1, -1, 0, 1, 1, 1})
 	instances:Define(MAX_RINGS, {
 		{id = 1, name = "place", size = 4},
-		{id = 2, name = "right", size = 4},
-		{id = 3, name = "front", size = 4},
-		{id = 4, name = "colour", size = 4},
+		{id = 2, name = "colour", size = 4},
 	})
 	vao:AttachVertexBuffer(quadVBO)
 	vao:AttachInstanceBuffer(instances)
@@ -221,33 +207,21 @@ local function TrackSelection()
 	selectedAt = fresh
 end
 
--- 16 numbers for every selected ship: the hitbox's centre and the time selected, the ship's right vector and
--- half the hitbox's width, its front vector and half the length, the colour and the corner rounding
-local STRIDE = 16
+-- {x, y, z, radius, r, g, b, time selected} for every selected ship
 local function Collect()
 	local data, n, count = {}, 0, 0
 	for unitID, since in pairs(selectedAt) do
 		if count >= MAX_RINGS then
 			break
 		end
-		local _, _, _, x, y, z = Spring.GetUnitPosition(unitID, true) -- the middle of the ship, not its base point
-		local sx, sy, sz, ox, oy, oz, volumeType, _, primaryAxis = Spring.GetUnitCollisionVolumeData(unitID)
-		local front, up, right = Spring.GetUnitVectors(unitID)
-		if x and sx and front and not Spring.GetUnitNoDraw(unitID) then
-			if ox ~= 0 or oy ~= 0 or oz ~= 0 then -- a hitbox that is off-centre
-				x = x + right[1] * ox + up[1] * oy + front[1] * oz
-				y = y + right[2] * ox + up[2] * oy + front[2] * oz
-				z = z + right[3] * ox + up[3] * oy + front[3] * oz
-			end
-			-- boxes (2) and lying cylinders get a box frame; upright cylinders (1, axis 1), ellipsoids (0) and
-			-- spheres (3) a round one
-			local round = (volumeType == 0) or (volumeType == 3) or (volumeType == 1 and primaryAxis == 1)
+		-- the middle of the hit sphere (not the model's base point)
+		local _, _, _, x, y, z = Spring.GetUnitPosition(unitID, true)
+		local radius = Spring.GetUnitRadius(unitID)
+		if x and radius and not Spring.GetUnitNoDraw(unitID) then
 			local colour = TeamColour(Spring.GetUnitTeam(unitID))
-			data[n + 1], data[n + 2], data[n + 3], data[n + 4] = x, y, z, since
-			data[n + 5], data[n + 6], data[n + 7], data[n + 8] = right[1], right[2], right[3], sx * 0.5
-			data[n + 9], data[n + 10], data[n + 11], data[n + 12] = front[1], front[2], front[3], sz * 0.5
-			data[n + 13], data[n + 14], data[n + 15], data[n + 16] = colour[1], colour[2], colour[3], round and 1 or CORNER_ROUNDING
-			n = n + STRIDE
+			data[n + 1], data[n + 2], data[n + 3], data[n + 4] = x, y, z, radius * SIZE_FACTOR
+			data[n + 5], data[n + 6], data[n + 7], data[n + 8] = colour[1], colour[2], colour[3], since
+			n = n + 8
 			count = count + 1
 		end
 	end
@@ -309,12 +283,12 @@ function widget:DrawWorld()
 	gl.Culling(false)
 	gl.Blending(GL.ONE, GL.ONE_MINUS_SRC_ALPHA) -- the shader's colours are premultiplied
 
-	instances:Upload(data, nil, 0, 1, count * STRIDE)
+	instances:Upload(data, nil, 0, 1, count * 8)
 	gl.UseShader(shader)
 	gl.Uniform(uniforms.viewport, vsx, vsy)
 	gl.Uniform(uniforms.time, Now())
 	gl.Uniform(uniforms.minPixels, MIN_PIXELS)
-	gl.Uniform(uniforms.marginPixels, MARGIN_PIXELS)
+	gl.Uniform(uniforms.extent, EXTENT)
 	gl.Uniform(uniforms.popSeconds, POP_SECONDS)
 	vao:DrawArrays(GL.TRIANGLE_STRIP, 4, 0, count, 0)
 	gl.UseShader(0)
