@@ -5,7 +5,7 @@ local unitDef = {
 
 	-- Required Tags
 	--power=0; (overridden by a later line)
-	mass = 20000,
+	mass = 10, -- added to the Imperator's own mass while attached, 17 times
 	icontype = "imperator",
 	Category = "ANY NOCHASE NOSHIP",
 	FootprintX = 6,
